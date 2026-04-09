@@ -24,7 +24,7 @@ import views.html.PageNotFoundView
 
 import javax.inject.Inject
 
-class PageNotFoundController @Inject()(
+class PageNotFoundController @Inject() (
   override val messagesApi: MessagesApi,
   val controllerComponents: MessagesControllerComponents,
   view: PageNotFoundView,
