@@ -55,6 +55,10 @@ class EnumerableSpec extends AnyFreeSpec with Matchers with EitherValues with Op
     "must fail to bind for invalid values" in {
       Json.fromJson[Foo](JsString("invalid")).asEither.left.value must contain(JsPath -> Seq(JsonValidationError("error.invalid")))
     }
+
+    "must fail to bind for a non-JsString value" in {
+      Json.fromJson[Foo](JsNumber(1)).asEither.left.value must contain(JsPath -> Seq(JsonValidationError("error.invalid")))
+    }
   }
 
   ".writes" - {

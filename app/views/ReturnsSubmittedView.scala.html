@@ -1,0 +1,96 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.CurrencyFormatter
+@import models.Regime
+@import models.returns.ReturnsSubmitted
+@import utils.DateTimeFormats
+
+@this(
+    layout: templates.Layout,
+    pagination: components.Pagination
+)
+
+@(regime: Regime, regNumber: String, pageSize: Int, pageNo: Int, returns: ReturnsSubmitted)(implicit request: Request[_], messages: Messages)
+
+@pageUrl(p: Int) = @{controllers.routes.ReturnsSubmittedController.onPageLoad(pageSize, p)}
+
+@formatAmount(amount: BigDecimal) = {
+    @if(amount < 0) {&minus;}@CurrencyFormatter.currencyFormat(amount.abs)
+}
+
+@breadcrumbs = {
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("site.accountOverview")</a>
+            </li>
+        </ol>
+    </nav>
+}
+
+@layout(
+    pageTitle     = titleNoForm(messages("returns.title")),
+    showBackLink  = false,
+    beforeContent = Some(breadcrumbs)
+) {
+
+    <h1 class="govuk-heading-l">
+        @messages("returns.heading")
+    </h1>
+    <p class="govuk-body">
+        @messages("returns.p1", messages(regime.messageKey))
+    </p>
+
+    @defining(
+        messages("returns.caption",
+            returns.periodStartDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse(""),
+            returns.periodEndDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
+        ),
+        returns.totalPeriodRecords.getOrElse(0),
+        returns.totalPeriodRecords.map(n => Math.ceil(n.toDouble / pageSize).toInt).getOrElse(0),
+        (pageNo - 1) * pageSize + 1,
+        returns.totalPeriodRecords.map(n => Math.min(pageNo * pageSize, n)).getOrElse(0)
+    ) { case (dateRange, totalRecords, totalPages, firstRecord, lastRecord) =>
+        @if(returns.amountDeclared.isEmpty) {
+            <h2 class="govuk-heading-s">@dateRange</h2>
+            <p class="govuk-body">@messages("returns.empty")</p>
+        } else {
+            <h2 class="govuk-heading-s">@dateRange</h2>
+            <p class="govuk-body">@messages("returns.totalSummary", totalRecords) @for(total <- returns.total){@formatAmount(total)}.</p>
+            <p class="govuk-body">@messages("returns.displaying", firstRecord, lastRecord, totalRecords)</p>
+            <table class="govuk-table">
+                <thead class="govuk-table__head">
+                    <tr class="govuk-table__row">
+                        <th scope="col" class="govuk-table__header">@messages("returns.table.periodStart")</th>
+                        <th scope="col" class="govuk-table__header">@messages("returns.table.periodEnd")</th>
+                        <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("returns.table.amount")</th>
+                    </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                    @for(item <- returns.amountDeclared) {
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">@item.periodStartDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")</td>
+                            <td class="govuk-table__cell">@item.periodEndDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")</td>
+                            <td class="govuk-table__cell govuk-table__cell--numeric">@for(amount <- item.amount){@formatAmount(amount)}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @pagination(pageNo, totalPages, pageUrl)
+        }
+    }
+}

@@ -33,8 +33,38 @@ error.prefix = Gwall
 error.summary.title = Mae problem
 
 index.title = cy: Welcome to the filing Machine Game Duty
-index.heading = cy: Welcome to the filing Machine Game Duty
+index.heading = cy: General betting duty account overview
+index.registrationNumber = cy: Registration number:
+index.currentBalance = cy: Your current balance is
+index.paymentInfo = cy: If your balance is negative, you must pay this amount.
+index.paymentInfo.link = cy: Pay what you owe
+index.table.description = cy: Description
+index.table.amount = cy: Amount
+index.table.returns = cy: Amount declared on returns
 index.guidance = cy: Welcome to your new frontend. Please see the README file for a guide to getting started.
+
+returns.title = cy: Returns submitted
+returns.heading = cy: Returns submitted
+returns.p1 = cy: The amount of {0} you have declared.
+
+regime.gbd = cy: General Betting Duty
+regime.pbd = cy: Pool Betting Duty
+regime.rgd = cy: Remote Gaming Duty
+regime.mgd = cy: Machine Games Duty
+returns.caption = {0} i {1}
+returns.empty = cy: You have not submitted any returns.
+returns.table.periodStart = cy: Period start date
+returns.table.periodEnd = cy: Period end date
+returns.table.amount = cy: Amount
+returns.table.total = cy: Total
+returns.totalSummary = cy: The total of the {0} records is
+returns.displaying = cy: Displaying {0} to {1} of {2} records.
+
+site.accountOverview = cy: Account overview
+site.pagination.label = cy: Pagination
+site.pagination.previous = cy: Previous
+site.pagination.next = cy: Next
+site.pagination.page = cy: page
 
 checkYourAnswers.title = cy: Check your answers
 checkYourAnswers.heading = cy: Check your answers

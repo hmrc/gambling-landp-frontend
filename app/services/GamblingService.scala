@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package navigation
+package services
 
-import play.api.mvc.Call
-import pages.*
-import models.{Mode, UserAnswers}
+import connectors.GamblingConnector
+import models.returns.ReturnsSubmitted
+import uk.gov.hmrc.http.HeaderCarrier
 
-class FakeNavigator(desiredRoute: Call) extends Navigator {
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.Future
 
-  override def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call =
-    desiredRoute
+@Singleton
+class GamblingService @Inject() (connector: GamblingConnector) {
+
+  def getReturnsSubmitted(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[ReturnsSubmitted] =
+    connector.getReturnsSubmitted(regime, regNumber, pageSize, pageNo)
 }

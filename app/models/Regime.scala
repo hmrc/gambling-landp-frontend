@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-package controllers
+package models
 
-import controllers.actions.IdentifierAction
-import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.IndexView
+sealed trait Regime(val code: String, val messageKey: String)
 
-class IndexController @Inject() (
-  val controllerComponents: MessagesControllerComponents,
-  identify: IdentifierAction,
-  view: IndexView
-) extends FrontendBaseController
-    with I18nSupport {
+object Regime {
+  case object GBD extends Regime("gbd", "regime.gbd")
+  case object PBD extends Regime("pbd", "regime.pbd")
+  case object RGD extends Regime("rgd", "regime.rgd")
+  case object MGD extends Regime("mgd", "regime.mgd")
 
-  def onPageLoad(): Action[AnyContent] = identify { implicit request =>
-    Ok(view())
-  }
+  val values: Seq[Regime] = Seq(GBD, PBD, RGD, MGD)
+
+  def fromString(s: String): Option[Regime] =
+    values.find(_.code == s.toLowerCase)
 }

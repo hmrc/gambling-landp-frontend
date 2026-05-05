@@ -2,7 +2,9 @@
 
 ->          /hmrc-frontend                               hmrcfrontend.Routes
 
-GET         /                                            controllers.IndexController.onPageLoad()
+GET        /:regime/:regNumber/current/account        controllers.AccountRedirectController.onPageLoad(regime: String, regNumber: String)
+GET        /current/account                           controllers.AccountOverviewController.onPageLoad()
+GET        /current/returns                           controllers.ReturnsSubmittedController.onPageLoad(pageSize: Int ?= 10, PageNo: Int ?= 1)
 
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 

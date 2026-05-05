@@ -178,6 +178,43 @@ class AuthActionSpec extends SpecBase {
         }
       }
     }
+
+    "the user is fully authorised" - {
+
+      "must invoke the block with the identifier request" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(new FakeSuccessAuthConnector(Some("internal-id")), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(FakeRequest())
+
+          status(result) mustBe OK
+        }
+      }
+    }
+
+    "the user is authorised but has no internal id" - {
+
+      "must throw an UnauthorizedException" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(new FakeSuccessAuthConnector(None), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+
+          an[Exception] must be thrownBy status(controller.onPageLoad()(FakeRequest()))
+        }
+      }
+    }
   }
 }
 
@@ -186,4 +223,11 @@ class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends 
 
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] =
     Future.failed(exceptionToReturn)
+}
+
+class FakeSuccessAuthConnector @Inject() (internalId: Option[String]) extends AuthConnector {
+  val serviceUrl: String = ""
+
+  override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] =
+    Future.successful(internalId.asInstanceOf[A])
 }

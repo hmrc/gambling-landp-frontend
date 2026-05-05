@@ -1,4 +1,4 @@
-service.name = Manage your Machine Games Duty
+service.name = Manage your gambling tax
 
 site.back = Back
 site.remove = Remove
@@ -27,9 +27,39 @@ error.title.prefix = Error:
 error.prefix = Error
 error.summary.title = There is a problem
 
-index.title = Manage your Machine Games Duty
-index.heading = Manage your Machine Games Duty
+index.title = Manage your gambling tax
+index.heading = General betting duty account overview
+index.registrationNumber = Registration number:
+index.currentBalance = Your current balance is
+index.paymentInfo = If your balance is negative, you must pay this amount.
+index.paymentInfo.link = Pay what you owe
+index.table.description = Description
+index.table.amount = Amount
+index.table.returns = Amount declared on returns
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+
+returns.title = Returns submitted
+returns.heading = Returns submitted
+returns.p1 = The amount of {0} you have declared.
+
+regime.gbd = General Betting Duty
+regime.pbd = Pool Betting Duty
+regime.rgd = Remote Gaming Duty
+regime.mgd = Machine Games Duty
+returns.caption = {0} to {1}
+returns.empty = You have not submitted any returns.
+returns.table.periodStart = Period start date
+returns.table.periodEnd = Period end date
+returns.table.amount = Amount
+returns.table.total = Total
+returns.totalSummary = The total of the {0} records is
+returns.displaying = Displaying {0} to {1} of {2} records.
+
+site.accountOverview = Account overview
+site.pagination.label = Pagination
+site.pagination.previous = Previous
+site.pagination.next = Next
+site.pagination.page = page
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers

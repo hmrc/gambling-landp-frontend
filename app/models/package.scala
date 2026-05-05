@@ -115,9 +115,11 @@ package object models {
 
       (path.path, jsValue) match {
         case (Nil, _)                                                                  => JsError("path cannot be empty")
+        case ((_: RecursiveSearch) :: _, _)                                            => JsError("recursive search not supported")
         case ((n: KeyPathNode) :: Nil, value: JsObject) if value.keys.contains(n.key)  => JsSuccess(value - n.key)
         case ((n: KeyPathNode) :: Nil, value: JsObject) if !value.keys.contains(n.key) => JsError("cannot find value at path")
         case ((n: IdxPathNode) :: Nil, value: JsArray)                                 => removeIndexNode(n, value)
+        case ((_: IdxPathNode) :: Nil, _)                                              => JsError(s"cannot remove an index on $jsValue")
         case ((_: KeyPathNode) :: Nil, _)                                              => JsError(s"cannot remove a key on $jsValue")
         case (first :: second :: rest, oldValue) =>
           Reads

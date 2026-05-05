@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package controllers
+package models
 
-import javax.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.AccessDeniedView
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.must.Matchers
 
-class AccessDeniedController @Inject() (
-  override val messagesApi: MessagesApi,
-  val controllerComponents: MessagesControllerComponents,
-  view: AccessDeniedView
-) extends FrontendBaseController
-    with I18nSupport {
+class ModeSpec extends AnyFreeSpec with Matchers {
 
-  def onPageLoad: Action[AnyContent] = Action { implicit request =>
-    Ok(view())
+  "Mode.jsLiteral" - {
+
+    "must convert NormalMode to its string representation" in {
+      Mode.jsLiteral.to(NormalMode) mustEqual "NormalMode"
+    }
+
+    "must convert CheckMode to its string representation" in {
+      Mode.jsLiteral.to(CheckMode) mustEqual "CheckMode"
+    }
   }
 }

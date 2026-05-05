@@ -19,22 +19,22 @@ package controllers
 import base.SpecBase
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.IndexView
+import views.html.AccountOverview
 
-class IndexControllerSpec extends SpecBase {
+class AccountOverviewControllerSpec extends SpecBase {
 
-  "Index Controller" - {
+  "AccountOverview Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.AccountOverviewController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[IndexView]
+        val view = application.injector.instanceOf[AccountOverview]
 
         status(result) mustEqual OK
 

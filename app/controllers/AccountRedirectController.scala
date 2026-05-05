@@ -16,20 +16,28 @@
 
 package controllers
 
-import javax.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
+import controllers.actions.IdentifierAction
+import models.{Regime, SessionKeys}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.AccessDeniedView
 
-class AccessDeniedController @Inject() (
-  override val messagesApi: MessagesApi,
+import javax.inject.Inject
+
+class AccountRedirectController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  view: AccessDeniedView
-) extends FrontendBaseController
-    with I18nSupport {
+  identify: IdentifierAction
+) extends FrontendBaseController {
 
-  def onPageLoad: Action[AnyContent] = Action { implicit request =>
-    Ok(view())
+  def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
+    Regime.fromString(regime) match {
+      case None =>
+        Redirect(routes.PageNotFoundController.onPageLoad())
+      case Some(validRegime) =>
+        Redirect(routes.AccountOverviewController.onPageLoad())
+          .addingToSession(
+            SessionKeys.regime    -> validRegime.code,
+            SessionKeys.regNumber -> regNumber
+          )
+    }
   }
 }
