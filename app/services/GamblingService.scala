@@ -17,6 +17,7 @@
 package services
 
 import connectors.GamblingConnector
+import models.reallocations.ReallocationsIn
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -28,4 +29,7 @@ class GamblingService @Inject() (connector: GamblingConnector) {
 
   def getReturnsSubmitted(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[ReturnsSubmitted] =
     connector.getReturnsSubmitted(regime, regNumber, pageSize, pageNo)
+
+  def getReallocationsIn(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[ReallocationsIn] =
+    connector.getReallocationsIn(regime, regNumber, pageSize, pageNo)
 }
