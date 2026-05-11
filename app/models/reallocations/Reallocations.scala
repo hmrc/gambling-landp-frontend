@@ -46,12 +46,12 @@ object Reallocations {
 
   private def reads(itemsKey: String): Reads[Reallocations] = (
     (__ \ "periodStartDate").readNullable[LocalDate] and
-    (__ \ "periodEndDate").readNullable[LocalDate] and
-    (__ \ "total").readNullable[BigDecimal] and
-    (__ \ "totalPeriodRecords").readNullable[Int] and
-    (__ \ itemsKey).read[Seq[ReallocationItem]]
+      (__ \ "periodEndDate").readNullable[LocalDate] and
+      (__ \ "total").readNullable[BigDecimal] and
+      (__ \ "totalPeriodRecords").readNullable[Int] and
+      (__ \ itemsKey).read[Seq[ReallocationItem]]
   )(Reallocations.apply)
 
-  val readsIn: Reads[Reallocations]  = reads("reallocationsInAmount")
+  val readsIn: Reads[Reallocations] = reads("reallocationsInAmount")
   val readsOut: Reads[Reallocations] = reads("reallocationsOutAmount")
 }
