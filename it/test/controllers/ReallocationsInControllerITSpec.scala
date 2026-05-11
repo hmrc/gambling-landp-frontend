@@ -46,8 +46,8 @@ class ReallocationsInControllerITSpec
        |  "periodStartDate": "2024-01-01",
        |  "periodEndDate": "2024-12-31",
        |  "total": 30.80,
-       |  "totalPeriodRecords": 1,
-       |  "reallocationsInAmount": [
+       |  "totalRecords": 1,
+       |  "items": [
        |    {
        |      "dateProcessed": "2024-07-01",
        |      "amount": 30.80
@@ -62,8 +62,8 @@ class ReallocationsInControllerITSpec
        |  "periodStartDate": "2024-01-01",
        |  "periodEndDate": "2024-12-31",
        |  "total": 500.00,
-       |  "totalPeriodRecords": 25,
-       |  "reallocationsInAmount": [
+       |  "totalRecords": 25,
+       |  "items": [
        |    {
        |      "dateProcessed": "2024-07-01",
        |      "amount": 30.80
@@ -78,8 +78,8 @@ class ReallocationsInControllerITSpec
        |  "periodStartDate": "2024-01-01",
        |  "periodEndDate": "2024-12-31",
        |  "total": 0,
-       |  "totalPeriodRecords": 0,
-       |  "reallocationsInAmount": []
+       |  "totalRecords": 0,
+       |  "items": []
        |}
        |""".stripMargin
 
@@ -191,8 +191,6 @@ class ReallocationsInControllerITSpec
 
           status(result) mustEqual OK
           body must include("govuk-table")
-          body must include("The total of the")
-          body must include("Displaying")
         }
       }
 
@@ -229,7 +227,7 @@ class ReallocationsInControllerITSpec
         }
       }
 
-      "must include pagination markup when totalPeriodRecords spans multiple pages" in {
+      "must include pagination markup and summary paragraphs when totalRecords spans multiple pages" in {
         val app = buildApp()
 
         stubReallocationsIn(regime, regNumber, pageSize = 10, pageNo = 1, multiPageJson)
@@ -238,9 +236,12 @@ class ReallocationsInControllerITSpec
           val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
+          val body   = contentAsString(result)
 
           status(result) mustEqual OK
-          contentAsString(result) must include("govuk-pagination")
+          body must include("govuk-pagination")
+          body must include("The total of the")
+          body must include("Displaying")
         }
       }
 

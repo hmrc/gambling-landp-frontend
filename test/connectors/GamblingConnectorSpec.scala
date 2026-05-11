@@ -137,8 +137,8 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |  "periodStartDate": "2024-01-01",
            |  "periodEndDate": "2024-12-31",
            |  "total": 30.80,
-           |  "totalPeriodRecords": 1,
-           |  "reallocationsInAmount": [
+           |  "totalRecords": 1,
+           |  "items": [
            |    {
            |      "dateProcessed": "2024-07-01",
            |      "amount": 30.80
@@ -215,8 +215,8 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |  "periodStartDate": "2024-01-01",
            |  "periodEndDate": "2024-12-31",
            |  "total": 45.60,
-           |  "totalPeriodRecords": 1,
-           |  "reallocationsOutAmount": [
+           |  "totalRecords": 1,
+           |  "items": [
            |    {
            |      "dateProcessed": "2024-08-01",
            |      "amount": 45.60

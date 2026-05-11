@@ -155,7 +155,7 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the table and summary paragraphs when records are present" in {
+    "must render the table when records are present" in {
       val mockService = mock[GamblingService]
       when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
@@ -168,16 +168,13 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
         val request = FakeRequest(GET, url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
-        val body = contentAsString(result)
 
         status(result) mustEqual OK
-        body must include("The total of the")
-        body must include("Displaying")
-        body must include("govuk-table")
+        contentAsString(result) must include("govuk-table")
       }
     }
 
-    "must render pagination when there are multiple pages" in {
+    "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
       when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
@@ -190,9 +187,12 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
         val request = FakeRequest(GET, url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
+        val body = contentAsString(result)
 
         status(result) mustEqual OK
-        contentAsString(result) must include("govuk-pagination")
+        body must include("govuk-pagination")
+        body must include("The total of the")
+        body must include("Displaying")
       }
     }
 

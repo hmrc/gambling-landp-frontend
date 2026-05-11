@@ -59,7 +59,7 @@ class ReallocationSpec extends AnyFreeSpec with Matchers {
     }
 
     "must deserialise with optional fields absent" in {
-      val json   = Json.obj()
+      val json = Json.obj()
       val result = json.as[ReallocationItem]
       result.dateProcessed mustBe None
       result.amount mustBe None
@@ -68,87 +68,36 @@ class ReallocationSpec extends AnyFreeSpec with Matchers {
 
   "Reallocations" - {
 
-    "format" - {
-
-      "must serialise to JSON using field names matching the case class" in {
-        val json = Json.toJson(reallocations)
-        (json \ "totalRecords").as[Int] mustEqual 1
-        (json \ "items").as[Seq[ReallocationItem]] mustEqual Seq(item)
-      }
-
-      "must deserialise from JSON using field names matching the case class" in {
-        val json = Json.obj(
-          "periodStartDate" -> "2024-01-01",
-          "periodEndDate"   -> "2024-12-31",
-          "total"           -> 30.80,
-          "totalRecords"    -> 1,
-          "items"           -> Json.arr(Json.obj("dateProcessed" -> "2024-07-01", "amount" -> 30.80))
-        )
-        json.as[Reallocations] mustEqual reallocations
-      }
-
-      "must round-trip through JSON" in {
-        val json = Json.toJson(reallocations)
-        json.as[Reallocations] mustEqual reallocations
-      }
-
-      "must deserialise with optional fields absent" in {
-        val json = Json.obj("items" -> Json.arr())
-        val result = json.as[Reallocations]
-        result.periodStartDate mustBe None
-        result.periodEndDate mustBe None
-        result.total mustBe None
-        result.totalRecords mustBe None
-        result.items mustBe Seq.empty
-      }
+    "must serialise to JSON" in {
+      val json = Json.toJson(reallocations)
+      (json \ "totalRecords").as[Int] mustEqual 1
+      (json \ "items").as[Seq[ReallocationItem]] mustEqual Seq(item)
     }
 
-    "readsIn" - {
-
-      "must deserialise from JSON using reallocationsInAmount field" in {
-        val json = Json.obj(
-          "periodStartDate"      -> "2024-01-01",
-          "periodEndDate"        -> "2024-12-31",
-          "total"                -> 30.80,
-          "totalPeriodRecords"   -> 1,
-          "reallocationsInAmount" -> Json.arr(Json.obj("dateProcessed" -> "2024-07-01", "amount" -> 30.80))
-        )
-        json.as[Reallocations](Reallocations.readsIn) mustEqual reallocations
-      }
-
-      "must deserialise with an empty items list" in {
-        val json = Json.obj(
-          "totalPeriodRecords"   -> 0,
-          "reallocationsInAmount" -> Json.arr()
-        )
-        val result = json.as[Reallocations](Reallocations.readsIn)
-        result.items mustBe Seq.empty
-        result.totalRecords mustEqual Some(0)
-      }
+    "must deserialise from JSON" in {
+      val json = Json.obj(
+        "periodStartDate" -> "2024-01-01",
+        "periodEndDate"   -> "2024-12-31",
+        "total"           -> 30.80,
+        "totalRecords"    -> 1,
+        "items"           -> Json.arr(Json.obj("dateProcessed" -> "2024-07-01", "amount" -> 30.80))
+      )
+      json.as[Reallocations] mustEqual reallocations
     }
 
-    "readsOut" - {
+    "must round-trip through JSON" in {
+      val json = Json.toJson(reallocations)
+      json.as[Reallocations] mustEqual reallocations
+    }
 
-      "must deserialise from JSON using reallocationsOutAmount field" in {
-        val json = Json.obj(
-          "periodStartDate"       -> "2024-01-01",
-          "periodEndDate"         -> "2024-12-31",
-          "total"                 -> 30.80,
-          "totalPeriodRecords"    -> 1,
-          "reallocationsOutAmount" -> Json.arr(Json.obj("dateProcessed" -> "2024-07-01", "amount" -> 30.80))
-        )
-        json.as[Reallocations](Reallocations.readsOut) mustEqual reallocations
-      }
-
-      "must deserialise with an empty items list" in {
-        val json = Json.obj(
-          "totalPeriodRecords"    -> 0,
-          "reallocationsOutAmount" -> Json.arr()
-        )
-        val result = json.as[Reallocations](Reallocations.readsOut)
-        result.items mustBe Seq.empty
-        result.totalRecords mustEqual Some(0)
-      }
+    "must deserialise with optional fields absent" in {
+      val json = Json.obj("items" -> Json.arr())
+      val result = json.as[Reallocations]
+      result.periodStartDate mustBe None
+      result.periodEndDate mustBe None
+      result.total mustBe None
+      result.totalRecords mustBe None
+      result.items mustBe Seq.empty
     }
   }
 }

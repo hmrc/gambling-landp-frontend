@@ -16,7 +16,6 @@
 
 package models.reallocations
 
-import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 
 import java.time.LocalDate
@@ -41,17 +40,5 @@ final case class Reallocations(
 
 object Reallocations {
   import ReallocationItem.localDateReads
-
   implicit val format: OFormat[Reallocations] = Json.format[Reallocations]
-
-  private def reads(itemsKey: String): Reads[Reallocations] = (
-    (__ \ "periodStartDate").readNullable[LocalDate] and
-      (__ \ "periodEndDate").readNullable[LocalDate] and
-      (__ \ "total").readNullable[BigDecimal] and
-      (__ \ "totalPeriodRecords").readNullable[Int] and
-      (__ \ itemsKey).read[Seq[ReallocationItem]]
-  )(Reallocations.apply)
-
-  val readsIn: Reads[Reallocations] = reads("reallocationsInAmount")
-  val readsOut: Reads[Reallocations] = reads("reallocationsOutAmount")
 }
