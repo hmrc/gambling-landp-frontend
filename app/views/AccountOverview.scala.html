@@ -18,7 +18,7 @@
     layout: templates.Layout
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(regNumber: String)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle    = titleNoForm(messages("index.title")),
@@ -28,7 +28,7 @@
     <h1 class="govuk-heading-l govuk-!-margin-bottom-2">
         @messages("index.heading")
     </h1>
-    <p class="govuk-body govuk-!-margin-bottom-1">@messages("index.registrationNumber") XWM00003100412</p>
+    <p class="govuk-body govuk-!-margin-bottom-1">@messages("index.registrationNumber") @regNumber</p>
     <h2 class="govuk-heading-m">
         @messages("index.currentBalance") &minus;&pound;8,224.60
     </h2>

@@ -89,6 +89,15 @@
                         </tr>
                     }
                 </tbody>
+                @if(returns.totalPeriodRecords.exists(_ <= pageSize)) {
+                <tfoot class="govuk-table__foot">
+                    <tr class="govuk-table__row">
+                        <th scope="row" class="govuk-table__header">@messages("returns.table.total")</th>
+                        <td class="govuk-table__cell"></td>
+                        <th class="govuk-table__header govuk-table__cell--numeric">@formatAmount(returns.amountDeclared.flatMap(_.amount).sum)</th>
+                    </tr>
+                </tfoot>
+                }
             </table>
             @pagination(pageNo, totalPages, pageUrl)
         }

@@ -35,6 +35,6 @@ class GamblingConnector @Inject() (
 
   def getReturnsSubmitted(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[ReturnsSubmitted] =
     httpClient
-      .get(url"$baseUrl/returns-submitted/$regime/$regNumber?pageSize=$pageSize&PageNo=$pageNo")
+      .get(url"$baseUrl/returns-submitted/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[ReturnsSubmitted]
 }
