@@ -18,7 +18,7 @@ package services
 
 import base.SpecBase
 import connectors.GamblingConnector
-import models.reallocations.{ReallocationsIn, ReallocationsInAmount}
+import models.reallocations.{ReallocationItem, Reallocations}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -34,7 +34,7 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private val regime = "gbd"
-  private val regNumber = "XWM001"
+  private val regNumber = "XWM00003102200"
   private val pageSize = 10
   private val pageNo = 1
 
@@ -88,12 +88,12 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
 
     "getReallocationsIn" - {
 
-      val reallocationsResponse = ReallocationsIn(
-        periodStartDate       = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate         = Some(LocalDate.of(2024, 12, 31)),
-        total                 = Some(BigDecimal("30.80")),
-        totalPeriodRecords    = Some(1),
-        reallocationsInAmount = Seq(ReallocationsInAmount(Some(LocalDate.of(2024, 7, 1)), Some(BigDecimal("30.80"))))
+      val reallocationsResponse = Reallocations(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("30.80")),
+        totalRecords    = Some(1),
+        items           = Seq(ReallocationItem(Some(LocalDate.of(2024, 7, 1)), Some(BigDecimal("30.80"))))
       )
 
       "must delegate to the connector with the correct arguments and return its result" in {

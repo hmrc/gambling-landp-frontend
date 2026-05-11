@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import models.reallocations.{ReallocationsIn, ReallocationsInAmount}
+import models.reallocations.{ReallocationItem, Reallocations}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -34,7 +34,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private val regime = "gbd"
-  private val regNumber = "XWM001"
+  private val regNumber = "XWM00003102200"
   private val pageSize = 10
   private val pageNo = 1
 
@@ -94,7 +94,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
       "must forward the correct regime and registration number in the URL" in {
         val otherRegime = "pbd"
-        val otherRegNumber = "XWM999"
+        val otherRegNumber = "XWM00003102999"
 
         stubFor(
           get(urlEqualTo(s"/gambling/returns-submitted/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
@@ -147,12 +147,12 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |}
            |""".stripMargin
 
-      val expectedReallocationsResponse = ReallocationsIn(
-        periodStartDate       = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate         = Some(LocalDate.of(2024, 12, 31)),
-        total                 = Some(BigDecimal("30.8")),
-        totalPeriodRecords    = Some(1),
-        reallocationsInAmount = Seq(ReallocationsInAmount(Some(LocalDate.of(2024, 7, 1)), Some(BigDecimal("30.8"))))
+      val expectedReallocationsResponse = Reallocations(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("30.8")),
+        totalRecords    = Some(1),
+        items           = Seq(ReallocationItem(Some(LocalDate.of(2024, 7, 1)), Some(BigDecimal("30.8"))))
       )
 
       "must return a deserialized ReallocationsIn for a 200 response" in {
@@ -172,7 +172,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
       "must forward the correct regime and registration number in the URL" in {
         val otherRegime = "pbd"
-        val otherRegNumber = "XWM999"
+        val otherRegNumber = "XWM00003102999"
 
         stubFor(
           get(urlEqualTo(s"/gambling/reallocations-in/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))

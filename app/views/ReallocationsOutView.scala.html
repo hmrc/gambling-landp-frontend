@@ -26,7 +26,7 @@
 
 @(regime: Regime, regNumber: String, pageSize: Int, pageNo: Int, reallocations: Reallocations)(implicit request: Request[_], messages: Messages)
 
-@pageUrl(p: Int) = @{controllers.routes.ReallocationsInController.onPageLoad(pageSize, p)}
+@pageUrl(p: Int) = @{controllers.routes.ReallocationsOutController.onPageLoad(pageSize, p)}
 
 @formatAmount(amount: BigDecimal) = {
     @if(amount < 0) {&minus;}@CurrencyFormatter.currencyFormat(amount.abs)
@@ -39,27 +39,27 @@
                 <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("site.accountOverview")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("reallocationsIn.breadcrumb")</a>
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("reallocationsOut.breadcrumb")</a>
             </li>
         </ol>
     </nav>
 }
 
 @layout(
-    pageTitle     = titleNoForm(messages("reallocationsIn.title")),
+    pageTitle     = titleNoForm(messages("reallocationsOut.title")),
     showBackLink  = false,
     beforeContent = Some(breadcrumbs)
 ) {
 
     <h1 class="govuk-heading-l">
-        @messages("reallocationsIn.heading")
+        @messages("reallocationsOut.heading")
     </h1>
     <p class="govuk-body">
-        @messages("reallocationsIn.p1")
+        @messages("reallocationsOut.p1")
     </p>
 
     @defining(
-        messages("reallocationsIn.caption",
+        messages("reallocationsOut.caption",
             reallocations.periodStartDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse(""),
             reallocations.periodEndDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
         ),
@@ -70,16 +70,16 @@
     ) { case (dateRange, totalRecords, totalPages, firstRecord, lastRecord) =>
         @if(reallocations.items.isEmpty) {
             <h2 class="govuk-heading-s">@dateRange</h2>
-            <p class="govuk-body">@messages("reallocationsIn.empty")</p>
+            <p class="govuk-body">@messages("reallocationsOut.empty")</p>
         } else {
             <h2 class="govuk-heading-s">@dateRange</h2>
-            <p class="govuk-body">@messages("reallocationsIn.totalSummary", totalRecords) @for(total <- reallocations.total){@formatAmount(total)}.</p>
-            <p class="govuk-body">@messages("reallocationsIn.displaying", firstRecord, lastRecord, totalRecords)</p>
+            <p class="govuk-body">@messages("reallocationsOut.totalSummary", totalRecords) @for(total <- reallocations.total){@formatAmount(total)}.</p>
+            <p class="govuk-body">@messages("reallocationsOut.displaying", firstRecord, lastRecord, totalRecords)</p>
             <table class="govuk-table">
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">
-                        <th scope="col" class="govuk-table__header">@messages("reallocationsIn.table.dateProcessed")</th>
-                        <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("reallocationsIn.table.amount")</th>
+                        <th scope="col" class="govuk-table__header">@messages("reallocationsOut.table.dateProcessed")</th>
+                        <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("reallocationsOut.table.amount")</th>
                     </tr>
                 </thead>
                 <tbody class="govuk-table__body">
@@ -91,7 +91,7 @@
                     }
                     @for(total <- reallocations.total) {
                         <tr class="govuk-table__row">
-                            <th scope="row" class="govuk-table__header">@messages("reallocationsIn.table.total")</th>
+                            <th scope="row" class="govuk-table__header">@messages("reallocationsOut.table.total")</th>
                             <th class="govuk-table__header govuk-table__header--numeric">@formatAmount(total)</th>
                         </tr>
                     }
