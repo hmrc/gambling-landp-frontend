@@ -38,15 +38,15 @@ class ReallocationsInController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(pageSize: Int = 10, PageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
             Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
           case Some(validRegime) =>
-            gamblingService.getReallocationsIn(validRegime.code, regNumber, pageSize, PageNo).map { reallocations =>
-              Ok(view(validRegime, regNumber, pageSize, PageNo, reallocations))
+            gamblingService.getReallocationsIn(validRegime.code, regNumber, pageSize, pageNo).map { reallocations =>
+              Ok(view(validRegime, regNumber, pageSize, pageNo, reallocations))
             }
         }
       case _ =>

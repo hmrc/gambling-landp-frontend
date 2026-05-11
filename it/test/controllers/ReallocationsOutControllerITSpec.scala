@@ -98,7 +98,7 @@ class ReallocationsOutControllerITSpec
 
   private def stubReallocationsOut(regime: String, regNumber: String, pageSize: Int, pageNo: Int, responseJson: String): Unit =
     stubFor(
-      get(urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$pageSize&PageNo=$pageNo"))
+      get(urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
         .willReturn(okJson(responseJson))
     )
 
@@ -253,14 +253,14 @@ class ReallocationsOutControllerITSpec
         val app = buildApp()
 
         running(app) {
-          val customUrl = routes.ReallocationsOutController.onPageLoad(pageSize = customPageSize, PageNo = customPageNo).url
+          val customUrl = routes.ReallocationsOutController.onPageLoad(pageSize = customPageSize, pageNo = customPageNo).url
           val request   = FakeRequest(GET, customUrl)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
           status(result) mustEqual OK
           verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$customPageSize&PageNo=$customPageNo")
+            urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
           ))
         }
       }
@@ -287,7 +287,7 @@ class ReallocationsOutControllerITSpec
 
             status(result) mustEqual OK
             verify(1, getRequestedFor(
-              urlEqualTo(s"/gambling/reallocations-out/$expectedBackendCode/$regNumber?pageSize=10&PageNo=1")
+              urlEqualTo(s"/gambling/reallocations-out/$expectedBackendCode/$regNumber?pageSize=10&pageNo=1")
             ))
           }
         }
@@ -307,7 +307,7 @@ class ReallocationsOutControllerITSpec
 
           status(result) mustEqual OK
           verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/reallocations-out/$regime/$otherRegNumber?pageSize=10&PageNo=1")
+            urlEqualTo(s"/gambling/reallocations-out/$regime/$otherRegNumber?pageSize=10&pageNo=1")
           ))
         }
       }

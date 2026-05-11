@@ -39,15 +39,15 @@ class ReturnsSubmittedController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(pageSize: Int = 10, PageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
             Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
           case Some(validRegime) =>
-            gamblingService.getReturnsSubmitted(validRegime.code, regNumber, pageSize, PageNo).map { returns =>
-              Ok(view(validRegime, regNumber, pageSize, PageNo, returns))
+            gamblingService.getReturnsSubmitted(validRegime.code, regNumber, pageSize, pageNo).map { returns =>
+              Ok(view(validRegime, regNumber, pageSize, pageNo, returns))
             }
         }
       case _ =>

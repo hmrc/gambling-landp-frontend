@@ -36,16 +36,16 @@ class GamblingConnector @Inject() (
 
   def getReturnsSubmitted(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[ReturnsSubmitted] =
     httpClient
-      .get(url"$baseUrl/returns-submitted/$regime/$regNumber?pageSize=$pageSize&PageNo=$pageNo")
+      .get(url"$baseUrl/returns-submitted/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[ReturnsSubmitted]
 
   def getReallocationsIn(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[ReallocationsIn] =
     httpClient
-      .get(url"$baseUrl/reallocations-in/$regime/$regNumber?pageSize=$pageSize&PageNo=$pageNo")
+      .get(url"$baseUrl/reallocations-in/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[ReallocationsIn]
 
   def getReallocationsOut(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[ReallocationsOut] =
     httpClient
-      .get(url"$baseUrl/reallocations-out/$regime/$regNumber?pageSize=$pageSize&PageNo=$pageNo")
+      .get(url"$baseUrl/reallocations-out/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[ReallocationsOut]
 }
