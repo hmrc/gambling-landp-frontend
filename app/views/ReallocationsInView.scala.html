@@ -76,7 +76,7 @@
                     <p class="govuk-body">@messages("reallocationsIn.empty")</p>
                 } else {
                     @if(totalPages > 1) {
-                        <p class="govuk-body">@messages("reallocationsIn.totalSummary", totalRecords) @for(total <- reallocations.total){@formatAmount(total)}.</p>
+                        <p class="govuk-body">@messages("reallocationsIn.totalSummary", totalRecords) @reallocations.total.map(formatAmount).</p>
                         <p class="govuk-body">@messages("reallocationsIn.displaying", firstRecord, lastRecord, totalRecords)</p>
                     }
                     <table class="govuk-table">
@@ -90,11 +90,11 @@
                             @for(item <- reallocations.items) {
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">@item.dateProcessed.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")</td>
-                                    <td class="govuk-table__cell govuk-table__cell--numeric">@for(amount <- item.amount){@formatAmount(amount)}</td>
+                                    <td class="govuk-table__cell govuk-table__cell--numeric">@item.amount.map(formatAmount)</td>
                                 </tr>
                             }
                             @if(totalPages <= 1) {
-                                @for(total <- reallocations.total) {
+                                @reallocations.total.map { total =>
                                     <tr class="govuk-table__row">
                                         <th scope="row" class="govuk-table__header">@messages("reallocationsIn.table.total")</th>
                                         <th class="govuk-table__header govuk-table__header--numeric">@formatAmount(total)</th>
