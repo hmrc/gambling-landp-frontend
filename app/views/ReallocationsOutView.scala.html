@@ -1,0 +1,103 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.CurrencyFormatter
+@import models.Regime
+@import models.reallocations.ReallocationsOut
+@import utils.DateTimeFormats
+
+@this(
+    layout: templates.Layout,
+    pagination: components.Pagination
+)
+
+@(regime: Regime, regNumber: String, pageSize: Int, pageNo: Int, reallocations: ReallocationsOut)(implicit request: Request[_], messages: Messages)
+
+@pageUrl(p: Int) = @{controllers.routes.ReallocationsOutController.onPageLoad(pageSize, p)}
+
+@formatAmount(amount: BigDecimal) = {
+    @if(amount < 0) {&minus;}@CurrencyFormatter.currencyFormat(amount.abs)
+}
+
+@breadcrumbs = {
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("site.accountOverview")</a>
+            </li>
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("reallocationsOut.breadcrumb")</a>
+            </li>
+        </ol>
+    </nav>
+}
+
+@layout(
+    pageTitle     = titleNoForm(messages("reallocationsOut.title")),
+    showBackLink  = false,
+    beforeContent = Some(breadcrumbs)
+) {
+
+    <h1 class="govuk-heading-l">
+        @messages("reallocationsOut.heading")
+    </h1>
+    <p class="govuk-body">
+        @messages("reallocationsOut.p1")
+    </p>
+
+    @defining(
+        messages("reallocationsOut.caption",
+            reallocations.periodStartDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse(""),
+            reallocations.periodEndDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
+        ),
+        reallocations.totalPeriodRecords.getOrElse(0),
+        reallocations.totalPeriodRecords.map(n => Math.ceil(n.toDouble / pageSize).toInt).getOrElse(0),
+        (pageNo - 1) * pageSize + 1,
+        reallocations.totalPeriodRecords.map(n => Math.min(pageNo * pageSize, n)).getOrElse(0)
+    ) { case (dateRange, totalRecords, totalPages, firstRecord, lastRecord) =>
+        @if(reallocations.reallocationsOutAmount.isEmpty) {
+            <h2 class="govuk-heading-s">@dateRange</h2>
+            <p class="govuk-body">@messages("reallocationsOut.empty")</p>
+        } else {
+            <h2 class="govuk-heading-s">@dateRange</h2>
+            <p class="govuk-body">@messages("reallocationsOut.totalSummary", totalRecords) @for(total <- reallocations.total){@formatAmount(total)}.</p>
+            <p class="govuk-body">@messages("reallocationsOut.displaying", firstRecord, lastRecord, totalRecords)</p>
+            <table class="govuk-table">
+                <thead class="govuk-table__head">
+                    <tr class="govuk-table__row">
+                        <th scope="col" class="govuk-table__header">@messages("reallocationsOut.table.dateProcessed")</th>
+                        <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("reallocationsOut.table.amount")</th>
+                    </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                    @for(item <- reallocations.reallocationsOutAmount) {
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">@item.dateProcessed.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")</td>
+                            <td class="govuk-table__cell govuk-table__cell--numeric">@for(amount <- item.amount){@formatAmount(amount)}</td>
+                        </tr>
+                    }
+                    @for(total <- reallocations.total) {
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">@messages("reallocationsOut.table.total")</th>
+                            <th class="govuk-table__header govuk-table__header--numeric">@formatAmount(total)</th>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @pagination(pageNo, totalPages, pageUrl)
+        }
+    }
+}

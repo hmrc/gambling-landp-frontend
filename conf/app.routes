@@ -6,6 +6,7 @@ GET        /:regime/:regNumber/current/account        controllers.AccountRedirec
 GET        /current/account                           controllers.AccountOverviewController.onPageLoad()
 GET        /current/returns                           controllers.ReturnsSubmittedController.onPageLoad(pageSize: Int ?= 10, PageNo: Int ?= 1)
 GET        /current/reallocations/in                  controllers.ReallocationsInController.onPageLoad(pageSize: Int ?= 10, PageNo: Int ?= 1)
+GET        /current/reallocations/out                 controllers.ReallocationsOutController.onPageLoad(pageSize: Int ?= 10, PageNo: Int ?= 1)
 
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 
