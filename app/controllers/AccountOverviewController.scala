@@ -17,6 +17,8 @@
 package controllers
 
 import controllers.actions.IdentifierAction
+import models.SessionKeys
+import play.api.Logging
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -28,9 +30,15 @@ class AccountOverviewController @Inject() (
   identify: IdentifierAction,
   view: AccountOverview
 ) extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] = identify { implicit request =>
-    Ok(view())
+    request.session.get(SessionKeys.regNumber) match {
+      case Some(regNumber) => Ok(view(regNumber))
+      case None =>
+        logger.warn("no regNumber found")
+        Redirect(routes.UnauthorisedController.onPageLoad())
+    }
   }
 }

@@ -17,15 +17,36 @@
 package controllers
 
 import base.SpecBase
+import models.SessionKeys
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.AccountOverview
 
 class AccountOverviewControllerSpec extends SpecBase {
 
+  private val regNumber = "XWM001"
+
   "AccountOverview Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and render the view with the regNumber from session" in {
+
+      val application = applicationBuilder(userAnswers = None).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.AccountOverviewController.onPageLoad().url)
+          .withSession(SessionKeys.regNumber -> regNumber)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[AccountOverview]
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(regNumber)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to Unauthorised when regNumber is absent from the session" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 
@@ -34,11 +55,8 @@ class AccountOverviewControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[AccountOverview]
-
-        status(result) mustEqual OK
-
-        contentAsString(result) mustEqual view()(request, messages(application)).toString
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
       }
     }
   }

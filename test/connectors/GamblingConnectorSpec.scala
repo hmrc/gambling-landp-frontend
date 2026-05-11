@@ -78,7 +78,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
       "must return a deserialized ReturnsSubmitted for a 200 response" in {
         stubFor(
-          get(urlEqualTo(s"/gambling/returns-submitted/$regime/$regNumber?pageSize=$pageSize&PageNo=$pageNo"))
+          get(urlEqualTo(s"/gambling/returns-submitted/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
             .willReturn(okJson(responseJson))
         )
 
@@ -96,7 +96,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         val otherRegNumber = "XWM999"
 
         stubFor(
-          get(urlEqualTo(s"/gambling/returns-submitted/$otherRegime/$otherRegNumber?pageSize=$pageSize&PageNo=$pageNo"))
+          get(urlEqualTo(s"/gambling/returns-submitted/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
             .willReturn(okJson(responseJson))
         )
 
@@ -114,7 +114,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         val customPageNo = 3
 
         stubFor(
-          get(urlEqualTo(s"/gambling/returns-submitted/$regime/$regNumber?pageSize=$customPageSize&PageNo=$customPageNo"))
+          get(urlEqualTo(s"/gambling/returns-submitted/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
             .willReturn(okJson(responseJson))
         )
 
