@@ -65,7 +65,19 @@ reallocationsIn.table.dateProcessed = Date processed
 reallocationsIn.table.amount = Amount
 reallocationsIn.table.total = Total
 reallocationsIn.totalSummary = The total of the {0} records is
-reallocationsIn.displaying = Displaying {0} to {1} of {2} records.
+reallocationsIn.displaying = Displaying {0} to {1} of {2} records
+
+reallocationsOut.title = Reallocations out
+reallocationsOut.heading = Reallocations out
+reallocationsOut.breadcrumb = Reallocations
+reallocationsOut.p1 = Payments are sometimes debited from the wrong account.
+reallocationsOut.caption = {0} to {1}
+reallocationsOut.empty = You have no reallocations out.
+reallocationsOut.table.dateProcessed = Date processed
+reallocationsOut.table.amount = Amount
+reallocationsOut.table.total = Total
+reallocationsOut.totalSummary = The total of the {0} records is
+reallocationsOut.displaying = Displaying {0} to {1} of {2} records
 
 site.accountOverview = Account overview
 site.pagination.label = Pagination

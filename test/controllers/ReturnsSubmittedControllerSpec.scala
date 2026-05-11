@@ -32,7 +32,7 @@ import scala.concurrent.Future
 
 class ReturnsSubmittedControllerSpec extends SpecBase with MockitoSugar {
 
-  private val regNumber = "XWM001"
+  private val regNumber = "XWM00003102200"
   private val pageSize = 10
   private val pageNo = 1
 

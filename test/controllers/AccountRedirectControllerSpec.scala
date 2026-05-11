@@ -24,7 +24,7 @@ import play.api.test.Helpers.*
 
 class AccountRedirectControllerSpec extends SpecBase {
 
-  private val regNumber = "XWM001"
+  private val regNumber = "XWM00003102200"
 
   "AccountRedirectController" - {
 

@@ -24,7 +24,7 @@ import views.html.AccountOverview
 
 class AccountOverviewControllerSpec extends SpecBase {
 
-  private val regNumber = "XWM001"
+  private val regNumber = "XWM00003102200"
 
   "AccountOverview Controller" - {
 

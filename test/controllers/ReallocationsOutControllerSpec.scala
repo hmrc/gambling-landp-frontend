@@ -30,21 +30,21 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
+class ReallocationsOutControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  private val url = routes.ReallocationsInController.onPageLoad().url
+  private val url = routes.ReallocationsOutController.onPageLoad().url
 
   private val singleRecord = ReallocationItem(
-    dateProcessed = Some(LocalDate.of(2024, 7, 1)),
-    amount        = Some(BigDecimal("30.80"))
+    dateProcessed = Some(LocalDate.of(2024, 8, 1)),
+    amount        = Some(BigDecimal("45.60"))
   )
 
   private val singlePageResponse = Reallocations(
     periodStartDate = Some(LocalDate.of(2024, 1, 1)),
     periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-    total           = Some(BigDecimal("30.80")),
+    total           = Some(BigDecimal("45.60")),
     totalRecords    = Some(1),
     items           = Seq(singleRecord)
   )
@@ -59,7 +59,7 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
     items           = Seq.empty
   )
 
-  "ReallocationsInController" - {
+  "ReallocationsOutController" - {
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
@@ -100,7 +100,7 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and render the heading for a valid regime" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+      when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -113,13 +113,13 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Reallocations in")
+        contentAsString(result) must include("Reallocations out")
       }
     }
 
     "must include the intro paragraph in the page content" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+      when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -132,13 +132,13 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Payments are sometimes credited to the wrong account.")
+        contentAsString(result) must include("Payments are sometimes debited from the wrong account.")
       }
     }
 
     "must render the empty-state message when the service returns no items" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+      when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(emptyResponse))
 
       val app = applicationBuilder()
@@ -151,13 +151,13 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("You have no reallocations in.")
+        contentAsString(result) must include("You have no reallocations out.")
       }
     }
 
     "must render the table when records are present" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+      when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -176,7 +176,7 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
 
     "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+      when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
@@ -198,7 +198,7 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
 
     "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+      when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -216,16 +216,11 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must support all valid regime codes" in {
-      val regimes = Seq(
-        "gbd" -> "General Betting Duty",
-        "pbd" -> "Pool Betting Duty",
-        "rgd" -> "Remote Gaming Duty",
-        "mgd" -> "Machine Games Duty"
-      )
+      val regimes = Seq("gbd", "pbd", "rgd", "mgd")
 
-      regimes.foreach { case (code, expectedDutyName) =>
+      regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getReallocationsIn(any(), any(), any(), any())(any()))
+        when(mockService.getReallocationsOut(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(singlePageResponse))
 
         val app = applicationBuilder()

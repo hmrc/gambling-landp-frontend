@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import models.reallocations.{ReallocationsIn, ReallocationsInAmount}
+import models.reallocations.{ReallocationItem, Reallocations}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -34,7 +34,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private val regime = "gbd"
-  private val regNumber = "XWM001"
+  private val regNumber = "XWM00003102200"
   private val pageSize = 10
   private val pageNo = 1
 
@@ -94,7 +94,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
       "must forward the correct regime and registration number in the URL" in {
         val otherRegime = "pbd"
-        val otherRegNumber = "XWM999"
+        val otherRegNumber = "XWM00003102999"
 
         stubFor(
           get(urlEqualTo(s"/gambling/returns-submitted/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
@@ -137,8 +137,8 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |  "periodStartDate": "2024-01-01",
            |  "periodEndDate": "2024-12-31",
            |  "total": 30.80,
-           |  "totalPeriodRecords": 1,
-           |  "reallocationsInAmount": [
+           |  "totalRecords": 1,
+           |  "items": [
            |    {
            |      "dateProcessed": "2024-07-01",
            |      "amount": 30.80
@@ -147,12 +147,12 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |}
            |""".stripMargin
 
-      val expectedReallocationsResponse = ReallocationsIn(
-        periodStartDate       = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate         = Some(LocalDate.of(2024, 12, 31)),
-        total                 = Some(BigDecimal("30.8")),
-        totalPeriodRecords    = Some(1),
-        reallocationsInAmount = Seq(ReallocationsInAmount(Some(LocalDate.of(2024, 7, 1)), Some(BigDecimal("30.8"))))
+      val expectedReallocationsResponse = Reallocations(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("30.8")),
+        totalRecords    = Some(1),
+        items           = Seq(ReallocationItem(Some(LocalDate.of(2024, 7, 1)), Some(BigDecimal("30.8"))))
       )
 
       "must return a deserialized ReallocationsIn for a 200 response" in {
@@ -172,7 +172,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
       "must forward the correct regime and registration number in the URL" in {
         val otherRegime = "pbd"
-        val otherRegNumber = "XWM999"
+        val otherRegNumber = "XWM00003102999"
 
         stubFor(
           get(urlEqualTo(s"/gambling/reallocations-in/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
@@ -203,6 +203,84 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getReallocationsIn(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedReallocationsResponse
+        }
+      }
+    }
+
+    "getReallocationsOut" - {
+
+      val reallocationsOutResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 45.60,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "dateProcessed": "2024-08-01",
+           |      "amount": 45.60
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedReallocationsOutResponse = Reallocations(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("45.6")),
+        totalRecords    = Some(1),
+        items           = Seq(ReallocationItem(Some(LocalDate.of(2024, 8, 1)), Some(BigDecimal("45.6"))))
+      )
+
+      "must return a deserialized ReallocationsOut for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(reallocationsOutResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getReallocationsOut(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedReallocationsOutResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/reallocations-out/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(reallocationsOutResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getReallocationsOut(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedReallocationsOutResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(reallocationsOutResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getReallocationsOut(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedReallocationsOutResponse
         }
       }
     }
