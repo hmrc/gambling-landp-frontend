@@ -33,10 +33,8 @@ import scala.concurrent.Future
 class ReturnsSubmittedControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
-  private val pageSize = 10
-  private val pageNo = 1
 
-  private val returnsUrl = routes.ReturnsSubmittedController.onPageLoad().url
+  private def returnsUrl = routes.ReturnsSubmittedController.onPageLoad().url
 
   private val amountDeclared = AmountDeclared(
     descriptionCode = Some(1),
@@ -159,10 +157,32 @@ class ReturnsSubmittedControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the summary paragraphs and table when returns are present" in {
+    "must render the table when returns are present on a single page" in {
       val mockService = mock[GamblingService]
       when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, returnsUrl)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        body must include("govuk-table")
+        body must not include "The total of the"
+        body must not include "Displaying"
+      }
+    }
+
+    "must render the summary paragraphs and table when there are multiple pages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))

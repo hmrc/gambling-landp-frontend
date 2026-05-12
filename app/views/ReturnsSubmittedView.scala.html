@@ -70,8 +70,10 @@
             <p class="govuk-body">@messages("returns.empty")</p>
         } else {
             <h2 class="govuk-heading-s">@dateRange</h2>
+            @if(totalPages > 1) {
             <p class="govuk-body">@messages("returns.totalSummary", totalRecords) @for(total <- returns.total){@formatAmount(total)}.</p>
             <p class="govuk-body">@messages("returns.displaying", firstRecord, lastRecord, totalRecords)</p>
+            }
             <table class="govuk-table">
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">
