@@ -19,11 +19,14 @@ package controllers.actions
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
+import models.SessionKeys
 import models.requests.IdentifierRequest
+import play.api.Logging
 import play.api.mvc.Results.*
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
@@ -37,16 +40,24 @@ class AuthenticatedIdentifierAction @Inject() (
   val parser: BodyParsers.Default
 )(implicit val executionContext: ExecutionContext)
     extends IdentifierAction
-    with AuthorisedFunctions {
+    with AuthorisedFunctions
+    with Logging {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    authorised().retrieve(Retrievals.internalId) {
-      _.map { internalId =>
-        block(IdentifierRequest(request, internalId))
-      }.getOrElse(throw new UnauthorizedException("Unable to retrieve internal Id"))
+    authorised().retrieve(Retrievals.internalId.and(Retrievals.allEnrolments)) {
+      case Some(internalId) ~ enrolments =>
+        request.session.get(SessionKeys.regNumber) match {
+          case Some(regNumber) if !AuthenticatedIdentifierAction.isValidEnrolment(enrolments, regNumber) =>
+            logger.warn(s"regNumber in session does not match auth enrolments")
+            Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+          case _ =>
+            block(IdentifierRequest(request, internalId))
+        }
+      case None ~ _ =>
+        throw new UnauthorizedException("Unable to retrieve internal Id")
     } recover {
       case _: NoActiveSession =>
         Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
@@ -54,6 +65,27 @@ class AuthenticatedIdentifierAction @Inject() (
         Redirect(routes.UnauthorisedController.onPageLoad())
     }
   }
+}
+
+object AuthenticatedIdentifierAction {
+  private val organisationEnrolmentKey = "HMRC-MGD-ORG"
+  private val organisationIdentifierKey = "HMRCMGDRN"
+  private val agentEnrolmentKey = "HMRC-MGD-AGNT"
+  private val agentIdentifierKey = "HMRCMGDAGENTREF"
+
+  def isValidEnrolment(enrolments: Enrolments, regNumber: String): Boolean =
+    hasActiveEnrolmentWithValue(enrolments, organisationEnrolmentKey, organisationIdentifierKey, regNumber) ||
+      hasActiveEnrolmentWithValue(enrolments, agentEnrolmentKey, agentIdentifierKey, regNumber)
+
+  private def hasActiveEnrolmentWithValue(
+    enrolments: Enrolments,
+    enrolmentKey: String,
+    identifierKey: String,
+    value: String
+  ): Boolean =
+    enrolments.getEnrolment(enrolmentKey).exists { enrolment =>
+      enrolment.isActivated && enrolment.getIdentifier(identifierKey).exists(_.value == value)
+    }
 }
 
 class SessionIdentifierAction @Inject() (
