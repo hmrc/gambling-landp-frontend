@@ -26,7 +26,7 @@ class PageNotFoundControllerSpec extends SpecBase {
 
   "PageNotFound Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return NOT_FOUND and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -37,7 +37,7 @@ class PageNotFoundControllerSpec extends SpecBase {
 
         val view = application.injector.instanceOf[PageNotFoundView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
-        status(result) mustEqual OK
+        status(result) mustEqual NOT_FOUND
         contentAsString(result) mustEqual view(appConfig.hmrcOnlineServiceDesk)(request, messages(application)).toString
       }
     }

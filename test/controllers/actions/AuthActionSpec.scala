@@ -26,7 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,12 +40,19 @@ class AuthActionSpec extends SpecBase {
 
   private val orgEnrolment = Enrolment("HMRC-MGD-ORG", Seq(EnrolmentIdentifier("HMRCMGDRN", "REG123")), "Activated")
   private val agentEnrolment = Enrolment("HMRC-MGD-AGNT", Seq(EnrolmentIdentifier("HMRCMGDAGENTREF", "AGENT456")), "Activated")
+  private val testCredentials = Some(Credentials("cred-id", "GovernmentGateway"))
+
+  private def orgConnector(enrolments: Enrolments) =
+    new FakeSuccessAuthConnector(Some(AffinityGroup.Organisation), enrolments, testCredentials)
+
+  private def agentConnector(enrolments: Enrolments) =
+    new FakeSuccessAuthConnector(Some(AffinityGroup.Agent), enrolments, testCredentials)
 
   "Auth Action" - {
 
     "when the user hasn't logged in" - {
 
-      "must redirect the user to log in " in {
+      "must redirect the user to log in" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -65,7 +72,7 @@ class AuthActionSpec extends SpecBase {
 
     "the user's session has expired" - {
 
-      "must redirect the user to log in " in {
+      "must redirect the user to log in" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -183,9 +190,9 @@ class AuthActionSpec extends SpecBase {
       }
     }
 
-    "the user is fully authorised with no regNumber in session" - {
+    "regime or regNumber missing from session" - {
 
-      "must invoke the block" in {
+      "must redirect to unauthorised when both are missing" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -193,37 +200,53 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction =
-            new AuthenticatedIdentifierAction(new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set.empty)), appConfig, bodyParsers)
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
-          status(result) mustBe OK
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+        }
+      }
+
+      "must redirect to unauthorised when regime is missing" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "REG123"))
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+        }
+      }
+
+      "must redirect to unauthorised when regNumber is missing" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regime -> "mgd"))
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
         }
       }
     }
 
-    "the user is authorised but has no internal id" - {
+    "no credentials returned by auth" - {
 
-      "must throw an UnauthorizedException" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-
-          val authAction = new AuthenticatedIdentifierAction(new FakeSuccessAuthConnector(None, Enrolments(Set.empty)), appConfig, bodyParsers)
-          val controller = new Harness(authAction)
-
-          an[Exception] must be thrownBy status(controller.onPageLoad()(FakeRequest()))
-        }
-      }
-    }
-
-    "regNumber validation" - {
-
-      "must invoke the block when regNumber in session matches an active organisation enrolment" in {
+      "must redirect the user to log in" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -232,141 +255,145 @@ class AuthActionSpec extends SpecBase {
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
           val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set(orgEnrolment))),
-            appConfig,
-            bodyParsers
-          )
-          val controller = new Harness(authAction)
-          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "REG123"))
-
-          status(result) mustBe OK
-        }
-      }
-
-      "must invoke the block when regNumber in session matches an active agent enrolment" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-
-          val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set(agentEnrolment))),
-            appConfig,
-            bodyParsers
-          )
-          val controller = new Harness(authAction)
-          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "AGENT456"))
-
-          status(result) mustBe OK
-        }
-      }
-
-      "must redirect to unauthorised when regNumber in session does not match any enrolment" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-
-          val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set(orgEnrolment))),
-            appConfig,
-            bodyParsers
-          )
-          val controller = new Harness(authAction)
-          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "WRONG999"))
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must redirect to unauthorised when regNumber in session matches an inactive organisation enrolment" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-          val inactiveOrgEnrolment = Enrolment("HMRC-MGD-ORG", Seq(EnrolmentIdentifier("HMRCMGDRN", "REG123")), "NotActivated")
-
-          val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set(inactiveOrgEnrolment))),
-            appConfig,
-            bodyParsers
-          )
-          val controller = new Harness(authAction)
-          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "REG123"))
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must redirect to unauthorised when regNumber in session matches an inactive agent enrolment" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-          val inactiveAgentEnrolment = Enrolment("HMRC-MGD-AGNT", Seq(EnrolmentIdentifier("HMRCMGDAGENTREF", "AGENT456")), "NotActivated")
-
-          val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set(inactiveAgentEnrolment))),
-            appConfig,
-            bodyParsers
-          )
-          val controller = new Harness(authAction)
-          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "AGENT456"))
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must redirect to unauthorised when regNumber in session but enrolment has no matching identifier" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-          val enrolmentNoIdentifier = Enrolment("HMRC-MGD-ORG", Seq.empty, "Activated")
-
-          val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set(enrolmentNoIdentifier))),
-            appConfig,
-            bodyParsers
-          )
-          val controller = new Harness(authAction)
-          val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "REG123"))
-
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must invoke the block when there is no regNumber in session regardless of enrolments" in {
-
-        val application = applicationBuilder(userAnswers = None).build()
-
-        running(application) {
-          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
-          val appConfig = application.injector.instanceOf[FrontendAppConfig]
-
-          val authAction = new AuthenticatedIdentifierAction(
-            new FakeSuccessAuthConnector(Some("internal-id"), Enrolments(Set.empty)),
+            new FakeSuccessAuthConnector(Some(AffinityGroup.Organisation), Enrolments(Set.empty), None),
             appConfig,
             bodyParsers
           )
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value must startWith(appConfig.loginUrl)
+        }
+      }
+    }
+
+    "regime and regNumber in session (isAuthorisedForRegime check)" - {
+
+      Seq(
+        ("gbd", "HMRC-GTS-GBD"),
+        ("pbd", "HMRC-GTS-PBD"),
+        ("rgd", "HMRC-GTS-RGD"),
+        ("mgd", "HMRC-MGD-ORG")
+      ).foreach { case (regime, enrolmentKey) =>
+        val (identifierKey, regNumber) = if (regime == "mgd") ("HMRCMGDRN", "MGD123") else ("HMRCGTSGBRN", "GTS123")
+
+        s"must invoke the block when regime=$regime and regNumber in session match the $enrolmentKey enrolment" in {
+
+          val application = applicationBuilder(userAnswers = None).build()
+
+          running(application) {
+            val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+            val appConfig = application.injector.instanceOf[FrontendAppConfig]
+            val enrolment = Enrolment(enrolmentKey, Seq(EnrolmentIdentifier(identifierKey, regNumber)), "Activated")
+
+            val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, bodyParsers)
+            val controller = new Harness(authAction)
+            val result = controller.onPageLoad()(
+              FakeRequest().withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
+            )
+
+            status(result) mustBe OK
+          }
+        }
+
+        s"must redirect to unauthorised when regNumber does not match $enrolmentKey enrolment" in {
+
+          val application = applicationBuilder(userAnswers = None).build()
+
+          running(application) {
+            val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+            val appConfig = application.injector.instanceOf[FrontendAppConfig]
+            val enrolment = Enrolment(enrolmentKey, Seq(EnrolmentIdentifier(identifierKey, regNumber)), "Activated")
+
+            val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, bodyParsers)
+            val controller = new Harness(authAction)
+            val result = controller.onPageLoad()(
+              FakeRequest().withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> "WRONG999")
+            )
+
+            status(result) mustBe SEE_OTHER
+            redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          }
+        }
+      }
+
+      "must redirect to unauthorised when regime in session does not match the enrolment" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val gbdEnrolment = Enrolment("HMRC-GTS-GBD", Seq(EnrolmentIdentifier("HMRCGTSGBRN", "GTS123")), "Activated")
+
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(gbdEnrolment))), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(
+            FakeRequest().withSession(SessionKeys.regime -> "pbd", SessionKeys.regNumber -> "GTS123")
+          )
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+        }
+      }
+
+      "must redirect to unauthorised when regime in session is not a recognised regime code" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val enrolment = Enrolment("HMRC-GTS-GBD", Seq(EnrolmentIdentifier("HMRCGTSGBRN", "GTS123")), "Activated")
+
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(
+            FakeRequest().withSession(SessionKeys.regime -> "invalid", SessionKeys.regNumber -> "GTS123")
+          )
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+        }
+      }
+
+      "must invoke the block for an agent when regime and regNumber are in session" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val gtsAgentEnrolment = Enrolment("HMRC-GTS-AGNT", Seq(EnrolmentIdentifier("HMRCGTSAGENTREF", "AGENT456")), "Activated")
+
+          val authAction = new AuthenticatedIdentifierAction(agentConnector(Enrolments(Set(gtsAgentEnrolment))), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(
+            FakeRequest().withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> "CLIENT123")
+          )
+
           status(result) mustBe OK
+        }
+      }
+
+      "must redirect to unauthorised for an agent when the agent enrolment is inactive" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val gtsAgentEnrolment = Enrolment("HMRC-GTS-AGNT", Seq(EnrolmentIdentifier("HMRCGTSAGENTREF", "AGENT456")), "NotActivated")
+
+          val authAction = new AuthenticatedIdentifierAction(agentConnector(Enrolments(Set(gtsAgentEnrolment))), appConfig, bodyParsers)
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(
+            FakeRequest().withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> "CLIENT123")
+          )
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
         }
       }
     }
@@ -380,9 +407,13 @@ class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends 
     Future.failed(exceptionToReturn)
 }
 
-class FakeSuccessAuthConnector @Inject() (internalId: Option[String], enrolments: Enrolments) extends AuthConnector {
+class FakeSuccessAuthConnector @Inject() (
+  affinityGroup: Option[AffinityGroup],
+  enrolments: Enrolments,
+  credentials: Option[Credentials]
+) extends AuthConnector {
   val serviceUrl: String = ""
 
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] =
-    Future.successful(`~`(internalId, enrolments).asInstanceOf[A])
+    Future.successful(new ~(new ~(affinityGroup, enrolments), credentials).asInstanceOf[A])
 }
