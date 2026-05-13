@@ -3,9 +3,13 @@
 ->          /hmrc-frontend                               hmrcfrontend.Routes
 
 GET        /:regime/:regNumber/current/account        controllers.AccountRedirectController.onPageLoad(regime: String, regNumber: String)
+
 GET        /current/account                           controllers.AccountOverviewController.onPageLoad()
-GET        /current/returns                           controllers.ReturnsSubmittedController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
+GET        /account/returns                           controllers.ReturnsSubmittedController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 GET        /current/reallocations-in                  controllers.ReallocationsInController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 GET        /current/reallocations-out                 controllers.ReallocationsOutController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /account/other-assessments                 controllers.OtherAssessmentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 

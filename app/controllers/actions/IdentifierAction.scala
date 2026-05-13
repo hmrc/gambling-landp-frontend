@@ -16,15 +16,18 @@
 
 package controllers.actions
 
-import com.google.inject.Inject
+import com.google.inject.{ImplementedBy, Inject}
 import config.FrontendAppConfig
 import controllers.routes
+import models.{AuthContext, Regime, SessionKeys}
 import models.requests.IdentifierRequest
+import play.api.Logging
 import play.api.mvc.Results.*
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
+import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,17 +40,126 @@ class AuthenticatedIdentifierAction @Inject() (
   val parser: BodyParsers.Default
 )(implicit val executionContext: ExecutionContext)
     extends IdentifierAction
-    with AuthorisedFunctions {
+    with AuthorisedFunctions
+    with Logging {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    authorised().retrieve(Retrievals.internalId) {
-      _.map { internalId =>
-        block(IdentifierRequest(request, internalId))
-      }.getOrElse(throw new UnauthorizedException("Unable to retrieve internal Id"))
-    } recover {
+    authorised()
+      .retrieve(Retrievals.affinityGroup.and(Retrievals.allEnrolments).and(Retrievals.credentials)) {
+
+        case Some(affinityGroup @ (AffinityGroup.Organisation | AffinityGroup.Agent)) ~ enrolments ~ Some(credentials) =>
+          val authContext = AuthContext(affinityGroup, enrolments, credentials.providerId)
+          val isAuthorised = (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
+            case (Some(regime), Some(regNumber)) =>
+              AuthenticatedIdentifierAction.isAuthorisedForRegime(authContext, regime, regNumber)
+            case _ =>
+              false
+          }
+          if (!isAuthorised) {
+            logger.warn(s"regime/regNumber missing from session or does not match auth enrolments")
+            Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+          } else {
+            block(IdentifierRequest(request, authContext.providerId))
+          }
+
+        case Some(affinityGroup) ~ _ ~ Some(_) =>
+          logger.warn(s"Unsupported affinity group: $affinityGroup")
+          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+
+        case _ ~ _ ~ None =>
+          logger.warn("No credentials providerId found")
+          Future.successful(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl))))
+
+        case _ =>
+          logger.warn("No affinity group found")
+          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+
+      } recover {
+      case _: NoActiveSession =>
+        Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
+      case _: AuthorisationException =>
+        Redirect(routes.UnauthorisedController.onPageLoad())
+    }
+  }
+}
+
+object AuthenticatedIdentifierAction {
+
+  private case class RegimeConfig(
+    orgEnrolmentKey: String,
+    orgIdentifierKey: String,
+    agentEnrolmentKey: String,
+    agentIdentifierKey: String
+  )
+
+  private val regimeConfig: Map[Regime, RegimeConfig] = Map(
+    Regime.MGD -> RegimeConfig("HMRC-MGD-ORG", "HMRCMGDRN", "HMRC-MGD-AGNT", "HMRCMGDAGENTREF"),
+    Regime.GBD -> RegimeConfig("HMRC-GTS-GBD", "HMRCGTSGBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF"),
+    Regime.PBD -> RegimeConfig("HMRC-GTS-PBD", "HMRCGTSGBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF"),
+    Regime.RGD -> RegimeConfig("HMRC-GTS-RGD", "HMRCGTSGBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF")
+  )
+
+  private def activeIdentifierValue(
+    enrolments: Enrolments,
+    enrolmentKey: String,
+    identifierKey: String
+  ): Option[String] =
+    enrolments
+      .getEnrolment(enrolmentKey)
+      .filter(_.isActivated)
+      .flatMap(_.getIdentifier(identifierKey))
+      .map(_.value)
+
+  def isAuthorisedForRegime(authContext: AuthContext, regime: String, regNumber: String): Boolean =
+    Regime.fromString(regime).flatMap(regimeConfig.get).exists { config =>
+      authContext.affinityGroup match {
+        case AffinityGroup.Organisation =>
+          activeIdentifierValue(authContext.enrolments, config.orgEnrolmentKey, config.orgIdentifierKey)
+            .contains(regNumber)
+        case AffinityGroup.Agent =>
+          activeIdentifierValue(authContext.enrolments, config.agentEnrolmentKey, config.agentIdentifierKey).isDefined
+        case _ => false
+      }
+    }
+}
+
+/** Lightweight auth check used at entry points (e.g. AccountRedirectController) that establish the session. Verifies the user is logged in as an
+  * Organisation or Agent — does NOT check session regime/regNumber.
+  */
+@ImplementedBy(classOf[AuthenticatedLoginAction])
+trait LoginAction extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
+
+class AuthenticatedLoginAction @Inject() (
+  override val authConnector: AuthConnector,
+  config: FrontendAppConfig,
+  val parser: BodyParsers.Default
+)(implicit val executionContext: ExecutionContext)
+    extends LoginAction
+    with AuthorisedFunctions
+    with Logging {
+
+  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
+
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+
+    authorised()
+      .retrieve(Retrievals.affinityGroup.and(Retrievals.credentials)) {
+
+        case Some(AffinityGroup.Organisation | AffinityGroup.Agent) ~ Some(credentials) =>
+          block(IdentifierRequest(request, credentials.providerId))
+
+        case Some(affinityGroup) ~ Some(_) =>
+          logger.warn(s"Unsupported affinity group: $affinityGroup")
+          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+
+        case _ =>
+          logger.warn("No credentials or affinity group returned")
+          Future.successful(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl))))
+
+      } recover {
       case _: NoActiveSession =>
         Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
       case _: AuthorisationException =>

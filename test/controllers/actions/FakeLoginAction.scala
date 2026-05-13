@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.actions
 
 import javax.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.AccessDeniedView
+import models.requests.IdentifierRequest
+import play.api.mvc.*
 
-class AccessDeniedController @Inject() (
-  override val messagesApi: MessagesApi,
-  val controllerComponents: MessagesControllerComponents,
-  view: AccessDeniedView
-) extends FrontendBaseController
-    with I18nSupport {
+import scala.concurrent.{ExecutionContext, Future}
 
-  def onPageLoad: Action[AnyContent] = Action { implicit request =>
-    Forbidden(view())
-  }
+class FakeLoginAction @Inject() (bodyParsers: PlayBodyParsers) extends LoginAction {
+
+  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] =
+    block(IdentifierRequest(request, "id"))
+
+  override def parser: BodyParser[AnyContent] =
+    bodyParsers.default
+
+  override protected def executionContext: ExecutionContext =
+    scala.concurrent.ExecutionContext.Implicits.global
 }

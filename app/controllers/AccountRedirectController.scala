@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions.IdentifierAction
+import controllers.actions.LoginAction
 import models.{Regime, SessionKeys}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 class AccountRedirectController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify: IdentifierAction
+  identify: LoginAction
 ) extends FrontendBaseController {
 
   def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
