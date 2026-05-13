@@ -7,6 +7,8 @@ GET        /current/account                           controllers.AccountOvervie
 GET        /current/returns                           controllers.ReturnsSubmittedController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /current/reallocations-in                  controllers.ReallocationsInController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /current/reallocations-out                 controllers.ReallocationsOutController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+GET        /account/other-assessments                 controllers.OtherAssessmentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
 

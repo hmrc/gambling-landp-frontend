@@ -16,7 +16,7 @@
 
 package models.returns
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.*
 
 import java.time.LocalDate
 
@@ -30,6 +30,8 @@ case class AmountDeclared(
 object AmountDeclared {
   implicit val localDateReads: Reads[LocalDate] = Reads.localDateReads("yyyy-MM-dd")
   implicit val reads: Reads[AmountDeclared] = Json.reads[AmountDeclared]
+  implicit val format: OFormat[AmountDeclared] = Json.format[AmountDeclared]
+
 }
 
 case class ReturnsSubmitted(
@@ -43,4 +45,6 @@ case class ReturnsSubmitted(
 object ReturnsSubmitted {
   import AmountDeclared.localDateReads
   implicit val reads: Reads[ReturnsSubmitted] = Json.reads[ReturnsSubmitted]
+  implicit val format: OFormat[ReturnsSubmitted] = Json.format[ReturnsSubmitted]
+
 }

@@ -60,6 +60,20 @@ returns.table.total = cy: Total
 returns.totalSummary = cy: The total of the {0} records is
 returns.displaying = cy: Displaying {0} to {1} of {2} records.
 
+otherAssessments.title = Other assessments
+otherAssessments.heading = Other assessments
+otherAssessments.p1 = HMRC's assessments for under-declarations of tax.
+otherAssessments.p2 = You may not have yet received formal notification of recent assessments.
+otherAssessments.caption = {0} to {1}
+otherAssessments.empty = You have no other assessments.
+otherAssessments.table.dateRaised = Date raised
+otherAssessments.table.periodStart = Period start date
+otherAssessments.table.periodEnd = Period end date
+otherAssessments.table.amount = Amount
+otherAssessments.table.total = Total
+otherAssessments.totalSummary = The total of the {0} records is
+otherAssessments.displaying = Displaying {0} to {1} of {2} records
+
 site.accountOverview = cy: Account overview
 site.pagination.label = cy: Pagination
 site.pagination.previous = cy: Previous
