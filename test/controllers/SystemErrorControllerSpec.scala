@@ -26,7 +26,7 @@ class SystemErrorControllerSpec extends SpecBase {
 
   "SystemError Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return INTERNAL_SERVER_ERROR and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -38,7 +38,7 @@ class SystemErrorControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[SystemErrorView]
         val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-        status(result) mustEqual OK
+        status(result) mustEqual INTERNAL_SERVER_ERROR
         contentAsString(result) mustEqual
           view(appConfig.hmrcOnlineServiceDesk)(request, messages(application)).toString
       }

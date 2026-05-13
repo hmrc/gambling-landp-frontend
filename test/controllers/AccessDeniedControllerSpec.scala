@@ -26,7 +26,7 @@ class AccessDeniedControllerSpec extends SpecBase {
 
   "AccessDenied Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return FORBIDDEN and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -37,7 +37,7 @@ class AccessDeniedControllerSpec extends SpecBase {
 
         val view = application.injector.instanceOf[AccessDeniedView]
 
-        status(result) mustEqual OK
+        status(result) mustEqual FORBIDDEN
         contentAsString(result) must include("Sorry, there is a problem with the service")
         contentAsString(result) must include("Continue to your account")
       }
