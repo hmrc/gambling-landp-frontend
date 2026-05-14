@@ -52,7 +52,7 @@ class ReturnsSubmittedController @Inject() (
             gamblingService.getReturnsSubmitted(validRegime.code, regNumber, pageSize, pageNo).map { returns =>
               val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)
               if (pageNo > pagination.totalPages && pagination.totalPages > 0)
-                BadRequest(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else
                 Ok(view(validRegime, regNumber, pagination, returns))
             }

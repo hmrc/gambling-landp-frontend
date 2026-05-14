@@ -239,7 +239,7 @@ class ReturnsSubmittedControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return BadRequest with page not found content when pageNo exceeds totalPages" in {
+    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
       when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
@@ -253,7 +253,7 @@ class ReturnsSubmittedControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual NOT_FOUND
         contentAsString(result) must include("Page not found")
       }
     }

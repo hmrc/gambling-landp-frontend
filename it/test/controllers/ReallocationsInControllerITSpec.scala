@@ -266,7 +266,7 @@ class ReallocationsInControllerITSpec
         }
       }
 
-      "must return BadRequest with page not found content when pageNo exceeds totalPages" in {
+      "must return Not Found with page not found content when pageNo exceeds totalPages" in {
         val app = buildApp()
 
         stubReallocationsIn(regime, regNumber, pageSize = 10, pageNo = 99, multiPageJson)
@@ -276,7 +276,7 @@ class ReallocationsInControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual BAD_REQUEST
+          status(result) mustEqual NOT_FOUND
           contentAsString(result) must include("Page not found")
         }
       }
