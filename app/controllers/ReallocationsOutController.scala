@@ -16,14 +16,15 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.{Regime, SessionKeys}
+import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.ReallocationsOutView
+import views.html.{PageNotFoundView, ReallocationsOutView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,21 +33,27 @@ class ReallocationsOutController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: ReallocationsOutView
+  view: ReallocationsOutView,
+  pageNotFoundView: PageNotFoundView,
+  appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad(pageSize: Int = 10, PageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
             Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
           case Some(validRegime) =>
-            gamblingService.getReallocationsOut(validRegime.code, regNumber, pageSize, PageNo).map { reallocations =>
-              Ok(view(validRegime, regNumber, pageSize, PageNo, reallocations))
+            gamblingService.getReallocationsOut(validRegime.code, regNumber, pageSize, pageNo).map { reallocations =>
+              val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
+              if (pagination.isOutOfRange)
+                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+              else
+                Ok(view(validRegime, regNumber, pagination, reallocations))
             }
         }
       case _ =>
