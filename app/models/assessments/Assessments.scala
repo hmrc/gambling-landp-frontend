@@ -21,11 +21,11 @@ import play.api.libs.json.*
 import java.time.LocalDate
 
 final case class AssessmentItem(
-                                 dateRaised: Option[LocalDate],
-                                 periodStartDate: Option[LocalDate],
-                                 periodEndDate: Option[LocalDate],
-                                 amount: Option[BigDecimal]
-                               )
+  dateRaised: Option[LocalDate],
+  periodStartDate: Option[LocalDate],
+  periodEndDate: Option[LocalDate],
+  amount: Option[BigDecimal]
+)
 
 object AssessmentItem {
   implicit val localDateReads: Reads[LocalDate] = Reads.localDateReads("yyyy-MM-dd")
@@ -33,12 +33,12 @@ object AssessmentItem {
 }
 
 final case class Assessments(
-                              periodStartDate: Option[LocalDate],
-                              periodEndDate: Option[LocalDate],
-                              total: Option[BigDecimal],
-                              totalRecords: Option[Int],
-                              items: Seq[AssessmentItem]
-                            )
+  periodStartDate: Option[LocalDate],
+  periodEndDate: Option[LocalDate],
+  total: Option[BigDecimal],
+  totalRecords: Option[Int],
+  items: Seq[AssessmentItem]
+)
 
 object Assessments {
 

@@ -28,13 +28,13 @@ import views.html.OtherAssessmentsView
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class OtherAssessmentsController @Inject()(
-                                            val controllerComponents: MessagesControllerComponents,
-                                            identify: IdentifierAction,
-                                            gamblingService: GamblingService,
-                                            view: OtherAssessmentsView
-                                          )(implicit ec: ExecutionContext)
-  extends FrontendBaseController
+class OtherAssessmentsController @Inject() (
+  val controllerComponents: MessagesControllerComponents,
+  identify: IdentifierAction,
+  gamblingService: GamblingService,
+  view: OtherAssessmentsView
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport
     with Logging {
 

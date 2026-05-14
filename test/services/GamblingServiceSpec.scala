@@ -183,9 +183,9 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
 
       val otherAssessmentsResponse = Assessments(
         periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate = Some(LocalDate.of(2024, 12, 31)),
-        total = Some(BigDecimal("45.60")),
-        totalRecords = Some(1),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("45.60")),
+        totalRecords    = Some(1),
         items = Seq(
           AssessmentItem(Some(LocalDate.of(2024, 8, 1)), Some(LocalDate.of(2024, 7, 1)), Some(LocalDate.of(2024, 9, 1)), Some(BigDecimal("45.60")))
         )

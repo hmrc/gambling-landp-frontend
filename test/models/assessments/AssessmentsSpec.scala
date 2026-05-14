@@ -25,18 +25,18 @@ import java.time.LocalDate
 class AssessmentsSpec extends AnyFreeSpec with Matchers {
 
   private val item = AssessmentItem(
-    dateRaised = Some(LocalDate.of(2024, 7, 1)),
+    dateRaised      = Some(LocalDate.of(2024, 7, 1)),
     periodStartDate = Some(LocalDate.of(2024, 1, 10)),
-    periodEndDate = Some(LocalDate.of(2024, 9, 13)),
-    amount = Some(BigDecimal("100.44"))
+    periodEndDate   = Some(LocalDate.of(2024, 9, 13)),
+    amount          = Some(BigDecimal("100.44"))
   )
 
   private val assessments = Assessments(
     periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate = Some(LocalDate.of(2024, 12, 31)),
-    total = Some(BigDecimal("100.44")),
-    totalRecords = Some(1),
-    items = Seq(item)
+    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+    total           = Some(BigDecimal("100.44")),
+    totalRecords    = Some(1),
+    items           = Seq(item)
   )
 
   "AssessmentItem" - {
@@ -51,10 +51,10 @@ class AssessmentsSpec extends AnyFreeSpec with Matchers {
 
     "must deserialise from JSON" in {
       val json = Json.obj(
-        "dateRaised" -> "2024-07-01",
+        "dateRaised"      -> "2024-07-01",
         "periodStartDate" -> "2024-01-10",
-        "periodEndDate" -> "2024-09-13",
-        "amount" -> 100.44
+        "periodEndDate"   -> "2024-09-13",
+        "amount"          -> 100.44
       )
       json.as[AssessmentItem] mustEqual item
     }
@@ -87,9 +87,9 @@ class AssessmentsSpec extends AnyFreeSpec with Matchers {
     "must deserialise from JSON" in {
       val json = Json.obj(
         "periodStartDate" -> "2024-01-01",
-        "periodEndDate" -> "2024-12-31",
-        "total" -> 100.44,
-        "totalRecords" -> 1,
+        "periodEndDate"   -> "2024-12-31",
+        "total"           -> 100.44,
+        "totalRecords"    -> 1,
         "items" -> Json.arr(
           Json.obj("dateRaised" -> "2024-07-01", "periodStartDate" -> "2024-01-10", "periodEndDate" -> "2024-09-13", "amount" -> 100.44)
         )
