@@ -87,7 +87,7 @@
         <p class="govuk-body">@messages("returns.empty")</p>
     } else {
         @if(paginationParams.totalPages > 1) {
-            <p class="govuk-body">@messages("returns.totalSummary", paginationParams.totalRecords) @for(total <- returns.total){@fmtAmountHtml(total)}.</p>
+            <p class="govuk-body">@messages("returns.totalSummary", paginationParams.totalRecords) @returns.total.map(fmtAmountHtml).</p>
             <p class="govuk-body">@messages("returns.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
         }
 

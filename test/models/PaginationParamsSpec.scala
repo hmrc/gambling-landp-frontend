@@ -67,5 +67,20 @@ class PaginationParamsSpec extends AnyFreeSpec with Matchers {
       "must have totalPages of 2" in { params.totalPages mustEqual 2 }
       "must have lastRecord of 20 on the final page" in { params.lastRecord mustEqual 20 }
     }
+
+    "isOutOfRange" - {
+      "must be false when totalRecords is 0" in {
+        PaginationParams(totalRecords = 0, pageSize = 10, pageNo = 1).isOutOfRange mustBe false
+      }
+      "must be false when pageNo is within range" in {
+        PaginationParams(totalRecords = 25, pageSize = 10, pageNo = 2).isOutOfRange mustBe false
+      }
+      "must be false when pageNo equals totalPages" in {
+        PaginationParams(totalRecords = 25, pageSize = 10, pageNo = 3).isOutOfRange mustBe false
+      }
+      "must be true when pageNo exceeds totalPages" in {
+        PaginationParams(totalRecords = 25, pageSize = 10, pageNo = 4).isOutOfRange mustBe true
+      }
+    }
   }
 }

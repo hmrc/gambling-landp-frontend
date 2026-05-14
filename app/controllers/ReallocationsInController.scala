@@ -50,7 +50,7 @@ class ReallocationsInController @Inject() (
           case Some(validRegime) =>
             gamblingService.getReallocationsIn(validRegime.code, regNumber, pageSize, pageNo).map { reallocations =>
               val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
-              if (pageNo > pagination.totalPages && pagination.totalPages > 0)
+              if (pagination.isOutOfRange)
                 NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else
                 Ok(view(validRegime, regNumber, pagination, reallocations))
