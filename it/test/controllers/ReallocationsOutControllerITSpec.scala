@@ -249,7 +249,7 @@ class ReallocationsOutControllerITSpec
         val customPageSize = 5
         val customPageNo   = 3
 
-        stubReallocationsOut(regime, regNumber, pageSize = customPageSize, pageNo = customPageNo, singlePageJson)
+        stubReallocationsOut(regime, regNumber, pageSize = customPageSize, pageNo = customPageNo, multiPageJson)
 
         val app = buildApp()
 
@@ -263,6 +263,21 @@ class ReallocationsOutControllerITSpec
           verify(1, getRequestedFor(
             urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
           ))
+        }
+      }
+
+      "must return BadRequest with page not found content when pageNo exceeds totalPages" in {
+        val app = buildApp()
+
+        stubReallocationsOut(regime, regNumber, pageSize = 10, pageNo = 99, multiPageJson)
+
+        running(app) {
+          val request = FakeRequest(GET, routes.ReallocationsOutController.onPageLoad(pageSize = 10, pageNo = 99).url)
+            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
+          val result = route(app, request).value
+
+          status(result) mustEqual BAD_REQUEST
+          contentAsString(result) must include("Page not found")
         }
       }
     }

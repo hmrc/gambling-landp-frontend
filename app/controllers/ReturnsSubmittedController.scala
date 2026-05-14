@@ -16,11 +16,12 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.{Regime, SessionKeys}
+import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import services.GamblingService
-import views.html.ReturnsSubmittedView
+import views.html.{PageNotFoundView, ReturnsSubmittedView}
 
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
@@ -33,7 +34,9 @@ class ReturnsSubmittedController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: ReturnsSubmittedView
+  view: ReturnsSubmittedView,
+  pageNotFoundView: PageNotFoundView,
+  appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -47,7 +50,11 @@ class ReturnsSubmittedController @Inject() (
             Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
           case Some(validRegime) =>
             gamblingService.getReturnsSubmitted(validRegime.code, regNumber, pageSize, pageNo).map { returns =>
-              Ok(view(validRegime, regNumber, pageSize, pageNo, returns))
+              val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)
+              if (pageNo > pagination.totalPages && pagination.totalPages > 0)
+                BadRequest(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+              else
+                Ok(view(validRegime, regNumber, pagination, returns))
             }
         }
       case _ =>

@@ -15,21 +15,47 @@
  *@
 
 @import config.CurrencyFormatter
-@import models.Regime
+@import models.{PaginationParams, Regime}
 @import models.reallocations.Reallocations
+@import play.twirl.api.Html
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 @import utils.DateTimeFormats
 
 @this(
     layout: templates.Layout,
+    govukTable: GovukTable,
     pagination: components.Pagination
 )
 
-@(regime: Regime, regNumber: String, pageSize: Int, pageNo: Int, reallocations: Reallocations)(implicit request: Request[_], messages: Messages)
+@(regime: Regime, regNumber: String, paginationParams: PaginationParams, reallocations: Reallocations)(implicit request: Request[_], messages: Messages)
 
-@pageUrl(p: Int) = @{controllers.routes.ReallocationsOutController.onPageLoad(pageSize, p)}
+@pageUrl(p: Int) = @{controllers.routes.ReallocationsOutController.onPageLoad(paginationParams.pageSize, p)}
 
-@formatAmount(amount: BigDecimal) = {
-    @if(amount < 0) {&minus;}@CurrencyFormatter.currencyFormat(amount.abs)
+@fmtDate(d: Option[java.time.LocalDate]) = @{
+    d.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
+}
+
+@fmtAmountHtml(amount: BigDecimal) = @{
+    Html(
+        if (amount < 0) s"""<span class="govuk-visually-hidden">minus </span>&minus;${CurrencyFormatter.currencyFormat(amount.abs)}"""
+        else CurrencyFormatter.currencyFormat(amount)
+    )
+}
+
+@dateRange = @{ messages("reallocationsOut.caption", fmtDate(reallocations.periodStartDate), fmtDate(reallocations.periodEndDate)) }
+
+@tableRows = @{
+    reallocations.items.map { item =>
+        Seq(
+            TableRow(content = Text(fmtDate(item.dateProcessed))),
+            TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(fmtAmountHtml(a).body)), format = Some("numeric"))
+        )
+    } ++ (if (paginationParams.totalPages <= 1) reallocations.total.toSeq.map { total =>
+        Seq(
+            TableRow(content = Text(messages("reallocationsOut.table.total"))),
+            TableRow(content = HtmlContent(fmtAmountHtml(total).body), format = Some("numeric"))
+        )
+    } else Seq.empty)
 }
 
 @breadcrumbs = {
@@ -61,50 +87,25 @@
                 @messages("reallocationsOut.p1")
             </p>
 
-            @defining(
-                messages("reallocationsOut.caption",
-                    reallocations.periodStartDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse(""),
-                    reallocations.periodEndDate.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
-                ),
-                reallocations.totalRecords.getOrElse(0),
-                reallocations.totalRecords.map(n => Math.ceil(n.toDouble / pageSize).toInt).getOrElse(0),
-                (pageNo - 1) * pageSize + 1,
-                reallocations.totalRecords.map(n => Math.min(pageNo * pageSize, n)).getOrElse(0)
-            ) { case (dateRange, totalRecords, totalPages, firstRecord, lastRecord) =>
-                <h2 class="govuk-heading-s">@dateRange</h2>
-                @if(reallocations.items.isEmpty) {
-                    <p class="govuk-body">@messages("reallocationsOut.empty")</p>
-                } else {
-                    @if(totalPages > 1) {
-                        <p class="govuk-body">@messages("reallocationsOut.totalSummary", totalRecords) @reallocations.total.map(formatAmount).</p>
-                        <p class="govuk-body">@messages("reallocationsOut.displaying", firstRecord, lastRecord, totalRecords)</p>
-                    }
-                    <table class="govuk-table">
-                        <thead class="govuk-table__head">
-                            <tr class="govuk-table__row">
-                                <th scope="col" class="govuk-table__header">@messages("reallocationsOut.table.dateProcessed")</th>
-                                <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("reallocationsOut.table.amount")</th>
-                            </tr>
-                        </thead>
-                        <tbody class="govuk-table__body">
-                            @for(item <- reallocations.items) {
-                                <tr class="govuk-table__row">
-                                    <td class="govuk-table__cell">@item.dateProcessed.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")</td>
-                                    <td class="govuk-table__cell govuk-table__cell--numeric">@item.amount.map(formatAmount)</td>
-                                </tr>
-                            }
-                            @if(totalPages <= 1) {
-                                @reallocations.total.map { total =>
-                                    <tr class="govuk-table__row">
-                                        <th scope="row" class="govuk-table__header">@messages("reallocationsOut.table.total")</th>
-                                        <th class="govuk-table__header govuk-table__header--numeric">@formatAmount(total)</th>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                    @pagination(pageNo, totalPages, pageUrl)
+            <h2 class="govuk-heading-s">@dateRange</h2>
+
+            @if(reallocations.items.isEmpty) {
+                <p class="govuk-body">@messages("reallocationsOut.empty")</p>
+            } else {
+                @if(paginationParams.totalPages > 1) {
+                    <p class="govuk-body">@messages("reallocationsOut.totalSummary", paginationParams.totalRecords) @for(total <- reallocations.total){@fmtAmountHtml(total)}.</p>
+                    <p class="govuk-body">@messages("reallocationsOut.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
                 }
+
+                @govukTable(Table(
+                    head = Some(Seq(
+                        HeadCell(content = Text(messages("reallocationsOut.table.dateProcessed"))),
+                        HeadCell(content = Text(messages("reallocationsOut.table.amount")), format = Some("numeric"))
+                    )),
+                    rows = tableRows
+                ))
+
+                @pagination(paginationParams.pageNo, paginationParams.totalPages, pageUrl)
             }
 
         </div>
