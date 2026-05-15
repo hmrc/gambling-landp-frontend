@@ -34,7 +34,7 @@ class ReallocationsInControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  private val url = routes.ReallocationsInController.onPageLoad().url
+  private def url = routes.ReallocationsInController.onPageLoad().url
 
   private val singleRecord = ReallocationItem(
     dateProcessed = Some(LocalDate.of(2024, 7, 1)),
