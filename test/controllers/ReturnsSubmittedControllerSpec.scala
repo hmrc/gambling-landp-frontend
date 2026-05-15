@@ -239,6 +239,25 @@ class ReturnsSubmittedControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.ReturnsSubmittedController.onPageLoad(10, 99).url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
+      }
+    }
+
     "must support all valid regime codes" in {
       val regimes = Seq(
         "gbd" -> "General Betting Duty",
