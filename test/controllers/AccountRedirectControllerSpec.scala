@@ -28,7 +28,7 @@ class AccountRedirectControllerSpec extends SpecBase {
 
   "AccountRedirectController" - {
 
-    "must redirect to AccountOverviewController and save regime and regNumber in session for a valid regime" in {
+    "must redirect to StatementController and save regime and regNumber in session for a valid regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
@@ -38,7 +38,7 @@ class AccountRedirectControllerSpec extends SpecBase {
         val result = call(controller.onPageLoad("gbd", regNumber), request)
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.AccountOverviewController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.StatementController.onPageLoad().url
         result.futureValue.newSession.value.get(SessionKeys.regime) mustEqual Some("gbd")
         result.futureValue.newSession.value.get(SessionKeys.regNumber) mustEqual Some(regNumber)
       }
@@ -69,7 +69,7 @@ class AccountRedirectControllerSpec extends SpecBase {
           val result = call(controller.onPageLoad(code, regNumber), request)
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.AccountOverviewController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.StatementController.onPageLoad().url
           result.futureValue.newSession.value.get(SessionKeys.regime) mustEqual Some(code)
         }
       }

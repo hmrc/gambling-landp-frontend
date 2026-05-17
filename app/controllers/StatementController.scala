@@ -25,7 +25,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.AccountOverview
 
-class AccountOverviewController @Inject() (
+class StatementController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   view: AccountOverview

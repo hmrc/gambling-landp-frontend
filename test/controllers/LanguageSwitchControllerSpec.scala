@@ -29,7 +29,7 @@ class LanguageSwitchControllerSpec extends SpecBase {
 
       running(app) {
         val request = FakeRequest(GET, routes.LanguageSwitchController.switchToLanguage("en").url)
-          .withHeaders("Referer" -> routes.AccountOverviewController.onPageLoad().url)
+          .withHeaders("Referer" -> routes.StatementController.onPageLoad().url)
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
@@ -41,7 +41,7 @@ class LanguageSwitchControllerSpec extends SpecBase {
 
       running(app) {
         val request = FakeRequest(GET, routes.LanguageSwitchController.switchToLanguage("cy").url)
-          .withHeaders("Referer" -> routes.AccountOverviewController.onPageLoad().url)
+          .withHeaders("Referer" -> routes.StatementController.onPageLoad().url)
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
@@ -56,7 +56,7 @@ class LanguageSwitchControllerSpec extends SpecBase {
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.AccountOverviewController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.StatementController.onPageLoad().url
       }
     }
   }

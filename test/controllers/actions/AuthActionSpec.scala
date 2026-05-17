@@ -192,7 +192,7 @@ class AuthActionSpec extends SpecBase {
 
     "regime or regNumber missing from session" - {
 
-      "must redirect to unauthorised when both are missing" in {
+      "must redirect to access denied when both are missing" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -205,7 +205,7 @@ class AuthActionSpec extends SpecBase {
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
 
@@ -222,7 +222,7 @@ class AuthActionSpec extends SpecBase {
           val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "REG123"))
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
 
@@ -239,14 +239,14 @@ class AuthActionSpec extends SpecBase {
           val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regime -> "mgd"))
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
     }
 
     "no credentials returned by auth" - {
 
-      "must redirect the user to log in" in {
+      "must redirect to access denied" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -263,7 +263,7 @@ class AuthActionSpec extends SpecBase {
           val result = controller.onPageLoad()(FakeRequest())
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value must startWith(appConfig.loginUrl)
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
     }
@@ -313,7 +313,7 @@ class AuthActionSpec extends SpecBase {
             )
 
             status(result) mustBe SEE_OTHER
-            redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+            redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
           }
         }
       }
@@ -334,7 +334,7 @@ class AuthActionSpec extends SpecBase {
           )
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
 
@@ -354,7 +354,7 @@ class AuthActionSpec extends SpecBase {
           )
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
 
@@ -393,7 +393,7 @@ class AuthActionSpec extends SpecBase {
           )
 
           status(result) mustBe SEE_OTHER
-          redirectLocation(result).value mustBe routes.UnauthorisedController.onPageLoad().url
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
         }
       }
     }
