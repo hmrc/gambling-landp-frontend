@@ -31,10 +31,6 @@
 
 @pageUrl(p: Int) = @{controllers.routes.ReturnsSubmittedController.onPageLoad(paginationParams.pageSize, p)}
 
-@fmtDate(d: Option[java.time.LocalDate]) = @{
-    d.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
-}
-
 @fmtAmountHtml(amount: BigDecimal) = @{
     Html(
         if (amount < 0) s"""<span class="govuk-visually-hidden">minus </span>&minus;${CurrencyFormatter.currencyFormat(amount.abs)}"""
@@ -42,13 +38,13 @@
     )
 }
 
-@dateRange = @{ messages("returns.caption", fmtDate(returns.periodStartDate), fmtDate(returns.periodEndDate)) }
+@dateRange = @{ messages("returns.caption", DateTimeFormats.formatDateFull(returns.periodStartDate), DateTimeFormats.formatDateFull(returns.periodEndDate)) }
 
 @tableRows = @{
     returns.amountDeclared.map { item =>
         Seq(
-            TableRow(content = Text(fmtDate(item.periodStartDate))),
-            TableRow(content = Text(fmtDate(item.periodEndDate))),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.periodStartDate))),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.periodEndDate))),
             TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(fmtAmountHtml(a).body)), format = Some("numeric"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
