@@ -33,7 +33,7 @@ class AccountRedirectController @Inject() (
       case None =>
         Redirect(routes.PageNotFoundController.onPageLoad())
       case Some(validRegime) =>
-        Redirect(routes.AccountOverviewController.onPageLoad())
+        Redirect(routes.StatementController.onPageLoad())
           .addingToSession(
             SessionKeys.regime    -> validRegime.code,
             SessionKeys.regNumber -> regNumber
