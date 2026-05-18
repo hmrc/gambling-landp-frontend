@@ -41,4 +41,11 @@ final case class Reallocations(
 object Reallocations {
   import ReallocationItem.localDateReads
   implicit val format: OFormat[Reallocations] = Json.format[Reallocations]
+
+  final case class Summary(
+    periodStartDate: Option[LocalDate],
+    periodEndDate: Option[LocalDate],
+    inTotal: BigDecimal,
+    outTotal: BigDecimal
+  )
 }

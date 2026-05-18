@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package config
+package utils
 
-trait CurrencyFormatter {
-  def currencyFormat(amt: BigDecimal): String = {
-    val sign = if (amt < 0) "-" else ""
-    f"$sign£${amt.abs}%,1.2f".replace(".00", "")
-  }
+import java.time.LocalDate
+import scala.math.Ordering.Implicits.infixOrderingOps
+
+object DateUtils {
+  def min(a: Option[LocalDate], b: Option[LocalDate]): Option[LocalDate] =
+    (a zip b).map(_.min(_)) orElse a orElse b
+
+  def max(a: Option[LocalDate], b: Option[LocalDate]): Option[LocalDate] =
+    (a zip b).map(_.max(_)) orElse a orElse b
 }
-
-object CurrencyFormatter extends CurrencyFormatter

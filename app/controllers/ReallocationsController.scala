@@ -17,23 +17,22 @@
 package controllers
 
 import controllers.actions.IdentifierAction
-import models.SessionKeys
+import models.{Regime, SessionKeys}
 import play.api.Logging
-
-import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.AccountOverview
+import views.html.ReallocationsView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class StatementController @Inject() (
+class ReallocationsController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
-  gambling: GamblingService,
-  view: AccountOverview
+  gamblingService: GamblingService,
+  view: ReallocationsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -41,8 +40,10 @@ class StatementController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regime), Some(regNumber)) =>
-        gambling.getReallocationsSummary(regime, regNumber).map(summary => Ok(view(regNumber, summary)))
+      case (Some(regimeCode), Some(regNumber)) =>
+        Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))) { validRegime =>
+          gamblingService.getReallocationsSummary(validRegime.code, regNumber).map(summary => Ok(view(summary)))
+        }
       case _ =>
         logger.warn("no regime or regNumber found")
         Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))

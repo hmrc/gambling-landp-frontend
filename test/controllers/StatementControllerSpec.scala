@@ -18,23 +18,45 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
+import models.reallocations.Reallocations
+import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.GamblingService
 import views.html.AccountOverview
 
-class StatementControllerSpec extends SpecBase {
+import java.time.LocalDate
+import scala.concurrent.Future
+
+class StatementControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
+  private val regime = "mgd"
+
+  private val summary = Reallocations.Summary(
+    periodStartDate = Option(LocalDate.of(2024, 1, 1)),
+    periodEndDate   = Option(LocalDate.of(2024, 12, 31)),
+    inTotal         = BigDecimal(45.60),
+    outTotal        = BigDecimal(-55.60)
+  )
 
   "Statement Controller" - {
 
-    "must return OK and render the view with the regNumber from session" in {
+    "must return OK and render the view with the regNumber from sessions and reallocations summary" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getReallocationsSummary(any(), any())(any()))
+        .thenReturn(Future.successful(summary))
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val application = applicationBuilder(userAnswers = None)
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.StatementController.onPageLoad().url)
-          .withSession(SessionKeys.regNumber -> regNumber)
+          .withSession(SessionKeys.regNumber -> regNumber, SessionKeys.regime -> regime)
 
         val result = route(application, request).value
 
@@ -42,16 +64,30 @@ class StatementControllerSpec extends SpecBase {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(regNumber)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(regNumber, summary)(request, messages(application)).toString
       }
     }
 
     "must redirect to Unauthorised when regNumber is absent from the session" in {
-
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
         val request = FakeRequest(GET, routes.StatementController.onPageLoad().url)
+          .withSession(SessionKeys.regime -> regime)
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Unauthorised when regime is absent from the session" in {
+      val application = applicationBuilder(userAnswers = None).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routes.StatementController.onPageLoad().url)
+          .withSession(SessionKeys.regNumber -> regNumber)
 
         val result = route(application, request).value
 
