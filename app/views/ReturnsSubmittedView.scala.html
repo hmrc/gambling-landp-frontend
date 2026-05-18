@@ -52,9 +52,9 @@
             TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(fmtAmountHtml(a).body)), format = Some("numeric"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
-        TableRow(content = Text(messages("returns.table.total"))),
+        TableRow(content = HtmlContent(s"<strong>${messages("returns.table.total")}</strong>")),
         TableRow(content = Empty),
-        TableRow(content = HtmlContent(fmtAmountHtml(returns.amountDeclared.flatMap(_.amount).sum).body), format = Some("numeric"))
+        TableRow(content = HtmlContent(s"<strong>${fmtAmountHtml(returns.amountDeclared.flatMap(_.amount).sum).body}</strong>"), format = Some("numeric"))
     )) else Seq.empty)
 }
 
@@ -62,7 +62,7 @@
     <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
         <ol class="govuk-breadcrumbs__list">
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@controllers.routes.AccountOverviewController.onPageLoad()">@messages("site.accountOverview")</a>
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.StatementController.onPageLoad()">@messages("site.statement")</a>
             </li>
         </ol>
     </nav>
@@ -87,7 +87,7 @@
         <p class="govuk-body">@messages("returns.empty")</p>
     } else {
         @if(paginationParams.totalPages > 1) {
-            <p class="govuk-body">@messages("returns.totalSummary", paginationParams.totalRecords) @returns.total.map(fmtAmountHtml).</p>
+            <p class="govuk-body">@messages("returns.totalSummary", paginationParams.totalRecords) @returns.total.map(fmtAmountHtml)</p>
             <p class="govuk-body">@messages("returns.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
         }
 

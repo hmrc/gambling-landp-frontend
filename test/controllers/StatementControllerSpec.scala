@@ -22,18 +22,18 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.AccountOverview
 
-class AccountOverviewControllerSpec extends SpecBase {
+class StatementControllerSpec extends SpecBase {
 
   private val regNumber = "XWM00003102200"
 
-  "AccountOverview Controller" - {
+  "Statement Controller" - {
 
     "must return OK and render the view with the regNumber from session" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.AccountOverviewController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StatementController.onPageLoad().url)
           .withSession(SessionKeys.regNumber -> regNumber)
 
         val result = route(application, request).value
@@ -51,7 +51,7 @@ class AccountOverviewControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.AccountOverviewController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StatementController.onPageLoad().url)
 
         val result = route(application, request).value
 

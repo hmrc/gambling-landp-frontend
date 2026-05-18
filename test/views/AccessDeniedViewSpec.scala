@@ -39,7 +39,6 @@ class AccessDeniedViewSpec extends SpecBase {
       val link = doc.select(".page-not-found-home-page-link a").attr("href")
 
       link mustEqual login
-
     }
   }
 

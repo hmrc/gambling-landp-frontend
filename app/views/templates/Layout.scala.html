@@ -60,7 +60,7 @@
         beforeContentBlock = beforeContent
     ),
     serviceURLs = ServiceURLs(
-        serviceUrl = Some(routes.AccountOverviewController.onPageLoad().url),
+        serviceUrl = Some(routes.StatementController.onPageLoad().url),
         signOutUrl = if(showSignOut) Some(controllers.auth.routes.AuthController.signOut().url) else None
     ),
     banners = Banners(

@@ -79,7 +79,7 @@ reallocationsOut.table.total = Total
 reallocationsOut.totalSummary = The total of the {0} records is
 reallocationsOut.displaying = Displaying {0} to {1} of {2} records
 
-site.accountOverview = Account overview
+site.statement = Statement
 site.pagination.label = Pagination
 site.pagination.previous = Previous
 site.pagination.next = Next

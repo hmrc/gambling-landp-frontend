@@ -28,7 +28,7 @@
 
 @layout(pageTitle = titleNoForm(messages("accessDenied.title")),
     showBackLink = true,
-    showSignOut = false,
+    showSignOut = true,
     ) {
 
     @h1("accessDenied.heading", classes = "govuk-heading-l")
@@ -38,5 +38,4 @@
         login,
         extraClasses = "page-not-found-home-page-link"
         )
-
 }

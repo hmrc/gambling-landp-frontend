@@ -52,30 +52,22 @@ class AuthenticatedIdentifierAction @Inject() (
 
         case Some(affinityGroup @ (AffinityGroup.Organisation | AffinityGroup.Agent)) ~ enrolments ~ Some(credentials) =>
           val authContext = AuthContext(affinityGroup, enrolments, credentials.providerId)
-          val isAuthorised = (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
+          val isAuthorisedForRegime = (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
             case (Some(regime), Some(regNumber)) =>
               AuthenticatedIdentifierAction.isAuthorisedForRegime(authContext, regime, regNumber)
             case _ =>
               false
           }
-          if (!isAuthorised) {
-            logger.warn(s"regime/regNumber missing from session or does not match auth enrolments")
-            Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+
+          if (!isAuthorisedForRegime) {
+            logger.warn(s"user is not authorised for regime")
+            Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
           } else {
             block(IdentifierRequest(request, authContext.providerId))
           }
 
-        case Some(affinityGroup) ~ _ ~ Some(_) =>
-          logger.warn(s"Unsupported affinity group: $affinityGroup")
-          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
-
-        case _ ~ _ ~ None =>
-          logger.warn("No credentials providerId found")
-          Future.successful(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl))))
-
         case _ =>
-          logger.warn("No affinity group found")
-          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+          Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
 
       } recover {
       case _: NoActiveSession =>
@@ -113,7 +105,7 @@ object AuthenticatedIdentifierAction {
       .flatMap(_.getIdentifier(identifierKey))
       .map(_.value)
 
-  def isAuthorisedForRegime(authContext: AuthContext, regime: String, regNumber: String): Boolean =
+  private def isAuthorisedForRegime(authContext: AuthContext, regime: String, regNumber: String): Boolean =
     Regime.fromString(regime).flatMap(regimeConfig.get).exists { config =>
       authContext.affinityGroup match {
         case AffinityGroup.Organisation =>
@@ -151,13 +143,8 @@ class AuthenticatedLoginAction @Inject() (
         case Some(AffinityGroup.Organisation | AffinityGroup.Agent) ~ Some(credentials) =>
           block(IdentifierRequest(request, credentials.providerId))
 
-        case Some(affinityGroup) ~ Some(_) =>
-          logger.warn(s"Unsupported affinity group: $affinityGroup")
-          Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
-
         case _ =>
-          logger.warn("No credentials or affinity group returned")
-          Future.successful(Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl))))
+          Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
 
       } recover {
       case _: NoActiveSession =>
