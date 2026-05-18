@@ -16,8 +16,9 @@
 
 package utils
 
-import play.api.i18n.Lang
+import play.api.i18n.{Lang, Messages}
 
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -30,9 +31,24 @@ object DateTimeFormats {
     "cy" -> dateTimeFormatter.withLocale(new Locale("cy"))
   )
 
-  def dateTimeFormat()(implicit lang: Lang): DateTimeFormatter = {
+  def dateTimeFormat()(implicit lang: Lang): DateTimeFormatter =
     localisedDateTimeFormatters.getOrElse(lang.code, dateTimeFormatter)
-  }
+
+  private val fullMonthFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
+  private val localisedFullMonthFormatters = Map(
+    "en" -> fullMonthFormatter,
+    "cy" -> fullMonthFormatter.withLocale(new Locale("cy"))
+  )
+
+  def dateTimeFormatFull()(implicit lang: Lang): DateTimeFormatter =
+    localisedFullMonthFormatters.getOrElse(lang.code, fullMonthFormatter)
+
+  def formatDate(date: Option[LocalDate])(implicit messages: Messages): String =
+    date.map(_.format(dateTimeFormat()(messages.lang))).getOrElse("")
+
+  def formatDateFull(date: Option[LocalDate])(implicit messages: Messages): String =
+    date.map(_.format(dateTimeFormatFull()(messages.lang))).getOrElse("")
 
   val dateTimeHintFormat: DateTimeFormatter =
     DateTimeFormatter.ofPattern("d M yyyy")
