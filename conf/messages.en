@@ -53,7 +53,7 @@ returns.table.periodEnd = Period end date
 returns.table.amount = Amount
 returns.table.total = Total
 returns.totalSummary = The total of the {0} records is
-returns.displaying = Displaying {0} to {1} of {2} records.
+returns.displaying = Displaying {0} to {1} of {2} records
 
 reallocationsIn.title = Reallocations in
 reallocationsIn.heading = Reallocations in
