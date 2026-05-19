@@ -174,7 +174,7 @@ class ReallocationsOutControllerITSpec
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          contentAsString(result) must include("Payments are sometimes debited from the wrong account.")
+          contentAsString(result) must include("Payments are sometimes credited from the wrong account.")
         }
       }
 
