@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import models.SessionKeys
 import models.reallocations.Reallocations
+import models.returns.ReturnsSubmitted
 import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -43,12 +44,22 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
     outTotal        = BigDecimal(-55.60)
   )
 
+  private val returnsSubmitted = ReturnsSubmitted(
+    periodStartDate    = None,
+    periodEndDate      = None,
+    total              = Some(BigDecimal(300)),
+    totalPeriodRecords = Some(3),
+    amountDeclared     = Seq.empty
+  )
+
   "Statement Controller" - {
 
     "must return OK and render the view with the regNumber from sessions and reallocations summary" in {
       val mockService = mock[GamblingService]
       when(mockService.getReallocationsSummary(any(), any())(any()))
         .thenReturn(Future.successful(summary))
+      when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(returnsSubmitted))
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -64,7 +75,10 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
 
-        contentAsString(result) mustEqual view(regNumber, summary)(request, messages(application)).toString
+        val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
+        val reallocationsTotal = summary.inTotal + summary.outTotal
+        val expectedBalance = returnsTotal + reallocationsTotal
+        contentAsString(result) mustEqual view(regNumber, returnsTotal, reallocationsTotal, expectedBalance)(request, messages(application)).toString
       }
     }
 
