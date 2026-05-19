@@ -36,6 +36,7 @@ index.paymentInfo.link = Pay what you owe
 index.table.description = Description
 index.table.amount = Amount
 index.table.returns = Amount declared on returns
+index.table.reallocations = Reallocations
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
 returns.title = Returns submitted
@@ -53,7 +54,19 @@ returns.table.periodEnd = Period end date
 returns.table.amount = Amount
 returns.table.total = Total
 returns.totalSummary = The total of the {0} records is
-returns.displaying = Displaying {0} to {1} of {2} records.
+returns.displaying = Displaying {0} to {1} of {2} records
+
+reallocations.title = Reallocations
+reallocations.heading = Reallocations
+reallocations.p1 = Money moved in or out of your account, or transferred to another tax.
+reallocations.caption = {0} to {1}
+reallocations.empty = There are no reallocations for this period.
+reallocations.table.reallocationsIn = Reallocations In
+reallocations.table.reallocationsOut = Reallocations Out
+reallocations.table.description = Description
+reallocations.table.amount = Amount
+reallocations.table.total = Total
+reallocations.totalSummary = The total of the {0} records is
 
 reallocationsIn.title = Reallocations in
 reallocationsIn.heading = Reallocations in

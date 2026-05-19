@@ -21,12 +21,13 @@ import models.assessments.Assessments
 import models.reallocations.Reallocations
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.DateUtils
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class GamblingService @Inject() (connector: GamblingConnector) {
+class GamblingService @Inject() (connector: GamblingConnector)(implicit ec: ExecutionContext) {
 
   def getReturnsSubmitted(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[ReturnsSubmitted] =
     connector.getReturnsSubmitted(regime, regNumber, pageSize, pageNo)
@@ -36,6 +37,20 @@ class GamblingService @Inject() (connector: GamblingConnector) {
 
   def getReallocationsOut(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Reallocations] =
     connector.getReallocationsOut(regime, regNumber, pageSize, pageNo)
+
+  def getReallocationsSummary(regime: String, regNumber: String)(implicit hc: HeaderCarrier): Future[Reallocations.Summary] = {
+    val reallocationsIn = getReallocationsIn(regime, regNumber, 10, 1)
+    val reallocationsOut = getReallocationsOut(regime, regNumber, 10, 1)
+    for
+      in  <- reallocationsIn
+      out <- reallocationsOut
+    yield Reallocations.Summary(
+      periodStartDate = DateUtils.min(in.periodStartDate, out.periodStartDate),
+      periodEndDate   = DateUtils.max(in.periodEndDate, out.periodEndDate),
+      inTotal         = in.total.getOrElse(BigDecimal(0)),
+      outTotal        = out.total.getOrElse(BigDecimal(0))
+    )
+  }
 
   def getOtherAssessments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Assessments] =
     connector.getOtherAssessments(regime, regNumber, pageSize, pageNo)

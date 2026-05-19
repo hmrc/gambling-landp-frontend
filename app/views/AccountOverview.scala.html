@@ -14,11 +14,14 @@
  * limitations under the License.
  *@
 
+@import config.CurrencyFormatter
+@import models.reallocations.Reallocations
+
 @this(
     layout: templates.Layout
 )
 
-@(regNumber: String)(implicit request: Request[_], messages: Messages)
+@(regNumber: String, reallocationsSummary: Reallocations.Summary)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle    = titleNoForm(messages("index.title")),
@@ -47,6 +50,10 @@
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReturnsSubmittedController.onPageLoad()}">@messages("index.table.returns")</a></th>
                 <td class="govuk-table__cell govuk-table__cell--numeric">&pound;109.80</td>
+            </tr>
+            <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReallocationsController.onPageLoad()}">@messages("index.table.reallocations")</a></th>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.currencyFormat(reallocationsSummary.inTotal + reallocationsSummary.outTotal)}</td>
             </tr>
         </tbody>
     </table>
