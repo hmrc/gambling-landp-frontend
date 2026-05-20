@@ -18,6 +18,7 @@ package services
 
 import connectors.GamblingConnector
 import models.assessments.Assessments
+import models.assessments.Penalties
 import models.reallocations.Reallocations
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,6 +38,9 @@ class GamblingService @Inject() (connector: GamblingConnector)(implicit ec: Exec
 
   def getReallocationsOut(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Reallocations] =
     connector.getReallocationsOut(regime, regNumber, pageSize, pageNo)
+
+  def getPenalties(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Penalties] =
+    connector.getPenalties(regime, regNumber, pageSize, pageNo)
 
   def getReallocationsSummary(regime: String, regNumber: String)(implicit hc: HeaderCarrier): Future[Reallocations.Summary] = {
     val reallocationsIn = getReallocationsIn(regime, regNumber, 10, 1)

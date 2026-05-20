@@ -28,7 +28,7 @@ error.prefix = Error
 error.summary.title = There is a problem
 
 index.title = Manage your gambling tax
-index.heading = General betting duty account overview
+index.heading = General Betting Duty statement
 index.registrationNumber = Registration number:
 index.currentBalance = Your current balance is
 index.paymentInfo = If your balance is negative, you must pay this amount.
@@ -38,6 +38,8 @@ index.table.amount = Amount
 index.table.returns = Amount declared on returns
 index.table.reallocations = Reallocations
 index.table.otherAssessments = Other assessments
+index.table.penalties = Penalties
+index.table.total = Total
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
 returns.title = Returns submitted
@@ -94,6 +96,27 @@ otherAssessments.table.amount = Amount
 otherAssessments.table.total = Total
 otherAssessments.totalSummary = The total of the {0} records is
 otherAssessments.displaying = Displaying {0} to {1} of {2} records
+
+penalties.title = Penalties
+penalties.heading = Penalties
+penalties.p1 = HMRC will charge penalties if you have:
+penalties.bullet1 = failed to notify your liability to register at the right time
+penalties.bullet2 = made errors on your returns
+penalties.bullet3 = failed to pay on time
+penalties.p2 = You may not have yet received formal notification of recent penalties.
+penalties.caption = {0} to {1}
+penalties.empty = You have not incurred any penalties.
+penalties.table.dateRaised = Date raised
+penalties.table.description = Description
+penalties.description.1980 = Late Filing Penalty {0} to {1}
+penalties.description.2680 = Late Filing Penalty {0} to {1}
+penalties.description.1990 = Late Payment Penalty {0} to {1}
+penalties.description.2690 = Late Payment Penalty {0} to {1}
+penalties.table.period = {0} to {1}
+penalties.table.amount = Amount
+penalties.table.total = Total
+penalties.totalSummary = The total of the {0} records is
+penalties.displaying = Displaying {0} to {1} of {2} records
 
 site.statement = Statement
 site.pagination.label = Pagination

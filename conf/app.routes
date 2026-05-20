@@ -8,6 +8,8 @@ GET        /statement                                    controllers.StatementCo
 
 GET        /statement/returns                            controllers.ReturnsSubmittedController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
+GET        /statement/penalties                          controllers.PenaltiesController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 GET        /statement/reallocations                     controllers.ReallocationsController.onPageLoad()
 GET        /statement/reallocations-in                   controllers.ReallocationsInController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /statement/reallocations-out                  controllers.ReallocationsOutController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
