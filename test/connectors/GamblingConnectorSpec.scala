@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import models.assessments.{AssessmentItem, Assessments}
+import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -364,6 +364,88 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getOtherAssessments(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedOtherAssessmentsResponse
+        }
+      }
+    }
+    "getPenalties" - {
+
+      val penaltiesResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": -500.00,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "dateRaised": "2024-08-01",
+           |      "descriptionCode": 1980,
+           |      "amount": -500.00,
+           |      "periodStartDate": "2024-01-01",
+           |      "periodEndDate": "2024-03-31"
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedPenaltiesResponse = Penalties(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("-500.0"),
+        totalRecords    = 1,
+        items = Seq(
+          PenaltyItem(LocalDate.of(2024, 8, 1), 1980, BigDecimal("-500.0"), LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31))
+        )
+      )
+
+      "must return a deserialized Penalties for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/penalties/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(penaltiesResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getPenalties(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedPenaltiesResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/penalties/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(penaltiesResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getPenalties(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedPenaltiesResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/penalties/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(penaltiesResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getPenalties(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedPenaltiesResponse
         }
       }
     }

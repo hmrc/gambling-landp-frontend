@@ -16,49 +16,45 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import controllers.routes
-import models.SessionKeys
+import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
-
-import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.AccountOverview
+import views.html.{PageNotFoundView, PenaltiesView}
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class StatementController @Inject() (
+class PenaltiesController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
-  gambling: GamblingService,
-  view: AccountOverview
+  gamblingService: GamblingService,
+  view: PenaltiesView,
+  pageNotFoundView: PageNotFoundView,
+  appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regime), Some(regNumber)) =>
-        val summaryF = gambling.getReallocationsSummary(regime, regNumber)
-        val returnsF = gambling.getReturnsSubmitted(regime, regNumber, pageSize = 1, pageNo = 1)
-        val otherAssessmentsF = gambling.getOtherAssessments(regime, regNumber, pageSize = 1, pageNo = 1)
-        val penaltiesF = gambling.getPenalties(regime, regNumber, pageSize = 1, pageNo = 1)
-        for {
-          summary          <- summaryF
-          returns          <- returnsF
-          otherAssessments <- otherAssessmentsF
-          penalties        <- penaltiesF
-        } yield {
-          val returnsTotal = returns.total.getOrElse(BigDecimal(0))
-          val reallocationsTotal = summary.inTotal + summary.outTotal
-          val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
-          val penaltiesTotal = penalties.total
-          val currentBalance = returnsTotal + reallocationsTotal + otherAssessmentsTotal + penaltiesTotal
-          Ok(view(regNumber, returnsTotal, reallocationsTotal, otherAssessmentsTotal, penaltiesTotal, currentBalance))
+      case (Some(regimeCode), Some(regNumber)) =>
+        Regime.fromString(regimeCode) match {
+          case None =>
+            Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
+          case Some(validRegime) =>
+            gamblingService.getPenalties(validRegime.code, regNumber, pageSize, pageNo).map { penalties =>
+              val pagination = PaginationParams(penalties.totalRecords, pageSize, pageNo)
+              if (pagination.isOutOfRange)
+                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+              else
+                Ok(view(validRegime, regNumber, pagination, penalties))
+            }
         }
       case _ =>
         logger.warn("no regime or regNumber found")
