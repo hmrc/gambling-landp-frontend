@@ -31,10 +31,6 @@
 
 @pageUrl(p: Int) = @{controllers.routes.OtherAssessmentsController.onPageLoad(paginationParams.pageSize, p)}
 
-@fmtDate(d: Option[java.time.LocalDate]) = @{
-    d.map(_.format(DateTimeFormats.dateTimeFormat()(messages.lang))).getOrElse("")
-}
-
 @fmtAmountHtml(amount: BigDecimal) = @{
     Html(
         if (amount < 0) s"""<span class="govuk-visually-hidden">minus </span>&minus;${CurrencyFormatter.currencyFormat(amount.abs)}"""
@@ -42,21 +38,23 @@
     )
 }
 
-@dateRange = @{ messages("otherAssessments.caption", fmtDate(assessments.periodStartDate), fmtDate(assessments.periodEndDate)) }
+@dateRange = @{ messages("otherAssessments.caption", DateTimeFormats.formatDateFull(assessments.periodStartDate), DateTimeFormats.formatDateFull(assessments.periodEndDate)) }
+
 
 @tableRows = @{
     assessments.items.map { item =>
         Seq(
-            TableRow(content = Text(fmtDate(item.dateRaised))),
-            TableRow(content = Text(fmtDate(item.periodStartDate))),
-            TableRow(content = Text(fmtDate(item.periodEndDate))),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.dateRaised))),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.periodStartDate))),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.periodEndDate))),
             TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(fmtAmountHtml(a).body)), format = Some("numeric"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
-        TableRow(content = Text(messages("otherAssessments.table.total"))),
+        TableRow(content = HtmlContent(s"<strong>${messages("otherAssessments.table.total")}</strong>")),
         TableRow(content = Empty),
         TableRow(content = Empty),
-        TableRow(content = HtmlContent(fmtAmountHtml(assessments.items.flatMap(_.amount).sum).body), format = Some("numeric"))
+        TableRow(content = HtmlContent(s"<strong>${fmtAmountHtml(assessments.items.flatMap(_.amount).sum).body}</strong>"), format = Some("numeric"))
+
     )) else Seq.empty)
 }
 

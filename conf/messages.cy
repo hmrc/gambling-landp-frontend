@@ -36,6 +36,8 @@ index.paymentInfo.link = Pay what you owe
 index.table.description = Description
 index.table.amount = Amount
 index.table.returns = Amount declared on returns
+index.table.reallocations = Reallocations
+index.table.otherAssessments = Other assessments
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
 returns.title = Returns submitted

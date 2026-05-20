@@ -55,6 +55,10 @@
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReallocationsController.onPageLoad()}">@messages("index.table.reallocations")</a></th>
                 <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.currencyFormat(reallocationsSummary.inTotal + reallocationsSummary.outTotal)}</td>
             </tr>
+            <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.OtherAssessmentsController.onPageLoad()}">@messages("index.table.otherAssessments")</a></th>
+                <td class="govuk-table__cell govuk-table__cell--numeric">-&pound;20.90</td>
+            </tr>
         </tbody>
     </table>
 }
