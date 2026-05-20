@@ -17,6 +17,7 @@
 package controllers
 
 import controllers.actions.IdentifierAction
+import controllers.routes
 import models.SessionKeys
 import play.api.Logging
 
@@ -42,7 +43,17 @@ class StatementController @Inject() (
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regime), Some(regNumber)) =>
-        gambling.getReallocationsSummary(regime, regNumber).map(summary => Ok(view(regNumber, summary)))
+        val summaryF = gambling.getReallocationsSummary(regime, regNumber)
+        val returnsF = gambling.getReturnsSubmitted(regime, regNumber, pageSize = 1, pageNo = 1)
+        for {
+          summary <- summaryF
+          returns <- returnsF
+        } yield {
+          val returnsTotal = returns.total.getOrElse(BigDecimal(0))
+          val reallocationsTotal = summary.inTotal + summary.outTotal
+          val currentBalance = returnsTotal + reallocationsTotal
+          Ok(view(regNumber, returnsTotal, reallocationsTotal, currentBalance))
+        }
       case _ =>
         logger.warn("no regime or regNumber found")
         Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))

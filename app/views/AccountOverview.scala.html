@@ -15,13 +15,12 @@
  *@
 
 @import config.CurrencyFormatter
-@import models.reallocations.Reallocations
 
 @this(
     layout: templates.Layout
 )
 
-@(regNumber: String, reallocationsSummary: Reallocations.Summary)(implicit request: Request[_], messages: Messages)
+@(regNumber: String, returnsTotal: BigDecimal, reallocationsTotal: BigDecimal, currentBalance: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle    = titleNoForm(messages("index.title")),
@@ -33,7 +32,7 @@
     </h1>
     <p class="govuk-body govuk-!-margin-bottom-1">@messages("index.registrationNumber") @regNumber</p>
     <h2 class="govuk-heading-m">
-        @messages("index.currentBalance") &minus;&pound;8,224.60
+        @messages("index.currentBalance") @if(currentBalance < 0){<span class="govuk-visually-hidden">minus </span>&minus;}@{CurrencyFormatter.currencyFormat(currentBalance.abs)}
     </h2>
     <p class="govuk-body">
         @messages("index.paymentInfo") <a class="govuk-link" href="https://www.gov.uk/guidance/pay-general-betting-pool-betting-or-remote-gaming-duty">@messages("index.paymentInfo.link")</a>.
@@ -49,11 +48,11 @@
         <tbody class="govuk-table__body">
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReturnsSubmittedController.onPageLoad()}">@messages("index.table.returns")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">&pound;109.80</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.currencyFormat(returnsTotal)}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReallocationsController.onPageLoad()}">@messages("index.table.reallocations")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.currencyFormat(reallocationsSummary.inTotal + reallocationsSummary.outTotal)}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.currencyFormat(reallocationsTotal)}</td>
             </tr>
         </tbody>
     </table>
