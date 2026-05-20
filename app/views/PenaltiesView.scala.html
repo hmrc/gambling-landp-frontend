@@ -17,7 +17,6 @@
 @import config.CurrencyFormatter
 @import models.{PaginationParams, Regime}
 @import models.assessments.Penalties
-@import play.twirl.api.Html
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import utils.DateTimeFormats
 
@@ -31,13 +30,6 @@
 
 @pageUrl(p: Int) = @{controllers.routes.PenaltiesController.onPageLoad(paginationParams.pageSize, p)}
 
-@fmtAmountHtml(amount: BigDecimal) = @{
-    Html(
-        if (amount < 0) s"""<span class="govuk-visually-hidden">minus </span>&minus;${CurrencyFormatter.currencyFormat(amount.abs)}"""
-        else CurrencyFormatter.currencyFormat(amount)
-    )
-}
-
 @dateRange = @{ messages("penalties.caption", DateTimeFormats.formatDateFull(penalties.periodStartDate), DateTimeFormats.formatDateFull(penalties.periodEndDate)) }
 
 @tableRows = @{
@@ -45,12 +37,12 @@
         Seq(
             TableRow(content = Text(DateTimeFormats.formatDate(Some(item.dateRaised)))),
             TableRow(content = Text(messages(s"penalties.description.${item.descriptionCode}", DateTimeFormats.formatDate(Some(item.periodStartDate)), DateTimeFormats.formatDate(Some(item.periodEndDate))))),
-            TableRow(content = HtmlContent(fmtAmountHtml(item.amount).body), format = Some("numeric"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body), format = Some("numeric"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
         TableRow(content = HtmlContent(s"<strong>${messages("penalties.table.total")}</strong>")),
         TableRow(content = Empty),
-        TableRow(content = HtmlContent(s"<strong>${fmtAmountHtml(penalties.total).body}</strong>"), format = Some("numeric"))
+        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(penalties.total).body}</strong>"), format = Some("numeric"))
     )) else Seq.empty)
 }
 
@@ -91,7 +83,7 @@
         <p class="govuk-body">@messages("penalties.empty")</p>
     } else {
         @if(paginationParams.totalPages > 1) {
-            <p class="govuk-body">@messages("penalties.totalSummary", paginationParams.totalRecords) @fmtAmountHtml(penalties.total)</p>
+            <p class="govuk-body">@messages("penalties.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(penalties.total)</p>
             <p class="govuk-body">@messages("penalties.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
         }
 
