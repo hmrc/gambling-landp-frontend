@@ -36,6 +36,8 @@ index.paymentInfo.link = Pay what you owe
 index.table.description = Description
 index.table.amount = Amount
 index.table.returns = Amount declared on returns
+index.table.reallocations = Reallocations
+index.table.otherAssessments = Other assessments
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
 returns.title = Returns submitted
@@ -78,6 +80,20 @@ reallocationsOut.table.amount = Amount
 reallocationsOut.table.total = Total
 reallocationsOut.totalSummary = The total of the {0} records is
 reallocationsOut.displaying = Displaying {0} to {1} of {2} records
+
+otherAssessments.title = Other assessments
+otherAssessments.heading = Other assessments
+otherAssessments.p1 = HMRC’s assessments for under-declarations of tax.
+otherAssessments.p2 = You may not have yet received formal notification of recent assessments.
+otherAssessments.caption = {0} to {1}
+otherAssessments.empty = You have no other assessments.
+otherAssessments.table.dateRaised = Date raised
+otherAssessments.table.periodStart = Period start date
+otherAssessments.table.periodEnd = Period end date
+otherAssessments.table.amount = Amount
+otherAssessments.table.total = Total
+otherAssessments.totalSummary = The total of the {0} records is
+otherAssessments.displaying = Displaying {0} to {1} of {2} records
 
 site.statement = Statement
 site.pagination.label = Pagination

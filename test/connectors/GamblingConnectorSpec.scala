@@ -17,6 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import models.assessments.{AssessmentItem, Assessments}
 import models.reallocations.{ReallocationItem, Reallocations}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -281,6 +282,88 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getReallocationsOut(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedReallocationsOutResponse
+        }
+      }
+    }
+
+    "getOtherAssessments" - {
+
+      val otherAssessmentsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 65.60,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "dateRaised": "2024-08-01",
+           |      "periodStartDate": "2024-07-01",
+           |      "periodEndDate": "2024-09-01",
+           |      "amount": 65.60
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedOtherAssessmentsResponse = Assessments(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("65.6")),
+        totalRecords    = Some(1),
+        items = Seq(
+          AssessmentItem(Some(LocalDate.of(2024, 8, 1)), Some(LocalDate.of(2024, 7, 1)), Some(LocalDate.of(2024, 9, 1)), Some(BigDecimal("65.6")))
+        )
+      )
+
+      "must return a deserialized OtherAssessments for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/other-assessments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(otherAssessmentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getOtherAssessments(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedOtherAssessmentsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/other-assessments/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(otherAssessmentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getOtherAssessments(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedOtherAssessmentsResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/other-assessments/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(otherAssessmentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getOtherAssessments(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedOtherAssessmentsResponse
         }
       }
     }

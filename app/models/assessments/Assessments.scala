@@ -14,37 +14,35 @@
  * limitations under the License.
  */
 
-package models.returns
+package models.assessments
 
 import play.api.libs.json.*
 
 import java.time.LocalDate
 
-case class AmountDeclared(
-  descriptionCode: Option[Int],
+final case class AssessmentItem(
+  dateRaised: Option[LocalDate],
   periodStartDate: Option[LocalDate],
   periodEndDate: Option[LocalDate],
   amount: Option[BigDecimal]
 )
 
-object AmountDeclared {
+object AssessmentItem {
   implicit val localDateReads: Reads[LocalDate] = Reads.localDateReads("yyyy-MM-dd")
-  implicit val reads: Reads[AmountDeclared] = Json.reads[AmountDeclared]
-  implicit val format: OFormat[AmountDeclared] = Json.format[AmountDeclared]
-
+  implicit val format: OFormat[AssessmentItem] = Json.format[AssessmentItem]
 }
 
-case class ReturnsSubmitted(
+final case class Assessments(
   periodStartDate: Option[LocalDate],
   periodEndDate: Option[LocalDate],
   total: Option[BigDecimal],
-  totalPeriodRecords: Option[Int],
-  amountDeclared: Seq[AmountDeclared]
+  totalRecords: Option[Int],
+  items: Seq[AssessmentItem]
 )
 
-object ReturnsSubmitted {
-  import AmountDeclared.localDateReads
-  implicit val reads: Reads[ReturnsSubmitted] = Json.reads[ReturnsSubmitted]
-  implicit val format: OFormat[ReturnsSubmitted] = Json.format[ReturnsSubmitted]
+object Assessments {
 
+  import AssessmentItem.localDateReads
+
+  implicit val format: OFormat[Assessments] = Json.format[Assessments]
 }

@@ -17,10 +17,11 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.assessments.Assessments
 import models.reallocations.Reallocations
 import models.returns.ReturnsSubmitted
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
@@ -48,4 +49,9 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/reallocations-out/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[Reallocations]
+
+  def getOtherAssessments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[Assessments] =
+    httpClient
+      .get(url"$baseUrl/other-assessments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[Assessments]
 }
