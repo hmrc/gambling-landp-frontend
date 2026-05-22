@@ -20,14 +20,13 @@ import play.twirl.api.Html
 
 trait CurrencyFormatter {
   def currencyFormat(amt: BigDecimal): String = {
-    val sign = if (amt < 0) "-" else ""
-    f"$sign£${amt.abs}%,1.2f".replace(".00", "")
+    f"£${amt.abs}%,1.2f".replace(".00", "")
   }
 
   def formatAmountHtml(amount: BigDecimal): Html =
     Html(
       if (amount < 0)
-        s"""<span class="govuk-visually-hidden">minus </span>&minus;${currencyFormat(amount.abs)}"""
+        s"""<span aria-hidden="true">&minus;</span><span class="govuk-visually-hidden">minus</span>${currencyFormat(amount.abs)}"""
       else
         currencyFormat(amount)
     )
