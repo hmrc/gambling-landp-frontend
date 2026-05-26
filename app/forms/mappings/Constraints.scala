@@ -17,9 +17,9 @@
 package forms.mappings
 
 import config.CurrencyFormatter
-import java.time.LocalDate
-
 import play.api.data.validation.{Constraint, Invalid, Valid}
+
+import java.time.LocalDate
 
 trait Constraints {
 
@@ -112,7 +112,7 @@ trait Constraints {
       if (input >= minimum) {
         Valid
       } else {
-        Invalid(errorKey, CurrencyFormatter.currencyFormat(minimum))
+        Invalid(errorKey, CurrencyFormatter.formatAmountHtml(minimum).body)
       }
     }
 
@@ -121,7 +121,7 @@ trait Constraints {
       if (input <= maximum) {
         Valid
       } else {
-        Invalid(errorKey, CurrencyFormatter.currencyFormat(maximum))
+        Invalid(errorKey, CurrencyFormatter.formatAmountHtml(maximum).body)
       }
     }
 }
