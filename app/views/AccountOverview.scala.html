@@ -56,11 +56,11 @@
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.OtherAssessmentsController.onPageLoad()}">@messages("index.table.otherAssessments")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(otherAssessmentsTotal).body}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(otherAssessmentsTotal)}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.PenaltiesController.onPageLoad()}">@messages("index.table.penalties")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(penaltiesTotal).body}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(penaltiesTotal)}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><strong>@messages("index.table.total")</strong></th>

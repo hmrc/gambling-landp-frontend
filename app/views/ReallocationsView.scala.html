@@ -53,11 +53,11 @@
     Seq(
         Seq(
             TableRow(content = linkOrText(messages("reallocations.table.reallocationsIn"), summary.inTotal, controllers.routes.ReallocationsInController.onPageLoad().url)),
-            TableRow(content = Text(CurrencyFormatter.formatAmountHtml(summary.inTotal).body), format = Some("numeric"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.inTotal).body), format = Some("numeric"))
         ),
         Seq(
             TableRow(content = linkOrText(messages("reallocations.table.reallocationsOut"), summary.outTotal, controllers.routes.ReallocationsOutController.onPageLoad().url)),
-            TableRow(content = Text(CurrencyFormatter.formatAmountHtml(summary.outTotal).body), format = Some("numeric"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.outTotal).body), format = Some("numeric"))
         )
     )
 }
