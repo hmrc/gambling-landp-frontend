@@ -156,8 +156,8 @@ class ReallocationsControllerITSpec
           status(result) mustEqual OK
           contentAsString(result) must include("Reallocations")
           contentAsString(result) must include("govuk-table")
-          contentAsString(result) must include("Reallocations In")
-          contentAsString(result) must include("Reallocations Out")
+          contentAsString(result) must include("Reallocations in")
+          contentAsString(result) must include("Reallocations out")
         }
       }
 
