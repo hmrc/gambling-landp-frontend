@@ -15,9 +15,11 @@
  *@
 
 @import config.CurrencyFormatter
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
-    layout: templates.Layout
+    layout: templates.Layout,
+    govukTable: GovukTable
 )
 
 @(regNumber: String, returnsTotal: BigDecimal, reallocationsTotal: BigDecimal, otherAssessmentsTotal: BigDecimal, penaltiesTotal: BigDecimal, currentBalance: BigDecimal)(implicit request: Request[_], messages: Messages)
@@ -37,35 +39,35 @@
     <p class="govuk-body">
         @messages("index.paymentInfo") <a class="govuk-link" href="https://www.gov.uk/guidance/pay-general-betting-pool-betting-or-remote-gaming-duty">@messages("index.paymentInfo.link")</a>.
     </p>
-    <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">1 November 2023 to 27 January 2025</caption>
-        <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">@messages("index.table.description")</th>
-                <th scope="col" class="govuk-table__header govuk-table__header--numeric">@messages("index.table.amount")</th>
-            </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-            <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReturnsSubmittedController.onPageLoad()}">@messages("index.table.returns")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(returnsTotal).body}</td>
-            </tr>
-            <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReallocationsController.onPageLoad()}">@messages("index.table.reallocations")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(reallocationsTotal).body}</td>
-            </tr>
-            <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.OtherAssessmentsController.onPageLoad()}">@messages("index.table.otherAssessments")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(otherAssessmentsTotal)}</td>
-            </tr>
-            <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.PenaltiesController.onPageLoad()}">@messages("index.table.penalties")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(penaltiesTotal)}</td>
-            </tr>
-            <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__header"><strong>@messages("index.table.total")</strong></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric"><strong>@if(currentBalance < 0){<span class="govuk-visually-hidden">minus </span>&minus;}@{CurrencyFormatter.formatAmountHtml(currentBalance.abs).body}</strong></td>
-            </tr>
-        </tbody>
-    </table>
+
+    @govukTable(Table(
+        caption = Some("1 November 2023 to 27 January 2025"),
+        captionClasses = "govuk-table__caption--m",
+        head = Some(Seq(
+            HeadCell(content = Text(messages("index.table.description"))),
+            HeadCell(content = Text(messages("index.table.amount")), format = Some("numeric"))
+        )),
+        rows = Seq(
+            Seq(
+                TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.ReturnsSubmittedController.onPageLoad()}">${messages("index.table.returns")}</a>""")),
+                TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(returnsTotal).body), format = Some("numeric"))
+            ),
+            Seq(
+                TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.ReallocationsController.onPageLoad()}">${messages("index.table.reallocations")}</a>""")),
+                TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(reallocationsTotal).body), format = Some("numeric"))
+            ),
+            Seq(
+                TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.OtherAssessmentsController.onPageLoad()}">${messages("index.table.otherAssessments")}</a>""")),
+                TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(otherAssessmentsTotal).body), format = Some("numeric"))
+            ),
+            Seq(
+                TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.PenaltiesController.onPageLoad()}">${messages("index.table.penalties")}</a>""")),
+                TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(penaltiesTotal).body), format = Some("numeric"))
+            ),
+            Seq(
+                TableRow(content = HtmlContent(s"<strong>${messages("index.table.total")}</strong>")),
+                TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(currentBalance).body}</strong>"), format = Some("numeric"))
+            )
+        )
+    ))
 }
