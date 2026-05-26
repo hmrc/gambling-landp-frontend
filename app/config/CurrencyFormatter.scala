@@ -19,7 +19,7 @@ package config
 import play.twirl.api.Html
 
 trait CurrencyFormatter {
-  def currencyFormat(amt: BigDecimal): String = {
+  private def currencyFormat(amt: BigDecimal): String = {
     f"£${amt.abs}%,1.2f".replace(".00", "")
   }
 

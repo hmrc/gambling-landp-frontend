@@ -32,7 +32,7 @@
     </h1>
     <p class="govuk-body govuk-!-margin-bottom-1">@messages("index.registrationNumber") @regNumber</p>
     <h2 class="govuk-heading-m">
-        @messages("index.currentBalance") @if(currentBalance < 0){<span class="govuk-visually-hidden">minus </span>&minus;}@{CurrencyFormatter.formatAmountHtml(currentBalance.abs)}
+        @messages("index.currentBalance") @if(currentBalance < 0){<span class="govuk-visually-hidden">minus </span>&minus;}@{CurrencyFormatter.formatAmountHtml(currentBalance.abs).body}
     </h2>
     <p class="govuk-body">
         @messages("index.paymentInfo") <a class="govuk-link" href="https://www.gov.uk/guidance/pay-general-betting-pool-betting-or-remote-gaming-duty">@messages("index.paymentInfo.link")</a>.
@@ -48,23 +48,23 @@
         <tbody class="govuk-table__body">
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReturnsSubmittedController.onPageLoad()}">@messages("index.table.returns")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(returnsTotal)}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(returnsTotal).body}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.ReallocationsController.onPageLoad()}">@messages("index.table.reallocations")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(reallocationsTotal)}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(reallocationsTotal).body}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.OtherAssessmentsController.onPageLoad()}">@messages("index.table.otherAssessments")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(otherAssessmentsTotal)}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(otherAssessmentsTotal).body}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><a class="govuk-link" href="@{controllers.routes.PenaltiesController.onPageLoad()}">@messages("index.table.penalties")</a></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(penaltiesTotal)}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">@{CurrencyFormatter.formatAmountHtml(penaltiesTotal).body}</td>
             </tr>
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__header"><strong>@messages("index.table.total")</strong></th>
-                <td class="govuk-table__cell govuk-table__cell--numeric"><strong>@if(currentBalance < 0){<span class="govuk-visually-hidden">minus </span>&minus;}@{CurrencyFormatter.formatAmountHtml(currentBalance.abs)}</strong></td>
+                <td class="govuk-table__cell govuk-table__cell--numeric"><strong>@if(currentBalance < 0){<span class="govuk-visually-hidden">minus </span>&minus;}@{CurrencyFormatter.formatAmountHtml(currentBalance.abs).body}</strong></td>
             </tr>
         </tbody>
     </table>
