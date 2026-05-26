@@ -33,15 +33,15 @@
 @dateRange = @{ messages("reallocationsOut.caption", DateTimeFormats.formatDateFull(reallocations.periodStartDate), DateTimeFormats.formatDateFull(reallocations.periodEndDate)) }
 
 @tableRows = @{
-    reallocations.items.map { item =>
+    reallocations.items.zipWithIndex.map { case (item, i) =>
         Seq(
-            TableRow(content = Text(DateTimeFormats.formatDate(item.dateProcessed))),
-            TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(CurrencyFormatter.formatAmountHtml(a).body)), format = Some("numeric"))
+            TableRow(content = Text(DateTimeFormats.formatDate(item.dateProcessed)), attributes = Map("data-testid" -> s"date-processed-$i")),
+            TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(CurrencyFormatter.formatAmountHtml(a).body)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
         )
     } ++ (if (paginationParams.totalPages <= 1) reallocations.total.toSeq.map { total =>
         Seq(
             TableRow(content = HtmlContent(s"<strong>${messages("reallocationsOut.table.total")}</strong>")),
-            TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(total).body}</strong>"), format = Some("numeric"))
+            TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-out-total"))
         )
     } else Seq.empty)
 }
@@ -68,7 +68,7 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
 
-            <h1 class="govuk-heading-l">@messages("reallocationsOut.heading")</h1>
+            <h1 class="govuk-heading-l" data-testid="reallocations-out-heading">@messages("reallocationsOut.heading")</h1>
             <p class="govuk-body">@messages("reallocationsOut.p1")</p>
 
             <h2 class="govuk-heading-s">@dateRange</h2>
@@ -77,11 +77,12 @@
                 <p class="govuk-body">@messages("reallocationsOut.empty")</p>
             } else {
                 @if(paginationParams.totalPages > 1) {
-                    <p class="govuk-body">@messages("reallocationsOut.totalSummary", paginationParams.totalRecords) @reallocations.total.map(CurrencyFormatter.formatAmountHtml)</p>
-                    <p class="govuk-body">@messages("reallocationsOut.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
+                    <p class="govuk-body" data-testid="total-summary">@messages("reallocationsOut.totalSummary", paginationParams.totalRecords) @reallocations.total.map(CurrencyFormatter.formatAmountHtml)</p>
+                    <p class="govuk-body" data-testid="pagination-info">@messages("reallocationsOut.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
                 }
 
                 @govukTable(Table(
+                    attributes = Map("data-testid" -> "reallocations-out-table"),
                     head = Some(Seq(
                         HeadCell(content = Text(messages("reallocationsOut.table.dateProcessed"))),
                         HeadCell(content = Text(messages("reallocationsOut.table.amount")), format = Some("numeric"))
