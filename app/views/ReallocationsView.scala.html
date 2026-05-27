@@ -53,11 +53,11 @@
     Seq(
         Seq(
             TableRow(content = linkOrText(messages("reallocations.table.reallocationsIn"), summary.inTotal, controllers.routes.ReallocationsInController.onPageLoad().url)),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.inTotal).body), format = Some("numeric"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.inTotal).body), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-in-amount"))
         ),
         Seq(
             TableRow(content = linkOrText(messages("reallocations.table.reallocationsOut"), summary.outTotal, controllers.routes.ReallocationsOutController.onPageLoad().url)),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.outTotal).body), format = Some("numeric"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.outTotal).body), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-out-amount"))
         )
     )
 }
@@ -67,7 +67,7 @@
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {
-    <h1 class="govuk-heading-l">@messages("reallocations.heading")</h1>
+    <h1 class="govuk-heading-l" data-testid="reallocations-heading">@messages("reallocations.heading")</h1>
 
     <p class="govuk-body">@messages("reallocations.p1")</p>
 
@@ -76,6 +76,7 @@
     } else {
         <h2 class="govuk-heading-s">@dateRange</h2>
         @govukTable(Table(
+            attributes = Map("data-testid" -> "reallocations-table"),
             head = Some(Seq(
                 HeadCell(content = Text(messages("reallocations.table.description"))),
                 HeadCell(content = Text(messages("reallocations.table.amount")), format = Some("numeric"))
@@ -83,7 +84,7 @@
             rows = tableRows ++ Seq(
                 Seq(
                     TableRow(content = HtmlContent(s"<strong>${messages("reallocations.table.total")}</strong>")),
-                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(summary.inTotal + summary.outTotal).body}</strong>"), format = Some("numeric"))
+                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(summary.inTotal + summary.outTotal).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-grand-total"))
                 )
             )
         ))

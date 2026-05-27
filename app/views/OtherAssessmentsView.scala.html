@@ -19,6 +19,7 @@
 @import models.assessments.Assessments
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import utils.DateTimeFormats
+
 @this(
     layout: templates.Layout,
     govukTable: GovukTable,
@@ -31,21 +32,19 @@
 
 @dateRange = @{ messages("otherAssessments.caption", DateTimeFormats.formatDateFull(assessments.periodStartDate), DateTimeFormats.formatDateFull(assessments.periodEndDate)) }
 
-
 @tableRows = @{
-    assessments.items.map { item =>
+    assessments.items.zipWithIndex.map { case (item, i) =>
         Seq(
-            TableRow(content = Text(DateTimeFormats.formatDate(item.dateRaised))),
-            TableRow(content = Text(DateTimeFormats.formatDate(item.periodStartDate))),
-            TableRow(content = Text(DateTimeFormats.formatDate(item.periodEndDate))),
-            TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(CurrencyFormatter.formatAmountHtml(a).body)), format = Some("numeric"))
+            TableRow(content = Text(DateTimeFormats.formatDate(item.dateRaised)), attributes = Map("data-testid" -> s"date-raised-$i")),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.periodStartDate)), attributes = Map("data-testid" -> s"period-start-$i")),
+            TableRow(content = Text(DateTimeFormats.formatDate(item.periodEndDate)), attributes = Map("data-testid" -> s"period-end-$i")),
+            TableRow(content = item.amount.fold[Content](Empty)(a => HtmlContent(CurrencyFormatter.formatAmountHtml(a).body)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
         TableRow(content = HtmlContent(s"<strong>${messages("otherAssessments.table.total")}</strong>")),
         TableRow(content = Empty),
         TableRow(content = Empty),
-        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(assessments.items.flatMap(_.amount).sum).body}</strong>"), format = Some("numeric"))
-
+        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(assessments.items.flatMap(_.amount).sum).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "other-assessments-total"))
     )) else Seq.empty)
 }
 
@@ -65,7 +64,7 @@
     beforeContent = Some(breadcrumbs)
 ) {
 
-    <h1 class="govuk-heading-l">
+    <h1 class="govuk-heading-l" data-testid="other-assessments-heading">
         @messages("otherAssessments.heading")
     </h1>
     <p class="govuk-body">
@@ -82,11 +81,12 @@
         <p class="govuk-body">@messages("otherAssessments.empty")</p>
     } else {
         @if(paginationParams.totalPages > 1) {
-            <p class="govuk-body">@messages("otherAssessments.totalSummary", paginationParams.totalRecords) @assessments.total.map(CurrencyFormatter.formatAmountHtml)</p>
-            <p class="govuk-body">@messages("otherAssessments.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
+            <p class="govuk-body" data-testid="total-summary">@messages("otherAssessments.totalSummary", paginationParams.totalRecords) @assessments.total.map(CurrencyFormatter.formatAmountHtml)</p>
+            <p class="govuk-body" data-testid="pagination-info">@messages("otherAssessments.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
         }
 
         @govukTable(Table(
+            attributes = Map("data-testid" -> "other-assessments-table"),
             head = Some(Seq(
                 HeadCell(content = Text(messages("otherAssessments.table.dateRaised"))),
                 HeadCell(content = Text(messages("otherAssessments.table.periodStart"))),
