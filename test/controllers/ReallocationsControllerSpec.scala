@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.reallocations.Reallocations
+import models.reallocations.ReallocationsDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -33,13 +33,13 @@ import scala.concurrent.Future
 class ReallocationsControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
-  private val regime = "mgd"
 
-  private val summary = Reallocations.Summary(
-    periodStartDate = Option(LocalDate.of(2024, 1, 1)),
-    periodEndDate   = Option(LocalDate.of(2024, 12, 31)),
-    inTotal         = BigDecimal(45.60),
-    outTotal        = BigDecimal(-55.60)
+  private val details = ReallocationsDetails(
+    periodStartDate        = Option(LocalDate.of(2024, 1, 1)),
+    periodEndDate          = Option(LocalDate.of(2024, 12, 31)),
+    reallocationsInAmount  = BigDecimal(45.60),
+    reallocationsOutAmount = BigDecimal(-55.60),
+    total                  = BigDecimal(-10.60)
   )
 
   "ReallocationsController" - {
@@ -85,8 +85,8 @@ class ReallocationsControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and render the heading for a valid regime and contains the expected messages in the content" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(summary))
+      when(mockService.getReallocationsDetails(any(), any())(any()))
+        .thenReturn(Future.successful(details))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -104,9 +104,9 @@ class ReallocationsControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must return OK and render the page with expected messages in the content when rellocations in/out are 0" in {
-      val emptySummary = summary.copy(inTotal = BigDecimal(0), outTotal = BigDecimal(0))
+      val emptySummary = details.copy(reallocationsInAmount = BigDecimal(0), reallocationsOutAmount = BigDecimal(0))
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsSummary(any(), any())(any()))
+      when(mockService.getReallocationsDetails(any(), any())(any()))
         .thenReturn(Future.successful(emptySummary))
 
       val app = applicationBuilder()
@@ -130,8 +130,8 @@ class ReallocationsControllerSpec extends SpecBase with MockitoSugar {
 
     "must include the intro paragraph in the page content" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(summary))
+      when(mockService.getReallocationsDetails(any(), any())(any()))
+        .thenReturn(Future.successful(details))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -152,8 +152,8 @@ class ReallocationsControllerSpec extends SpecBase with MockitoSugar {
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getReallocationsSummary(any(), any())(any()))
-          .thenReturn(Future.successful(summary))
+        when(mockService.getReallocationsDetails(any(), any())(any()))
+          .thenReturn(Future.successful(details))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))

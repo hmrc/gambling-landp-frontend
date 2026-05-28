@@ -18,12 +18,12 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
-import models.reallocations.Reallocations
+import models.assessments.{Assessments, Penalties}
+import models.reallocations.ReallocationsDetails
 import models.returns.ReturnsSubmitted
-import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -38,11 +38,12 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
   private val regNumber = "XWM00003102200"
   private val regime = "mgd"
 
-  private val summary = Reallocations.Summary(
-    periodStartDate = Option(LocalDate.of(2024, 1, 1)),
-    periodEndDate   = Option(LocalDate.of(2024, 12, 31)),
-    inTotal         = BigDecimal(45.60),
-    outTotal        = BigDecimal(-55.60)
+  private val reallocationsDetails = ReallocationsDetails(
+    periodStartDate        = Option(LocalDate.of(2024, 1, 1)),
+    periodEndDate          = Option(LocalDate.of(2024, 12, 31)),
+    reallocationsInAmount  = BigDecimal(45.60),
+    reallocationsOutAmount = BigDecimal(-55.60),
+    total                  = BigDecimal(-10.00)
   )
 
   private val returnsSubmitted = ReturnsSubmitted(
@@ -71,10 +72,10 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
 
   "Statement Controller" - {
 
-    "must return OK and render the view with the regNumber from sessions and reallocations summary" in {
+    "must return OK and render the view with the regNumber from sessions and reallocations reallocationsDetails" in {
       val mockService = mock[GamblingService]
-      when(mockService.getReallocationsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(summary))
+      when(mockService.getReallocationsDetails(any(), any())(any()))
+        .thenReturn(Future.successful(reallocationsDetails))
       when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(returnsSubmitted))
       when(mockService.getOtherAssessments(any(), any(), any(), any())(any()))
@@ -97,13 +98,12 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         status(result) mustEqual OK
 
         val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
-        val reallocationsTotal = summary.inTotal + summary.outTotal
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
         val penaltiesTotal = penalties.total
-        val expectedBalance = returnsTotal + reallocationsTotal + otherAssessmentsTotal + penaltiesTotal
+        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penaltiesTotal
         val body = contentAsString(result)
         body must include("<strong>Total</strong>")
-        body mustEqual view(regNumber, returnsTotal, reallocationsTotal, otherAssessmentsTotal, penaltiesTotal, expectedBalance)(
+        body mustEqual view(regNumber, returnsTotal, reallocationsDetails.total, otherAssessmentsTotal, penaltiesTotal, expectedBalance)(
           request,
           messages(application)
         ).toString
