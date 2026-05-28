@@ -161,7 +161,7 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the description as Late filing Penalty for code 1980" in {
+    "must render the description as Late filing penalty for code 1980" in {
       val mockService = mock[GamblingService]
       when(mockService.getPenalties(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
@@ -176,11 +176,11 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Late filing Penalty")
+        contentAsString(result) must include("Late filing penalty")
       }
     }
 
-    "must render the description as Late payment Penalty for code 1990" in {
+    "must render the description as Late payment penalty for code 1990" in {
       val latePaymentItem = penaltyItem.copy(descriptionCode = 1990)
       val mockService = mock[GamblingService]
       when(mockService.getPenalties(any(), any(), any(), any())(any()))
@@ -196,7 +196,7 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Late payment Penalty")
+        contentAsString(result) must include("Late payment penalty")
       }
     }
 
