@@ -40,35 +40,14 @@ class ReallocationsControllerITSpec
   private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
-  private val reallocationsInJson =
+  private val reallocationsDetailsJson =
     s"""
        |{
        |  "periodStartDate": "2024-01-01",
        |  "periodEndDate": "2024-12-31",
-       |  "total": 45.60,
-       |  "totalRecords": 1,
-       |  "items": [
-       |    {
-       |      "dateProcessed": "2024-08-01",
-       |      "amount": 45.60
-       |    }
-       |  ]
-       |}
-       |""".stripMargin
-
-  private val reallocationsOutJson =
-    s"""
-       |{
-       |  "periodStartDate": "2024-01-01",
-       |  "periodEndDate": "2024-12-31",
-       |  "total": -45.60,
-       |  "totalRecords": 1,
-       |  "items": [
-       |    {
-       |      "dateProcessed": "2024-08-01",
-       |      "amount": -45.60
-       |    }
-       |  ]
+       |  "reallocationsInAmount": 45.60,
+       |  "reallocationsOutAmount": -55.60,
+       |  "total": -10.00
        |}
        |""".stripMargin
 
@@ -85,16 +64,9 @@ class ReallocationsControllerITSpec
       )
       .build()
 
-  private def stubReallocationsIn(regime: String, regNumber: String, pageSize: Int, pageNo: Int, responseJson: String): Unit =
+  private def stubReallocationsDetails(regime: String, regNumber: String, responseJson: String): Unit =
     stubFor(
-      get(urlEqualTo(s"/gambling/reallocations-in/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
-        .willReturn(okJson(responseJson))
-    )
-
-  private def stubReallocationsOut(regime: String, regNumber: String, pageSize: Int, pageNo: Int, responseJson: String): Unit =
-    stubFor(
-      get(urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
-        .willReturn(okJson(responseJson))
+      get(urlEqualTo(s"/gambling/reallocations-details/$regime/$regNumber")).willReturn(okJson(responseJson))
     )
 
   private val url = routes.ReallocationsController.onPageLoad().url
@@ -145,8 +117,7 @@ class ReallocationsControllerITSpec
 
       "must return OK and render the page heading" in {
         val app = buildApp()
-        stubReallocationsOut(regime, regNumber, pageSize = 10, pageNo = 1, reallocationsOutJson)
-        stubReallocationsIn(regime, regNumber, pageSize  = 10, pageNo = 1, reallocationsInJson)
+        stubReallocationsDetails(regime, regNumber, reallocationsDetailsJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
@@ -163,8 +134,7 @@ class ReallocationsControllerITSpec
 
       "must include the introductory paragraph in the page body" in {
         val app = buildApp()
-        stubReallocationsOut(regime, regNumber, pageSize = 10, pageNo = 1, reallocationsOutJson)
-        stubReallocationsIn(regime, regNumber, pageSize  = 10, pageNo = 1, reallocationsInJson)
+        stubReallocationsDetails(regime, regNumber, reallocationsDetailsJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
@@ -182,8 +152,7 @@ class ReallocationsControllerITSpec
       Seq("gbd", "pbd", "rgd", "mgd").foreach { code =>
 
         s"must pass regime code '$code' through to the backend" in {
-          stubReallocationsOut(code, regNumber, pageSize = 10, pageNo = 1, reallocationsOutJson)
-          stubReallocationsIn(code, regNumber, pageSize  = 10, pageNo = 1, reallocationsInJson)
+          stubReallocationsDetails(code, regNumber, reallocationsDetailsJson)
 
           val app = buildApp()
 
@@ -195,12 +164,7 @@ class ReallocationsControllerITSpec
             status(result) mustEqual OK
             verify(1,
                    getRequestedFor(
-                     urlEqualTo(s"/gambling/reallocations-out/$code/$regNumber?pageSize=10&pageNo=1")
-                   )
-                  )
-            verify(1,
-                   getRequestedFor(
-                     urlEqualTo(s"/gambling/reallocations-in/$code/$regNumber?pageSize=10&pageNo=1")
+                     urlEqualTo(s"/gambling/reallocations-details/$code/$regNumber")
                    )
                   )
           }
@@ -209,8 +173,7 @@ class ReallocationsControllerITSpec
 
       "must pass the registration number through to the backend unchanged" in {
         val otherRegNumber = "XWM00003102999"
-        stubReallocationsOut(regime, otherRegNumber, pageSize = 10, pageNo = 1, reallocationsOutJson)
-        stubReallocationsIn(regime, otherRegNumber, pageSize  = 10, pageNo = 1, reallocationsInJson)
+        stubReallocationsDetails(regime, otherRegNumber, reallocationsDetailsJson)
 
         val app = buildApp()
 
@@ -222,12 +185,7 @@ class ReallocationsControllerITSpec
           status(result) mustEqual OK
           verify(1,
                  getRequestedFor(
-                   urlEqualTo(s"/gambling/reallocations-out/$regime/$otherRegNumber?pageSize=10&pageNo=1")
-                 )
-                )
-          verify(1,
-                 getRequestedFor(
-                   urlEqualTo(s"/gambling/reallocations-in/$regime/$otherRegNumber?pageSize=10&pageNo=1")
+                   urlEqualTo(s"/gambling/reallocations-details/$regime/$otherRegNumber")
                  )
                 )
         }

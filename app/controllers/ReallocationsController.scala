@@ -42,7 +42,7 @@ class ReallocationsController @Inject() (
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))) { validRegime =>
-          gamblingService.getReallocationsSummary(validRegime.code, regNumber).map(summary => Ok(view(summary)))
+          gamblingService.getReallocationsDetails(validRegime.code, regNumber).map(details => Ok(view(details)))
         }
       case _ =>
         logger.warn("no regime or regNumber found")

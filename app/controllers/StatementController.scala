@@ -17,17 +17,15 @@
 package controllers
 
 import controllers.actions.IdentifierAction
-import controllers.routes
 import models.SessionKeys
 import play.api.Logging
-
-import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.AccountOverview
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class StatementController @Inject() (
@@ -43,22 +41,21 @@ class StatementController @Inject() (
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regime), Some(regNumber)) =>
-        val summaryF = gambling.getReallocationsSummary(regime, regNumber)
+        val reallocationDetailsF = gambling.getReallocationsDetails(regime, regNumber)
         val returnsF = gambling.getReturnsSubmitted(regime, regNumber, pageSize = 1, pageNo = 1)
         val otherAssessmentsF = gambling.getOtherAssessments(regime, regNumber, pageSize = 1, pageNo = 1)
         val penaltiesF = gambling.getPenalties(regime, regNumber, pageSize = 1, pageNo = 1)
         for {
-          summary          <- summaryF
-          returns          <- returnsF
-          otherAssessments <- otherAssessmentsF
-          penalties        <- penaltiesF
+          reallocationDetails <- reallocationDetailsF
+          returns             <- returnsF
+          otherAssessments    <- otherAssessmentsF
+          penalties           <- penaltiesF
         } yield {
           val returnsTotal = returns.total.getOrElse(BigDecimal(0))
-          val reallocationsTotal = summary.inTotal + summary.outTotal
           val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
           val penaltiesTotal = penalties.total
-          val currentBalance = returnsTotal + reallocationsTotal + otherAssessmentsTotal + penaltiesTotal
-          Ok(view(regNumber, returnsTotal, reallocationsTotal, otherAssessmentsTotal, penaltiesTotal, currentBalance))
+          val currentBalance = returnsTotal + reallocationDetails.total + otherAssessmentsTotal + penaltiesTotal
+          Ok(view(regNumber, returnsTotal, reallocationDetails.total, otherAssessmentsTotal, penaltiesTotal, currentBalance))
         }
       case _ =>
         logger.warn("no regime or regNumber found")

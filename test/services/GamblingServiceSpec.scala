@@ -19,7 +19,7 @@ package services
 import base.SpecBase
 import connectors.GamblingConnector
 import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
-import models.reallocations.{ReallocationItem, Reallocations}
+import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -27,7 +27,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDate
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class GamblingServiceSpec extends SpecBase with MockitoSugar {
@@ -275,80 +274,25 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "getReallocationsSummary" - {
+    "getReallocationsDetails" - {
 
-      val reallocationsIn = Reallocations(
-        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-        total           = Some(BigDecimal(30.80)),
-        totalRecords    = Some(1),
-        items           = Seq()
+      val reallocationsDetails = ReallocationsDetails(
+        periodStartDate        = Option(LocalDate.of(2024, 1, 1)),
+        periodEndDate          = Option(LocalDate.of(2024, 12, 31)),
+        reallocationsInAmount  = BigDecimal(45.60),
+        reallocationsOutAmount = BigDecimal(-55.60),
+        total                  = BigDecimal(-10.00)
       )
 
-      val reallocationsOut = Reallocations(
-        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-        total           = Some(BigDecimal(-20.80)),
-        totalRecords    = Some(1),
-        items           = Seq()
-      )
-
-      "must fetch reallocations in and reallocations out and combine into a summary" in {
+      "must fetch reallocations details" in {
         val mockConnector = mock[GamblingConnector]
-        when(mockConnector.getReallocationsIn(eqTo(regime), eqTo(regNumber), eqTo(10), eqTo(1))(using any[HeaderCarrier]()))
-          .thenReturn(Future.successful(reallocationsIn))
-        when(mockConnector.getReallocationsOut(eqTo(regime), eqTo(regNumber), eqTo(10), eqTo(1))(using any[HeaderCarrier]()))
-          .thenReturn(Future.successful(reallocationsOut))
+        when(mockConnector.getReallocationsDetails(eqTo(regime), eqTo(regNumber))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(reallocationsDetails))
 
         val service = new GamblingService(mockConnector)
-        val result = service.getReallocationsSummary(regime, regNumber).futureValue
+        val result = service.getReallocationsDetails(regime, regNumber).futureValue
 
-        result mustEqual Reallocations.Summary(
-          periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-          periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-          inTotal         = BigDecimal(30.80),
-          outTotal        = BigDecimal(-20.80)
-        )
-      }
-
-      "must return the earliest start date and the latest end date from reallocations in/out responses" in {
-        val in = reallocationsIn.copy(periodStartDate = Some(LocalDate.of(2023, 1, 1)), periodEndDate = Some(LocalDate.of(2024, 12, 31)))
-        val out = reallocationsOut.copy(periodStartDate = Some(LocalDate.of(2024, 1, 1)), periodEndDate = Some(LocalDate.of(2025, 12, 31)))
-        val mockConnector = mock[GamblingConnector]
-        when(mockConnector.getReallocationsIn(eqTo(regime), eqTo(regNumber), eqTo(10), eqTo(1))(using any[HeaderCarrier]()))
-          .thenReturn(Future.successful(in))
-        when(mockConnector.getReallocationsOut(eqTo(regime), eqTo(regNumber), eqTo(10), eqTo(1))(using any[HeaderCarrier]()))
-          .thenReturn(Future.successful(out))
-
-        val service = new GamblingService(mockConnector)
-        val result = service.getReallocationsSummary(regime, regNumber).futureValue
-
-        result mustEqual Reallocations.Summary(
-          periodStartDate = Some(LocalDate.of(2023, 1, 1)),
-          periodEndDate   = Some(LocalDate.of(2025, 12, 31)),
-          inTotal         = BigDecimal(30.80),
-          outTotal        = BigDecimal(-20.80)
-        )
-      }
-
-      "must default inTotal and outTotal in Reallocations.Summary to 0 when the underlying reallocations tota values are none" in {
-        val in = reallocationsIn.copy(total = None)
-        val out = reallocationsOut.copy(total = None)
-        val mockConnector = mock[GamblingConnector]
-        when(mockConnector.getReallocationsIn(eqTo(regime), eqTo(regNumber), eqTo(10), eqTo(1))(using any[HeaderCarrier]()))
-          .thenReturn(Future.successful(in))
-        when(mockConnector.getReallocationsOut(eqTo(regime), eqTo(regNumber), eqTo(10), eqTo(1))(using any[HeaderCarrier]()))
-          .thenReturn(Future.successful(out))
-
-        val service = new GamblingService(mockConnector)
-        val result = service.getReallocationsSummary(regime, regNumber).futureValue
-
-        result mustEqual Reallocations.Summary(
-          periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-          periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-          inTotal         = BigDecimal(0),
-          outTotal        = BigDecimal(0)
-        )
+        result mustEqual reallocationsDetails
       }
     }
   }

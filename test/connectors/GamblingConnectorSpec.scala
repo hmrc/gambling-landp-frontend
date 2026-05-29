@@ -18,7 +18,7 @@ package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
-import models.reallocations.{ReallocationItem, Reallocations}
+import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -282,6 +282,61 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getReallocationsOut(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedReallocationsOutResponse
+        }
+      }
+    }
+
+    "getReallocationsDetails" - {
+
+      val reallocationsDetailsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "reallocationsInAmount": 45.60,
+           |  "reallocationsOutAmount": -85.60,
+           |  "total": -45.60
+           |}
+           |""".stripMargin
+
+      val expectedReallocationsDetailsResponse = ReallocationsDetails(
+        periodStartDate        = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate          = Some(LocalDate.of(2024, 12, 31)),
+        reallocationsInAmount  = BigDecimal("45.6"),
+        reallocationsOutAmount = BigDecimal("-85.6"),
+        total                  = BigDecimal("-45.6")
+      )
+
+      "must return a deserialized ReallocationsDetails for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/reallocations-details/$regime/$regNumber"))
+            .willReturn(okJson(reallocationsDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getReallocationsDetails(regime, regNumber).futureValue
+
+          result mustEqual expectedReallocationsDetailsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/reallocations-details/$otherRegime/$otherRegNumber"))
+            .willReturn(okJson(reallocationsDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getReallocationsDetails(otherRegime, otherRegNumber).futureValue
+
+          result mustEqual expectedReallocationsDetailsResponse
         }
       }
     }

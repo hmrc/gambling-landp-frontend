@@ -19,7 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import models.assessments.Assessments
 import models.assessments.Penalties
-import models.reallocations.Reallocations
+import models.reallocations.{Reallocations, ReallocationsDetails}
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -50,6 +50,11 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/reallocations-out/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[Reallocations]
+
+  def getReallocationsDetails(regime: String, regNumber: String)(using hc: HeaderCarrier): Future[ReallocationsDetails] =
+    httpClient
+      .get(url"$baseUrl/reallocations-details/$regime/$regNumber")
+      .execute[ReallocationsDetails]
 
   def getOtherAssessments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[Assessments] =
     httpClient

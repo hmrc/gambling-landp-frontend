@@ -16,7 +16,7 @@
 
 @import play.api.mvc.Request
 @import play.api.i18n.Messages
-@import models.reallocations.Reallocations
+@import models.reallocations.ReallocationsDetails
 @import utils.DateTimeFormats
 @import config.CurrencyFormatter
 @import uk.gov.hmrc.govukfrontend.views.html.components._
@@ -26,7 +26,7 @@
         govukTable: GovukTable
 )
 
-@(summary: Reallocations.Summary)(implicit request: Request[_], messages: Messages)
+@(details: ReallocationsDetails)(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
     <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
@@ -39,7 +39,7 @@
 }
 
 @dateRange = @{
-    messages("reallocations.caption", DateTimeFormats.formatDateFull(summary.periodStartDate), DateTimeFormats.formatDateFull(summary.periodEndDate))
+    messages("reallocations.caption", DateTimeFormats.formatDateFull(details.periodStartDate), DateTimeFormats.formatDateFull(details.periodEndDate))
 }
 
 @linkOrText(label: String, total: BigDecimal, href: String) = @{
@@ -52,12 +52,12 @@
 @tableRows = @{
     Seq(
         Seq(
-            TableRow(content = linkOrText(messages("reallocations.table.reallocationsIn"), summary.inTotal, controllers.routes.ReallocationsInController.onPageLoad().url)),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.inTotal).body), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-in-amount"))
+            TableRow(content = linkOrText(messages("reallocations.table.reallocationsIn"), details.reallocationsInAmount, controllers.routes.ReallocationsInController.onPageLoad().url)),
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(details.reallocationsInAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-in-amount"))
         ),
         Seq(
-            TableRow(content = linkOrText(messages("reallocations.table.reallocationsOut"), summary.outTotal, controllers.routes.ReallocationsOutController.onPageLoad().url)),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(summary.outTotal).body), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-out-amount"))
+            TableRow(content = linkOrText(messages("reallocations.table.reallocationsOut"), details.reallocationsOutAmount, controllers.routes.ReallocationsOutController.onPageLoad().url)),
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(details.reallocationsOutAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-out-amount"))
         )
     )
 }
@@ -71,7 +71,7 @@
 
     <p class="govuk-body">@messages("reallocations.p1")</p>
 
-    @if(summary.inTotal == 0 && summary.outTotal == 0) {
+    @if(details.reallocationsInAmount == 0 && details.reallocationsOutAmount == 0) {
         <p class="govuk-body">@messages("reallocations.empty")</p>
     } else {
         <h2 class="govuk-heading-s">@dateRange</h2>
@@ -84,7 +84,7 @@
             rows = tableRows ++ Seq(
                 Seq(
                     TableRow(content = HtmlContent(s"<strong>${messages("reallocations.table.total")}</strong>")),
-                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(summary.inTotal + summary.outTotal).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-grand-total"))
+                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(details.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "reallocations-grand-total"))
                 )
             )
         ))
