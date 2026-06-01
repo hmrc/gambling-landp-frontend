@@ -39,6 +39,7 @@ index.table.returns = Amount declared on returns
 index.table.reallocations = Reallocations
 index.table.otherAssessments = Other assessments
 index.table.penalties = Penalties
+index.table.payments = Payments
 index.table.total = Total
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
@@ -117,6 +118,20 @@ penalties.table.amount = Amount
 penalties.table.total = Total
 penalties.totalSummary = The total of the {0} records is
 penalties.displaying = Displaying {0} to {1} of {2} records
+
+payments.title = Payments
+payments.heading = Payments
+payments.p1 = Payments you have made to HMRC.
+payments.caption = {0} to {1}
+payments.empty = You have not made any payments to HMRC.
+payments.description.2680 = Electronic
+payments.description.2690 = Cheque
+payments.table.transactionDate = Transaction date
+payments.table.description = Description
+payments.table.amount = Amount
+payments.table.total = Total
+payments.totalSummary = The total of the {0} records is
+payments.displaying = Displaying {0} to {1} of {2} records
 
 site.statement = Statement
 site.pagination.label = Pagination

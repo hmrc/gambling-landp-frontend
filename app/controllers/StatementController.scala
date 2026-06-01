@@ -45,17 +45,20 @@ class StatementController @Inject() (
         val returnsF = gambling.getReturnsSubmitted(regime, regNumber, pageSize = 1, pageNo = 1)
         val otherAssessmentsF = gambling.getOtherAssessments(regime, regNumber, pageSize = 1, pageNo = 1)
         val penaltiesF = gambling.getPenalties(regime, regNumber, pageSize = 1, pageNo = 1)
+        val paymentsF = gambling.getPayments(regime, regNumber, pageSize = 1, pageNo = 1)
         for {
           reallocationDetails <- reallocationDetailsF
           returns             <- returnsF
           otherAssessments    <- otherAssessmentsF
           penalties           <- penaltiesF
+          payments            <- paymentsF
         } yield {
           val returnsTotal = returns.total.getOrElse(BigDecimal(0))
           val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
           val penaltiesTotal = penalties.total
-          val currentBalance = returnsTotal + reallocationDetails.total + otherAssessmentsTotal + penaltiesTotal
-          Ok(view(regNumber, returnsTotal, reallocationDetails.total, otherAssessmentsTotal, penaltiesTotal, currentBalance))
+          val paymentsTotal = payments.total
+          val currentBalance = returnsTotal + reallocationDetails.total + otherAssessmentsTotal + penaltiesTotal + paymentsTotal
+          Ok(view(regNumber, returnsTotal, reallocationDetails.total, otherAssessmentsTotal, penaltiesTotal, paymentsTotal, currentBalance))
         }
       case _ =>
         logger.warn("no regime or regNumber found")
