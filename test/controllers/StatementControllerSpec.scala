@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import models.SessionKeys
 import models.assessments.{Assessments, Penalties}
+import models.payments.Payments
 import models.reallocations.ReallocationsDetails
 import models.returns.ReturnsSubmitted
 import org.mockito.ArgumentMatchers.any
@@ -70,6 +71,14 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
     items           = Seq.empty
   )
 
+  private val payments = Payments(
+    periodStartDate = None,
+    periodEndDate   = None,
+    total           = BigDecimal(-291.64),
+    totalRecords    = 3,
+    items           = Seq.empty
+  )
+
   "Statement Controller" - {
 
     "must return OK and render the view with the regNumber from sessions and reallocations reallocationsDetails" in {
@@ -82,6 +91,8 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(otherAssessments))
       when(mockService.getPenalties(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(penalties))
+      when(mockService.getPayments(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(payments))
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -100,10 +111,19 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
         val penaltiesTotal = penalties.total
-        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penaltiesTotal
+        val paymentsTotal = payments.total
+        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penaltiesTotal + paymentsTotal
         val body = contentAsString(result)
         body must include("<strong>Total</strong>")
-        body mustEqual view(regNumber, returnsTotal, reallocationsDetails.total, otherAssessmentsTotal, penaltiesTotal, expectedBalance)(
+        body must include("Payments")
+        body mustEqual view(regNumber,
+                            returnsTotal,
+                            reallocationsDetails.total,
+                            otherAssessmentsTotal,
+                            penaltiesTotal,
+                            paymentsTotal,
+                            expectedBalance
+                           )(
           request,
           messages(application)
         ).toString

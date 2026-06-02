@@ -18,6 +18,7 @@ package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
+import models.payments.{PaymentItem, Payments}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -501,6 +502,85 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getPenalties(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedPenaltiesResponse
+        }
+      }
+    }
+
+    "getPayments" - {
+
+      val paymentsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2023-11-01",
+           |  "periodEndDate": "2025-01-27",
+           |  "total": -291.64,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "transactionDate": "2024-07-23",
+           |      "descriptionCode": "2680",
+           |      "amount": -291.64
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedPaymentsResponse = Payments(
+        periodStartDate = Some(LocalDate.of(2023, 11, 1)),
+        periodEndDate   = Some(LocalDate.of(2025, 1, 27)),
+        total           = BigDecimal("-291.64"),
+        totalRecords    = 1,
+        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "2680", BigDecimal("-291.64")))
+      )
+
+      "must return a deserialized Payments for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/payments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(paymentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getPayments(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedPaymentsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/payments/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(paymentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getPayments(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedPaymentsResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/payments/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(paymentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getPayments(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedPaymentsResponse
         }
       }
     }
