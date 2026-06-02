@@ -14,6 +14,8 @@ GET        /statement/reallocations                     controllers.Reallocation
 GET        /statement/reallocations-in                   controllers.ReallocationsInController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /statement/reallocations-out                  controllers.ReallocationsOutController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
+GET        /statement/actual-repayments                 controllers.ActualRepaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 GET        /statement/other-assessments                 controllers.OtherAssessmentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
 GET        /statement/payments                          controllers.PaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)

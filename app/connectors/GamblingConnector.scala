@@ -21,6 +21,7 @@ import models.assessments.Assessments
 import models.assessments.Penalties
 import models.payments.Payments
 import models.reallocations.{Reallocations, ReallocationsDetails}
+import models.repayments.ActualRepayments
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -71,4 +72,9 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/payments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[Payments]
+
+  def getActualRepayments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[ActualRepayments] =
+    httpClient
+      .get(url"$baseUrl/actual-repayments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[ActualRepayments]
 }

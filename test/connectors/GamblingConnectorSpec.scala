@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
 import models.payments.{PaymentItem, Payments}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
+import models.repayments.{ActualRepaymentItem, ActualRepayments}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -581,6 +582,84 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getPayments(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedPaymentsResponse
+        }
+      }
+    }
+
+    "getActualRepayments" - {
+
+      val actualRepaymentsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 150.00,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "transactionDate": "2024-07-01",
+           |      "amount": 150.00
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedActualRepaymentsResponse = ActualRepayments(
+        periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
+        total            = BigDecimal("150.0"),
+        totalRecords     = 1,
+        items = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.0")))
+      )
+
+      "must return a deserialized ActualRepayments for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/actual-repayments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(actualRepaymentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getActualRepayments(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedActualRepaymentsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/actual-repayments/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(actualRepaymentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getActualRepayments(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedActualRepaymentsResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/actual-repayments/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(actualRepaymentsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getActualRepayments(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedActualRepaymentsResponse
         }
       }
     }

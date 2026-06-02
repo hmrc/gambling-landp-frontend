@@ -84,6 +84,18 @@ reallocationsOut.table.total = Total
 reallocationsOut.totalSummary = The total of the {0} records is
 reallocationsOut.displaying = Displaying {0} to {1} of {2} records
 
+actualRepayments.title = Actual repayments
+actualRepayments.heading = Actual repayments
+actualRepayments.breadcrumb = Repayments
+actualRepayments.p1 = Repayments HMRC has made, or will make to you.
+actualRepayments.caption = {0} to {1}
+actualRepayments.empty = You have no actual repayments.
+actualRepayments.table.transactionDate = Transaction date
+actualRepayments.table.amount = Amount
+actualRepayments.table.total = Total
+actualRepayments.totalSummary = The total of the {0} records is
+actualRepayments.displaying = Displaying {0} to {1} of {2} records
+
 otherAssessments.title = Other assessments
 otherAssessments.heading = Other assessments
 otherAssessments.p1 = HMRC’s assessments for under-declarations of tax.
