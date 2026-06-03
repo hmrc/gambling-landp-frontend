@@ -20,6 +20,7 @@ import base.SpecBase
 import models.SessionKeys
 import models.assessments.{Assessments, Penalties}
 import models.reallocations.ReallocationsDetails
+import models.repayments.RepaymentsSummary
 import models.returns.ReturnsSubmitted
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -70,6 +71,14 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
     items           = Seq.empty
   )
 
+  private val repaymentsSummary = RepaymentsSummary(
+    periodStartDate                = Option(LocalDate.of(2024, 1, 1)),
+    periodEndDate                  = Option(LocalDate.of(2024, 12, 31)),
+    actualRepaymentsAmount         = BigDecimal(35.30),
+    repaymentsInterestRepaidAmount = BigDecimal(-55.60),
+    total                          = BigDecimal(-20.30)
+  )
+
   "Statement Controller" - {
 
     "must return OK and render the view with the regNumber from sessions and reallocations reallocationsDetails" in {
@@ -82,6 +91,8 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(otherAssessments))
       when(mockService.getPenalties(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(penalties))
+      when(mockService.getRepaymentsSummary(any(), any())(any()))
+        .thenReturn(Future.successful(repaymentsSummary))
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -100,10 +111,17 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
         val penaltiesTotal = penalties.total
-        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penaltiesTotal
+        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penaltiesTotal + repaymentsSummary.total
         val body = contentAsString(result)
         body must include("<strong>Total</strong>")
-        body mustEqual view(regNumber, returnsTotal, reallocationsDetails.total, otherAssessmentsTotal, penaltiesTotal, expectedBalance)(
+        body mustEqual view(regNumber,
+                            returnsTotal,
+                            reallocationsDetails.total,
+                            otherAssessmentsTotal,
+                            penaltiesTotal,
+                            repaymentsSummary.total,
+                            expectedBalance
+                           )(
           request,
           messages(application)
         ).toString

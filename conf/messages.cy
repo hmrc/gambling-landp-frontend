@@ -39,6 +39,7 @@ index.table.returns = Amount declared on returns
 index.table.reallocations = Reallocations
 index.table.otherAssessments = Other assessments
 index.table.penalties = Penalties
+index.table.repayments = Repayments
 index.table.total = Total
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
@@ -117,6 +118,17 @@ penalties.table.amount = Amount
 penalties.table.total = Total
 penalties.totalSummary = The total of the {0} records is
 penalties.displaying = Displaying {0} to {1} of {2} records
+
+repayments.title = Repayments
+repayments.heading = Repayments
+repayments.p1 = The total amount of repayments HMRC has paid to you.
+repayments.caption = {0} to {1}
+repayments.empty = There are no repayments for this period.
+repayments.table.actualRepayments = Actual repayments
+repayments.table.repaymentInterestRepaid = Repayment interest repaid
+repayments.table.description = Description
+repayments.table.amount = Amount
+repayments.table.total = Total
 
 site.statement = Statement
 site.pagination.label = Pagination

@@ -20,6 +20,7 @@ import base.SpecBase
 import connectors.GamblingConnector
 import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
+import models.repayments.RepaymentsSummary
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -293,6 +294,28 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
         val result = service.getReallocationsDetails(regime, regNumber).futureValue
 
         result mustEqual reallocationsDetails
+      }
+    }
+
+    "getRepaymentsSummary" - {
+
+      val repaymentsSummary = RepaymentsSummary(
+        periodStartDate                = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate                  = Some(LocalDate.of(2024, 12, 31)),
+        actualRepaymentsAmount         = BigDecimal(71.84),
+        repaymentsInterestRepaidAmount = BigDecimal(-35.76),
+        total                          = BigDecimal(36.08)
+      )
+
+      "must fetch repayments summary" in {
+        val mockConnector = mock[GamblingConnector]
+        when(mockConnector.getRepaymentsSummary(eqTo(regime), eqTo(regNumber))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(repaymentsSummary))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getRepaymentsSummary(regime, regNumber).futureValue
+
+        result mustEqual repaymentsSummary
       }
     }
   }

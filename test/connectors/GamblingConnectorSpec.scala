@@ -19,6 +19,7 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
+import models.repayments.RepaymentsSummary
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -501,6 +502,61 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getPenalties(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedPenaltiesResponse
+        }
+      }
+    }
+
+    "getRepaymentsSummary" - {
+
+      val repaymentsSummaryResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "actualRepaymentsAmount": 45.60,
+           |  "repaymentsInterestRepaidAmount": -85.60,
+           |  "total": -45.60
+           |}
+           |""".stripMargin
+
+      val expectedRepaymentsSummaryResponse = RepaymentsSummary(
+        periodStartDate                = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate                  = Some(LocalDate.of(2024, 12, 31)),
+        actualRepaymentsAmount         = BigDecimal("45.6"),
+        repaymentsInterestRepaidAmount = BigDecimal("-85.6"),
+        total                          = BigDecimal("-45.6")
+      )
+
+      "must return a deserialized RepaymentsSummary for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/repayment-summary/$regime/$regNumber"))
+            .willReturn(okJson(repaymentsSummaryResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getRepaymentsSummary(regime, regNumber).futureValue
+
+          result mustEqual expectedRepaymentsSummaryResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/repayment-summary/$otherRegime/$otherRegNumber"))
+            .willReturn(okJson(repaymentsSummaryResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getRepaymentsSummary(otherRegime, otherRegNumber).futureValue
+
+          result mustEqual expectedRepaymentsSummaryResponse
         }
       }
     }
