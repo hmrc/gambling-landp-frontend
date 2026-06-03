@@ -16,7 +16,7 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{status, *}
+import com.github.tomakehurst.wiremock.client.WireMock.{get, getRequestedFor, okJson, stubFor, urlEqualTo, verify}
 import controllers.actions.{FakeIdentifierAction, IdentifierAction}
 import models.SessionKeys
 import org.scalatest.OptionValues
