@@ -56,7 +56,7 @@
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.actualRepaymentsAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-actual-amount"))
         ),
         Seq(
-            TableRow(content = linkOrText(messages("repayments.table.repaymentInterestRepaid"), model.repaymentsInterestRepaidAmount, controllers.routes.ReallocationsOutController.onPageLoad().url)),
+            TableRow(content = linkOrText(messages("repayments.table.repaymentInterestRepaid"), model.repaymentsInterestRepaidAmount, "#")),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.repaymentsInterestRepaidAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-interest-amount"))
         )
     )
