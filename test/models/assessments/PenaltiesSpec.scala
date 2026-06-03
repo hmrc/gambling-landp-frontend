@@ -16,6 +16,7 @@
 
 package models.assessments
 
+import models.penalties.{Penalties, PenaltyItem}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.*

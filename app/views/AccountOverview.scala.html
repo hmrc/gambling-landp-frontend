@@ -22,7 +22,7 @@
     govukTable: GovukTable
 )
 
-@(regNumber: String, returnsTotal: BigDecimal, assessmentsWithReturnsTotal: BigDecimal, reallocationsTotal: BigDecimal, otherAssessmentsTotal: BigDecimal, penaltiesTotal: BigDecimal, paymentsTotal: BigDecimal, currentBalance: BigDecimal)(implicit request: Request[_], messages: Messages)
+@(regNumber: String, returnsTotal: BigDecimal, assessmentsWithReturnsTotal: BigDecimal, reallocationsTotal: BigDecimal, otherAssessmentsTotal: BigDecimal, penaltiesTotal: BigDecimal, paymentsTotal: BigDecimal, repaymentsTotal: BigDecimal, currentBalance: BigDecimal)(implicit request: Request[_], messages: Messages)
 
 @layout(
     pageTitle    = titleNoForm(messages("index.title")),
@@ -72,6 +72,10 @@
             Seq(
                 TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.PaymentsController.onPageLoad()}">${messages("index.table.payments")}</a>""")),
                 TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(paymentsTotal).body), format = Some("numeric"), attributes = Map("data-testid" -> "payments-total"))
+            ),
+            Seq(
+            TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.RepaymentsController.onPageLoad()}">${messages("index.table.repayments")}</a>""")),
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(repaymentsTotal).body), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-total"))
             ),
             Seq(
                 TableRow(content = HtmlContent(s"<strong>${messages("index.table.total")}</strong>")),

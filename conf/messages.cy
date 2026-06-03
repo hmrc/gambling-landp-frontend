@@ -41,6 +41,7 @@ index.table.reallocations = Reallocations
 index.table.otherAssessments = Other assessments
 index.table.penalties = Penalties
 index.table.payments = Payments
+index.table.repayments = Repayments
 index.table.total = Total
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
@@ -84,18 +85,6 @@ reallocationsOut.table.amount = Amount
 reallocationsOut.table.total = Total
 reallocationsOut.totalSummary = The total of the {0} records is
 reallocationsOut.displaying = Displaying {0} to {1} of {2} records
-
-actualRepayments.title = Actual repayments
-actualRepayments.heading = Actual repayments
-actualRepayments.breadcrumb = Repayments
-actualRepayments.p1 = Repayments HMRC has made, or will make to you.
-actualRepayments.caption = {0} to {1}
-actualRepayments.empty = You have no actual repayments.
-actualRepayments.table.transactionDate = Transaction date
-actualRepayments.table.amount = Amount
-actualRepayments.table.total = Total
-actualRepayments.totalSummary = The total of the {0} records is
-actualRepayments.displaying = Displaying {0} to {1} of {2} records
 
 assessmentInAbsenceOfReturns.title = Assessments in absence of return
 assessmentInAbsenceOfReturns.heading = Assessments in the absence of a return
@@ -160,6 +149,29 @@ payments.table.amount = Amount
 payments.table.total = Total
 payments.totalSummary = The total of the {0} records is
 payments.displaying = Displaying {0} to {1} of {2} records
+
+repayments.title = Repayments
+repayments.heading = Repayments
+repayments.p1 = The total amount of repayments HMRC has paid to you.
+repayments.caption = {0} to {1}
+repayments.empty = There are no repayments for this period.
+repayments.table.actualRepayments = Actual repayments
+repayments.table.repaymentInterestRepaid = Repayment interest repaid
+repayments.table.description = Description
+repayments.table.amount = Amount
+repayments.table.total = Total
+
+actualRepayments.title = Actual repayments
+actualRepayments.heading = Actual repayments
+actualRepayments.breadcrumb = Repayments
+actualRepayments.p1 = Repayments HMRC has made, or will make to you.
+actualRepayments.caption = {0} to {1}
+actualRepayments.empty = You have no actual repayments.
+actualRepayments.table.transactionDate = Transaction date
+actualRepayments.table.amount = Amount
+actualRepayments.table.total = Total
+actualRepayments.totalSummary = The total of the {0} records is
+actualRepayments.displaying = Displaying {0} to {1} of {2} records
 
 site.statement = Statement
 site.pagination.label = Pagination

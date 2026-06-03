@@ -71,10 +71,11 @@
 
     <p class="govuk-body">@messages("reallocations.p1")</p>
 
+    <h2 class="govuk-heading-s">@dateRange</h2>
+
     @if(details.reallocationsInAmount == 0 && details.reallocationsOutAmount == 0) {
         <p class="govuk-body">@messages("reallocations.empty")</p>
     } else {
-        <h2 class="govuk-heading-s">@dateRange</h2>
         @govukTable(Table(
             attributes = Map("data-testid" -> "reallocations-table"),
             head = Some(Seq(

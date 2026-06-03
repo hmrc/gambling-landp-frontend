@@ -39,7 +39,6 @@ class AuthActionSpec extends SpecBase {
   }
 
   private val orgEnrolment = Enrolment("HMRC-MGD-ORG", Seq(EnrolmentIdentifier("HMRCMGDRN", "REG123")), "Activated")
-  private val agentEnrolment = Enrolment("HMRC-MGD-AGNT", Seq(EnrolmentIdentifier("HMRCMGDAGENTREF", "AGENT456")), "Activated")
   private val testCredentials = Some(Credentials("cred-id", "GovernmentGateway"))
 
   private def orgConnector(enrolments: Enrolments) =

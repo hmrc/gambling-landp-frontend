@@ -1,0 +1,93 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import play.api.mvc.Request
+@import play.api.i18n.Messages
+@import models.repayments.RepaymentsSummary
+@import utils.DateTimeFormats
+@import config.CurrencyFormatter
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+
+@this(
+        layout: templates.Layout,
+        govukTable: GovukTable
+)
+
+@(model: RepaymentsSummary)(implicit request: Request[_], messages: Messages)
+
+@breadcrumbs = {
+    <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="govuk-breadcrumbs__list">
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.StatementController.onPageLoad()">@messages("site.statement")</a>
+            </li>
+        </ol>
+    </nav>
+}
+
+@dateRange = @{
+    messages("repayments.caption", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate))
+}
+
+@linkOrText(label: String, total: BigDecimal, href: String) = @{
+    HtmlContent(
+        if (total == 0) s"""<span>$label</span>"""
+        else s"""<a class="govuk-link" href="$href">$label</a>"""
+    )
+}
+
+@tableRows = @{
+    Seq(
+        Seq(
+            TableRow(content = linkOrText(messages("repayments.table.actualRepayments"), model.actualRepaymentsAmount, controllers.routes.ActualRepaymentsController.onPageLoad().url)),
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.actualRepaymentsAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-actual-amount"))
+        ),
+        Seq(
+            TableRow(content = linkOrText(messages("repayments.table.repaymentInterestRepaid"), model.repaymentsInterestRepaidAmount, "#")),
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.repaymentsInterestRepaidAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-interest-amount"))
+        )
+    )
+}
+
+@layout(
+    pageTitle = titleNoForm(messages("repayments.title")),
+    showBackLink = false,
+    beforeContent = Some(breadcrumbs)
+) {
+    <h1 class="govuk-heading-l" data-testid="repayments-heading">@messages("repayments.heading")</h1>
+
+    <p class="govuk-body">@messages("repayments.p1")</p>
+
+    <h2 class="govuk-heading-s">@dateRange</h2>
+
+    @if(model.actualRepaymentsAmount == 0 && model.repaymentsInterestRepaidAmount == 0) {
+        <p class="govuk-body">@messages("repayments.empty")</p>
+    } else {
+        @govukTable(Table(
+            attributes = Map("data-testid" -> "repayments-summary-table"),
+            head = Some(Seq(
+                HeadCell(content = Text(messages("repayments.table.description"))),
+                HeadCell(content = Text(messages("repayments.table.amount")), format = Some("numeric"))
+            )),
+            rows = tableRows ++ Seq(
+                Seq(
+                    TableRow(content = HtmlContent(s"<strong>${messages("repayments.table.total")}</strong>")),
+                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-grand-total"))
+                )
+            )
+        ))
+    }
+}

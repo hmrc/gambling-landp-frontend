@@ -19,7 +19,6 @@ package controllers
 import base.SpecBase
 import models.SessionKeys
 import models.assessments.{AssessmentItem, Assessments}
-import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar

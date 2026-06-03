@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
-package generators
+package models.repayments
 
-trait ModelGenerators {}
+import play.api.libs.json.{Json, OFormat}
+
+import java.time.LocalDate
+
+final case class RepaymentsSummary(
+  periodStartDate: Option[LocalDate],
+  periodEndDate: Option[LocalDate],
+  actualRepaymentsAmount: BigDecimal,
+  repaymentsInterestRepaidAmount: BigDecimal,
+  total: BigDecimal
+)
+
+object RepaymentsSummary {
+  implicit val format: OFormat[RepaymentsSummary] = Json.format[RepaymentsSummary]
+}
