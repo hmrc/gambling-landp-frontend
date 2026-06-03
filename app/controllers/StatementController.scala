@@ -43,22 +43,35 @@ class StatementController @Inject() (
       case (Some(regime), Some(regNumber)) =>
         val reallocationDetailsF = gambling.getReallocationsDetails(regime, regNumber)
         val returnsF = gambling.getReturnsSubmitted(regime, regNumber, pageSize = 1, pageNo = 1)
+        val assessmentsWithoutReturnsF = gambling.getAssessmentsWithoutReturns(regime, regNumber, pageSize = 1, pageNo = 1)
         val otherAssessmentsF = gambling.getOtherAssessments(regime, regNumber, pageSize = 1, pageNo = 1)
         val penaltiesF = gambling.getPenalties(regime, regNumber, pageSize = 1, pageNo = 1)
         val paymentsF = gambling.getPayments(regime, regNumber, pageSize = 1, pageNo = 1)
         for {
-          reallocationDetails <- reallocationDetailsF
-          returns             <- returnsF
-          otherAssessments    <- otherAssessmentsF
-          penalties           <- penaltiesF
-          payments            <- paymentsF
+          reallocationDetails       <- reallocationDetailsF
+          returns                   <- returnsF
+          assessmentsWithoutReturns <- assessmentsWithoutReturnsF
+          otherAssessments          <- otherAssessmentsF
+          penalties                 <- penaltiesF
+          payments                  <- paymentsF
         } yield {
           val returnsTotal = returns.total.getOrElse(BigDecimal(0))
           val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
+          val assessmentWithoutReturnsTotal = assessmentsWithoutReturns.total.getOrElse(BigDecimal(0))
           val penaltiesTotal = penalties.total
           val paymentsTotal = payments.total
           val currentBalance = returnsTotal + reallocationDetails.total + otherAssessmentsTotal + penaltiesTotal + paymentsTotal
-          Ok(view(regNumber, returnsTotal, reallocationDetails.total, otherAssessmentsTotal, penaltiesTotal, paymentsTotal, currentBalance))
+          Ok(
+            view(regNumber,
+                 returnsTotal,
+                 assessmentWithoutReturnsTotal,
+                 reallocationDetails.total,
+                 otherAssessmentsTotal,
+                 penaltiesTotal,
+                 paymentsTotal,
+                 currentBalance
+                )
+          )
         }
       case _ =>
         logger.warn("no regime or regNumber found")

@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.repayments.{ActualRepaymentItem, ActualRepayments}
+import models.assessments.{AssessmentItem, Assessments}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -30,36 +30,38 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
+class AssessmentInAbsenceOfReturnsControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  private def url = routes.ActualRepaymentsController.onPageLoad().url
+  private def url = routes.AssessmentInAbsenceOfReturnsController.onPageLoad().url
 
-  private val singleRecord = ActualRepaymentItem(
-    transactionDate = LocalDate.of(2024, 8, 1),
-    amount          = BigDecimal("45.60")
+  private val singleRecord = AssessmentItem(
+    dateRaised      = Some(LocalDate.of(2024, 2, 10)),
+    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate   = Some(LocalDate.of(2024, 3, 31)),
+    amount          = Some(BigDecimal("1500.00"))
   )
 
-  private val singlePageResponse = ActualRepayments(
+  private val singlePageResponse = Assessments(
     periodStartDate = Some(LocalDate.of(2024, 1, 1)),
     periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-    total           = BigDecimal("45.60"),
-    totalRecords    = 1,
+    total           = Some(BigDecimal("1500.00")),
+    totalRecords    = Some(1),
     items           = Seq(singleRecord)
   )
 
-  private val multiPageResponse = singlePageResponse.copy(totalRecords = 25)
+  private val multiPageResponse = singlePageResponse.copy(totalRecords = Some(25))
 
-  private val emptyResponse = ActualRepayments(
+  private val emptyResponse = Assessments(
     periodStartDate = Some(LocalDate.of(2024, 1, 1)),
     periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-    total           = BigDecimal(0),
-    totalRecords    = 0,
+    total           = Some(BigDecimal(0)),
+    totalRecords    = Some(0),
     items           = Seq.empty
   )
 
-  "ActualRepaymentsController" - {
+  "AssessmentInAbsenceOfReturnsController" - {
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
@@ -98,9 +100,9 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return OK for a valid regime and render the heading, intro paragraph " in {
+    "must return OK for a valid regime and render the heading, intro paragraph" in {
       val mockService = mock[GamblingService]
-      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -113,14 +115,16 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Actual repayments")
-        contentAsString(result) must include("Repayments HMRC has made, or will make to you.")
+        contentAsString(result) must include("Assessments in the absence of a return")
+        contentAsString(result) must include("Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC.")
+        contentAsString(result) must include("Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn.")
+        contentAsString(result) must include("You may not have yet received formal notification of recent assessments.")
       }
     }
 
     "must render the empty-state message when the service returns no items" in {
       val mockService = mock[GamblingService]
-      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(emptyResponse))
 
       val app = applicationBuilder()
@@ -133,13 +137,13 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("You have no actual repayments.")
+        contentAsString(result) must include("You are up-to-date on your returns.")
       }
     }
 
     "must render the table when records are present" in {
       val mockService = mock[GamblingService]
-      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -158,7 +162,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
 
     "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
@@ -180,7 +184,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
 
     "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -199,7 +203,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
 
     "must return Not Found with page not found content when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
@@ -207,7 +211,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
         .build()
 
       running(app) {
-        val request = FakeRequest(GET, routes.ActualRepaymentsController.onPageLoad(10, 99).url)
+        val request = FakeRequest(GET, routes.AssessmentInAbsenceOfReturnsController.onPageLoad(10, 99).url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
@@ -221,7 +225,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
+        when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(singlePageResponse))
 
         val app = applicationBuilder()

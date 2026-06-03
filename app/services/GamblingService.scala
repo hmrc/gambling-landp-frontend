@@ -48,6 +48,9 @@ class GamblingService @Inject() (connector: GamblingConnector) {
   def getOtherAssessments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Assessments] =
     connector.getOtherAssessments(regime, regNumber, pageSize, pageNo)
 
+  def getAssessmentsWithoutReturns(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Assessments] =
+    connector.getAssessmentsWithoutReturns(regime, regNumber, pageSize, pageNo)
+
   def getPayments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[Payments] =
     connector.getPayments(regime, regNumber, pageSize, pageNo)
 

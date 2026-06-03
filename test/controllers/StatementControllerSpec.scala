@@ -55,6 +55,14 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
     amountDeclared     = Seq.empty
   )
 
+  private val assessmentsWithoutReturns = Assessments(
+    periodStartDate = None,
+    periodEndDate   = None,
+    total           = Some(BigDecimal(30.90)),
+    totalRecords    = Some(1),
+    items           = Seq.empty
+  )
+
   private val otherAssessments = Assessments(
     periodStartDate = None,
     periodEndDate   = None,
@@ -87,6 +95,8 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(reallocationsDetails))
       when(mockService.getReturnsSubmitted(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(returnsSubmitted))
+      when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(assessmentsWithoutReturns))
       when(mockService.getOtherAssessments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(otherAssessments))
       when(mockService.getPenalties(any(), any(), any(), any())(any()))
@@ -109,6 +119,7 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         status(result) mustEqual OK
 
         val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
+        val assessmentWithoutReturnsTotal = assessmentsWithoutReturns.total.getOrElse(BigDecimal(0))
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
         val penaltiesTotal = penalties.total
         val paymentsTotal = payments.total
@@ -118,6 +129,7 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         body must include("Payments")
         body mustEqual view(regNumber,
                             returnsTotal,
+                            assessmentWithoutReturnsTotal,
                             reallocationsDetails.total,
                             otherAssessmentsTotal,
                             penaltiesTotal,
