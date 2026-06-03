@@ -519,7 +519,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |  "items": [
            |    {
            |      "transactionDate": "2024-07-23",
-           |      "descriptionCode": "2680",
+           |      "descriptionCode": "E",
            |      "amount": -291.64
            |    }
            |  ]
@@ -531,7 +531,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         periodEndDate   = Some(LocalDate.of(2025, 1, 27)),
         total           = BigDecimal("-291.64"),
         totalRecords    = 1,
-        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "2680", BigDecimal("-291.64")))
+        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "E", BigDecimal("-291.64")))
       )
 
       "must return a deserialized Payments for a 200 response" in {
@@ -605,11 +605,11 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |""".stripMargin
 
       val expectedActualRepaymentsResponse = ActualRepayments(
-        periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
-        total            = BigDecimal("150.0"),
-        totalRecords     = 1,
-        items = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.0")))
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("150.0"),
+        totalRecords    = 1,
+        items           = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.0")))
       )
 
       "must return a deserialized ActualRepayments for a 200 response" in {

@@ -42,21 +42,21 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
   )
 
   private val singlePageResponse = ActualRepayments(
-    periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
-    total            = BigDecimal("45.60"),
-    totalRecords     = 1,
-    items = Seq(singleRecord)
+    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+    total           = BigDecimal("45.60"),
+    totalRecords    = 1,
+    items           = Seq(singleRecord)
   )
 
   private val multiPageResponse = singlePageResponse.copy(totalRecords = 25)
 
   private val emptyResponse = ActualRepayments(
-    periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
-    total            = BigDecimal(0),
-    totalRecords     = 0,
-    items = Seq.empty
+    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+    total           = BigDecimal(0),
+    totalRecords    = 0,
+    items           = Seq.empty
   )
 
   "ActualRepaymentsController" - {
