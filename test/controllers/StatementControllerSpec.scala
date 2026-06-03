@@ -134,20 +134,22 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         val assessmentWithoutReturnsTotal = assessmentsWithoutReturns.total.getOrElse(BigDecimal(0))
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
         val expectedBalance =
-          returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penalties.total + payments.total + repaymentsSummary.total
+          returnsTotal + assessmentWithoutReturnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penalties.total + payments.total + repaymentsSummary.total
+
         val body = contentAsString(result)
         body must include("<strong>Total</strong>")
         body must include("Payments")
-        body mustEqual view(regNumber,
-                            returnsTotal,
-                            assessmentWithoutReturnsTotal,
-                            reallocationsDetails.total,
-                            otherAssessmentsTotal,
-                            penalties.total,
-                            payments.total,
-                            repaymentsSummary.total,
-                            expectedBalance
-                           )(
+        body mustEqual view(
+          regNumber,
+          returnsTotal,
+          assessmentWithoutReturnsTotal,
+          reallocationsDetails.total,
+          otherAssessmentsTotal,
+          penalties.total,
+          payments.total,
+          repaymentsSummary.total,
+          expectedBalance
+        )(
           request,
           messages(application)
         ).toString

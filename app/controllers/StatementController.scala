@@ -55,25 +55,26 @@ class StatementController @Inject() (
           otherAssessments          <- otherAssessmentsF
           penalties                 <- penaltiesF
           payments                  <- paymentsF
-          repayments          <- repaymentsF
+          repayments                <- repaymentsF
         } yield {
           val returnsTotal = returns.total.getOrElse(BigDecimal(0))
           val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
           val assessmentWithoutReturnsTotal = assessmentsWithoutReturns.total.getOrElse(BigDecimal(0))
-          val penaltiesTotal = penalties.total
-          val paymentsTotal = payments.total
-          val currentBalance = returnsTotal + reallocationDetails.total + otherAssessmentsTotal + assessmentWithoutReturnsTotal + penaltiesTotal + paymentsTotalpenalties.total + payments.total + repayments.total
+          val currentBalance =
+            returnsTotal + reallocationDetails.total + otherAssessmentsTotal + assessmentWithoutReturnsTotal + penalties.total + payments.total + repayments.total
+
           Ok(
-            view(regNumber,
-                 returnsTotal,
-                 assessmentWithoutReturnsTotal,
-                 reallocationDetails.total,
-                 otherAssessmentsTotal,
-                 penalties.total,
-                 payments.total,
-                 repayments.total,
-                 currentBalance
-                )
+            view(
+              regNumber,
+              returnsTotal,
+              assessmentWithoutReturnsTotal,
+              reallocationDetails.total,
+              otherAssessmentsTotal,
+              penalties.total,
+              payments.total,
+              repayments.total,
+              currentBalance
+            )
           )
         }
       case _ =>
