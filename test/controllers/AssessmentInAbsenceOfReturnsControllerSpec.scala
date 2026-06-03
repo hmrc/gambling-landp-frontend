@@ -115,6 +115,7 @@ class AssessmentInAbsenceOfReturnsControllerSpec extends SpecBase with MockitoSu
         val result = route(app, request).value
 
         status(result) mustEqual OK
+        contentAsString(result) must include("Assessments in absence of return")
         contentAsString(result) must include("Assessments in the absence of a return")
         contentAsString(result) must include("Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC.")
         contentAsString(result) must include("Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn.")

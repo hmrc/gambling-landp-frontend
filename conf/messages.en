@@ -109,7 +109,7 @@ actualRepayments.table.total = Total
 actualRepayments.totalSummary = The total of the {0} records is
 actualRepayments.displaying = Displaying {0} to {1} of {2} records
 
-assessmentInAbsenceOfReturns.title = Assessments in absence of returns
+assessmentInAbsenceOfReturns.title = Assessments in absence of return
 assessmentInAbsenceOfReturns.heading = Assessments in the absence of a return
 assessmentInAbsenceOfReturns.p1 = Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC.
 assessmentInAbsenceOfReturns.p2 = Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn.
