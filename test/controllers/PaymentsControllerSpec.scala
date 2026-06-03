@@ -38,7 +38,7 @@ class PaymentsControllerSpec extends SpecBase with MockitoSugar {
 
   private val paymentItem = PaymentItem(
     transactionDate = LocalDate.of(2024, 7, 23),
-    descriptionCode = "2680",
+    descriptionCode = "E",
     amount          = BigDecimal("-291.64")
   )
 
@@ -159,7 +159,7 @@ class PaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the description for code 2680 as Electronic" in {
+    "must render the description for code E as Electronic" in {
       val mockService = mock[GamblingService]
       when(mockService.getPayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
@@ -178,8 +178,8 @@ class PaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the description for code 2690 as Cheque" in {
-      val chequeItem = paymentItem.copy(descriptionCode = "2690")
+    "must render the description for code C as Cheque" in {
+      val chequeItem = paymentItem.copy(descriptionCode = "C")
       val mockService = mock[GamblingService]
       when(mockService.getPayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse.copy(items = Seq(chequeItem))))

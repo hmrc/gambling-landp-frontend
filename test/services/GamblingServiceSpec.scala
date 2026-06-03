@@ -283,7 +283,7 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
         periodEndDate   = Some(LocalDate.of(2025, 1, 27)),
         total           = BigDecimal("-291.64"),
         totalRecords    = 1,
-        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "2680", BigDecimal("-291.64")))
+        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "E", BigDecimal("-291.64")))
       )
 
       "must delegate to the connector with the correct arguments and return its result" in {
@@ -325,11 +325,11 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
     "getActualRepayments" - {
 
       val actualRepaymentsResponse = ActualRepayments(
-        periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
-        total            = BigDecimal("150.00"),
-        totalRecords     = 1,
-        items = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.00")))
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("150.00"),
+        totalRecords    = 1,
+        items           = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.00")))
       )
 
       "must delegate to the connector with the correct arguments and return its result" in {
