@@ -63,6 +63,11 @@ class GamblingConnector @Inject() (
       .get(url"$baseUrl/other-assessments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[Assessments]
 
+  def getAssessmentsWithoutReturns(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[Assessments] =
+    httpClient
+      .get(url"$baseUrl/assessments-without-returns/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[Assessments]
+
   def getPenalties(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[Penalties] =
     httpClient
       .get(url"$baseUrl/penalties/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
