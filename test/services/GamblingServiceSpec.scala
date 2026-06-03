@@ -181,6 +181,54 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "getAssessmentsWithoutReturns" - {
+
+      val assessmentsWithoutReturnsResponse = Assessments(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("45.60")),
+        totalRecords    = Some(1),
+        items = Seq(
+          AssessmentItem(Some(LocalDate.of(2024, 8, 1)), Some(LocalDate.of(2024, 7, 1)), Some(LocalDate.of(2024, 9, 1)), Some(BigDecimal("45.60")))
+        )
+      )
+
+      "must delegate to the connector with the correct arguments and return its result" in {
+        val mockConnector = mock[GamblingConnector]
+        when(mockConnector.getAssessmentsWithoutReturns(eqTo(regime), eqTo(regNumber), eqTo(pageSize), eqTo(pageNo))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(assessmentsWithoutReturnsResponse))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getAssessmentsWithoutReturns(regime, regNumber, pageSize, pageNo).futureValue
+
+        result mustEqual assessmentsWithoutReturnsResponse
+      }
+
+      "must delegate with the correct regime code when a different regime is provided" in {
+        val mockConnector = mock[GamblingConnector]
+        val otherRegime = "mgd"
+        when(mockConnector.getAssessmentsWithoutReturns(eqTo(otherRegime), eqTo(regNumber), eqTo(pageSize), eqTo(pageNo))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(assessmentsWithoutReturnsResponse))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getAssessmentsWithoutReturns(otherRegime, regNumber, pageSize, pageNo).futureValue
+
+        result mustEqual assessmentsWithoutReturnsResponse
+      }
+
+      "must propagate failures from the connector" in {
+        val mockConnector = mock[GamblingConnector]
+        val exception = new RuntimeException("upstream failure")
+        when(mockConnector.getAssessmentsWithoutReturns(eqTo(regime), eqTo(regNumber), eqTo(pageSize), eqTo(pageNo))(using any[HeaderCarrier]()))
+          .thenReturn(Future.failed(exception))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getAssessmentsWithoutReturns(regime, regNumber, pageSize, pageNo).failed.futureValue
+
+        result mustEqual exception
+      }
+    }
+
     "getOtherAssessments" - {
 
       val otherAssessmentsResponse = Assessments(
@@ -284,7 +332,7 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
         periodEndDate   = Some(LocalDate.of(2025, 1, 27)),
         total           = BigDecimal("-291.64"),
         totalRecords    = 1,
-        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "2680", BigDecimal("-291.64")))
+        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "E", BigDecimal("-291.64")))
       )
 
       "must delegate to the connector with the correct arguments and return its result" in {

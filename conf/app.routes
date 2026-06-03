@@ -1,6 +1,6 @@
 # microservice specific routes
 
-->         /hmrc-frontend                                hmrcfrontend.Routes
+->         /hmrc-frontend                               hmrcfrontend.Routes
 
 GET        /:regime/:regNumber/current/account           controllers.AccountRedirectController.onPageLoad(regime: String, regNumber: String)
 
@@ -14,7 +14,11 @@ GET        /statement/reallocations                      controllers.Reallocatio
 GET        /statement/reallocations-in                   controllers.ReallocationsInController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /statement/reallocations-out                  controllers.ReallocationsOutController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
+GET        /statement/repayments/actual-repayments       controllers.ActualRepaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 GET        /statement/other-assessments                  controllers.OtherAssessmentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
+GET        /statement/assessments                        controllers.AssessmentInAbsenceOfReturnsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
 GET        /statement/payments                           controllers.PaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 

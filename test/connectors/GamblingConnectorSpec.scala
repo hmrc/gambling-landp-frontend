@@ -344,6 +344,88 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
       }
     }
 
+    "getAssessmentsWithoutReturns" - {
+
+      val assessmentsWithoutReturnsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 65.60,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "dateRaised": "2024-08-01",
+           |      "periodStartDate": "2024-07-01",
+           |      "periodEndDate": "2024-09-01",
+           |      "amount": 65.60
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedAssessmentsWithoutReturnsResponse = Assessments(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = Some(BigDecimal("65.6")),
+        totalRecords    = Some(1),
+        items = Seq(
+          AssessmentItem(Some(LocalDate.of(2024, 8, 1)), Some(LocalDate.of(2024, 7, 1)), Some(LocalDate.of(2024, 9, 1)), Some(BigDecimal("65.6")))
+        )
+      )
+
+      "must return a deserialized Assessments for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/assessments-without-returns/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(assessmentsWithoutReturnsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getAssessmentsWithoutReturns(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedAssessmentsWithoutReturnsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/assessments-without-returns/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(assessmentsWithoutReturnsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getAssessmentsWithoutReturns(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedAssessmentsWithoutReturnsResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/assessments-without-returns/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(assessmentsWithoutReturnsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getAssessmentsWithoutReturns(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedAssessmentsWithoutReturnsResponse
+        }
+      }
+    }
+
     "getOtherAssessments" - {
 
       val otherAssessmentsResponseJson =
@@ -520,7 +602,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |  "items": [
            |    {
            |      "transactionDate": "2024-07-23",
-           |      "descriptionCode": "2680",
+           |      "descriptionCode": "E",
            |      "amount": -291.64
            |    }
            |  ]
@@ -532,7 +614,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         periodEndDate   = Some(LocalDate.of(2025, 1, 27)),
         total           = BigDecimal("-291.64"),
         totalRecords    = 1,
-        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "2680", BigDecimal("-291.64")))
+        items           = Seq(PaymentItem(LocalDate.of(2024, 7, 23), "E", BigDecimal("-291.64")))
       )
 
       "must return a deserialized Payments for a 200 response" in {

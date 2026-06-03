@@ -26,7 +26,7 @@ class PaymentsSpec extends AnyFreeSpec with Matchers {
 
   private val item = PaymentItem(
     transactionDate = LocalDate.of(2024, 7, 23),
-    descriptionCode = "2680",
+    descriptionCode = "E",
     amount          = BigDecimal("-291.64")
   )
 
@@ -43,14 +43,14 @@ class PaymentsSpec extends AnyFreeSpec with Matchers {
     "must serialise to JSON" in {
       val json = Json.toJson(item)
       (json \ "transactionDate").as[String] mustEqual "2024-07-23"
-      (json \ "descriptionCode").as[String] mustEqual "2680"
+      (json \ "descriptionCode").as[String] mustEqual "E"
       (json \ "amount").as[BigDecimal] mustEqual BigDecimal("-291.64")
     }
 
     "must deserialise from JSON" in {
       val json = Json.obj(
         "transactionDate" -> "2024-07-23",
-        "descriptionCode" -> "2680",
+        "descriptionCode" -> "E",
         "amount"          -> -291.64
       )
       json.as[PaymentItem] mustEqual item
@@ -64,10 +64,10 @@ class PaymentsSpec extends AnyFreeSpec with Matchers {
     "must deserialise with a different description code" in {
       val json = Json.obj(
         "transactionDate" -> "2024-07-23",
-        "descriptionCode" -> "2690",
+        "descriptionCode" -> "C",
         "amount"          -> -291.64
       )
-      json.as[PaymentItem].descriptionCode mustEqual "2690"
+      json.as[PaymentItem].descriptionCode mustEqual "C"
     }
   }
 
@@ -91,7 +91,7 @@ class PaymentsSpec extends AnyFreeSpec with Matchers {
         "items" -> Json.arr(
           Json.obj(
             "transactionDate" -> "2024-07-23",
-            "descriptionCode" -> "2680",
+            "descriptionCode" -> "E",
             "amount"          -> -291.64
           )
         )
@@ -132,8 +132,8 @@ class PaymentsSpec extends AnyFreeSpec with Matchers {
         "total"        -> -583.28,
         "totalRecords" -> 2,
         "items" -> Json.arr(
-          Json.obj("transactionDate" -> "2024-07-23", "descriptionCode" -> "2680", "amount" -> -291.64),
-          Json.obj("transactionDate" -> "2024-08-15", "descriptionCode" -> "2690", "amount" -> -291.64)
+          Json.obj("transactionDate" -> "2024-07-23", "descriptionCode" -> "E", "amount" -> -291.64),
+          Json.obj("transactionDate" -> "2024-08-15", "descriptionCode" -> "C", "amount" -> -291.64)
         )
       )
       json.as[Payments].items must have size 2
