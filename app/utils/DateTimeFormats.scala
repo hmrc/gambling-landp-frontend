@@ -24,7 +24,7 @@ import java.util.Locale
 
 object DateTimeFormats {
 
-  private val dateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+  private val dateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
 
   private val localisedDateTimeFormatters = Map(
     "en" -> dateTimeFormatter,
@@ -34,14 +34,14 @@ object DateTimeFormats {
   def dateTimeFormat()(implicit lang: Lang): DateTimeFormatter =
     localisedDateTimeFormatters.getOrElse(lang.code, dateTimeFormatter)
 
-  private val fullMonthFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+  private val fullMonthFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
 
   private val localisedFullMonthFormatters = Map(
     "en" -> fullMonthFormatter,
     "cy" -> fullMonthFormatter.withLocale(new Locale("cy"))
   )
 
-  def dateTimeFormatFull()(implicit lang: Lang): DateTimeFormatter =
+  private def dateTimeFormatFull()(implicit lang: Lang): DateTimeFormatter =
     localisedFullMonthFormatters.getOrElse(lang.code, fullMonthFormatter)
 
   def formatDate(date: Option[LocalDate])(implicit messages: Messages): String =
@@ -49,7 +49,4 @@ object DateTimeFormats {
 
   def formatDateFull(date: Option[LocalDate])(implicit messages: Messages): String =
     date.map(_.format(dateTimeFormatFull()(messages.lang))).getOrElse("")
-
-  val dateTimeHintFormat: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("d M yyyy")
 }
