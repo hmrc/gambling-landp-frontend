@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import models.SessionKeys
 import models.assessments.{Assessments, Penalties}
+import models.payments.Payments
 import models.reallocations.ReallocationsDetails
 import models.repayments.RepaymentsSummary
 import models.returns.ReturnsSubmitted
@@ -71,6 +72,14 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
     items           = Seq.empty
   )
 
+  private val payments = Payments(
+    periodStartDate = None,
+    periodEndDate   = None,
+    total           = BigDecimal(-291.64),
+    totalRecords    = 3,
+    items           = Seq.empty
+  )
+
   private val repaymentsSummary = RepaymentsSummary(
     periodStartDate                = Option(LocalDate.of(2024, 1, 1)),
     periodEndDate                  = Option(LocalDate.of(2024, 12, 31)),
@@ -91,6 +100,8 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(otherAssessments))
       when(mockService.getPenalties(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(penalties))
+      when(mockService.getPayments(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(payments))
       when(mockService.getRepaymentsSummary(any(), any())(any()))
         .thenReturn(Future.successful(repaymentsSummary))
 
@@ -110,15 +121,16 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
 
         val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
-        val penaltiesTotal = penalties.total
-        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penaltiesTotal + repaymentsSummary.total
+        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penalties.total + payments.total + repaymentsSummary.total
         val body = contentAsString(result)
         body must include("<strong>Total</strong>")
+        body must include("Payments")
         body mustEqual view(regNumber,
                             returnsTotal,
                             reallocationsDetails.total,
                             otherAssessmentsTotal,
-                            penaltiesTotal,
+                            penalties.total,
+                            payments.total,
                             repaymentsSummary.total,
                             expectedBalance
                            )(

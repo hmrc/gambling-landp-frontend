@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.assessments.{Penalties, PenaltyItem}
+import models.repayments.{ActualRepaymentItem, ActualRepayments}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -30,39 +30,36 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
+class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  private def url = routes.PenaltiesController.onPageLoad().url
+  private def url = routes.ActualRepaymentsController.onPageLoad().url
 
-  private val penaltyItem = PenaltyItem(
-    dateRaised      = LocalDate.of(2024, 8, 1),
-    descriptionCode = 1980,
-    amount          = BigDecimal("-500.00"),
-    periodStartDate = LocalDate.of(2024, 1, 1),
-    periodEndDate   = LocalDate.of(2024, 3, 31)
+  private val singleRecord = ActualRepaymentItem(
+    transactionDate = LocalDate.of(2024, 8, 1),
+    amount          = BigDecimal("45.60")
   )
 
-  private val singlePageResponse = Penalties(
-    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-    total           = BigDecimal("-500.00"),
-    totalRecords    = 1,
-    items           = Seq(penaltyItem)
+  private val singlePageResponse = ActualRepayments(
+    periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
+    total            = BigDecimal("45.60"),
+    totalRecords     = 1,
+    items = Seq(singleRecord)
   )
 
   private val multiPageResponse = singlePageResponse.copy(totalRecords = 25)
 
-  private val emptyResponse = Penalties(
-    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-    total           = BigDecimal(0),
-    totalRecords    = 0,
-    items           = Seq.empty
+  private val emptyResponse = ActualRepayments(
+    periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
+    total            = BigDecimal(0),
+    totalRecords     = 0,
+    items = Seq.empty
   )
 
-  "PenaltiesController" - {
+  "ActualRepaymentsController" - {
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
@@ -101,9 +98,9 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return OK and render the heading for a valid regime" in {
+    "must return OK for a valid regime and render the heading, intro paragraph " in {
       val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
+      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -116,13 +113,14 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Penalties")
+        contentAsString(result) must include("Actual repayments")
+        contentAsString(result) must include("Repayments HMRC has made, or will make to you.")
       }
     }
 
     "must render the empty-state message when the service returns no items" in {
       val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
+      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(emptyResponse))
 
       val app = applicationBuilder()
@@ -135,35 +133,13 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("You have not incurred any penalties.")
+        contentAsString(result) must include("You have no actual repayments.")
       }
     }
 
-    "must render the table when penalties are present" in {
+    "must render the table when records are present" in {
       val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-        val body = contentAsString(result)
-
-        status(result) mustEqual OK
-        body must include("govuk-table")
-        body must not include "The total of the"
-        body must not include "Displaying"
-      }
-    }
-
-    "must render the description as Late filing penalty for code 1980" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
+      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -176,53 +152,13 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Late filing penalty")
+        contentAsString(result) must include("govuk-table")
       }
     }
 
-    "must render the description as Late payment penalty for code 1990" in {
-      val latePaymentItem = penaltyItem.copy(descriptionCode = 1990)
+    "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse.copy(items = Seq(latePaymentItem))))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Late payment penalty")
-      }
-    }
-
-    "must render the bold total row on a single page" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-        val body = contentAsString(result)
-
-        status(result) mustEqual OK
-        body must include("<strong>Total</strong>")
-      }
-    }
-
-    "must render the summary paragraphs and table when there are multiple pages" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
+      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
@@ -236,34 +172,15 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         val body = contentAsString(result)
 
         status(result) mustEqual OK
+        body must include("govuk-pagination")
         body must include("The total of the")
         body must include("Displaying")
-        body must include("govuk-table")
-      }
-    }
-
-    "must render pagination when there are multiple pages" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(multiPageResponse))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("govuk-pagination")
       }
     }
 
     "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
+      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
@@ -282,7 +199,7 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
 
     "must return Not Found with page not found content when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getPenalties(any(), any(), any(), any())(any()))
+      when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
@@ -290,7 +207,7 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
         .build()
 
       running(app) {
-        val request = FakeRequest(GET, routes.PenaltiesController.onPageLoad(10, 99).url)
+        val request = FakeRequest(GET, routes.ActualRepaymentsController.onPageLoad(10, 99).url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
@@ -304,7 +221,7 @@ class PenaltiesControllerSpec extends SpecBase with MockitoSugar {
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getPenalties(any(), any(), any(), any())(any()))
+        when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(singlePageResponse))
 
         val app = applicationBuilder()
