@@ -17,11 +17,11 @@
 package services
 
 import connectors.GamblingConnector
-import models.assessments.{Assessments, Penalties}
+import models.assessments.Assessments
 import models.payments.Payments
+import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}
-import models.repayments.ActualRepayments
-import models.repayments.RepaymentsSummary
+import models.repayments.{ActualRepayments, RepaymentsSummary}
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HeaderCarrier
 

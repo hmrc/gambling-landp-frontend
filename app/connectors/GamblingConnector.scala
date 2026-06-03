@@ -18,12 +18,10 @@ package connectors
 
 import config.FrontendAppConfig
 import models.assessments.Assessments
-import models.assessments.Penalties
 import models.payments.Payments
-import models.assessments.{Assessments, Penalties}
+import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}
-import models.repayments.ActualRepayments
-import models.repayments.RepaymentsSummary
+import models.repayments.{ActualRepayments, RepaymentsSummary}
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2

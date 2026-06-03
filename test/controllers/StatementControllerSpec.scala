@@ -18,8 +18,9 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.assessments.{Assessments, Penalties}
+import models.assessments.Assessments
 import models.payments.Payments
+import models.penalties.Penalties
 import models.reallocations.ReallocationsDetails
 import models.repayments.RepaymentsSummary
 import models.returns.ReturnsSubmitted
@@ -121,7 +122,8 @@ class StatementControllerSpec extends SpecBase with MockitoSugar {
 
         val returnsTotal = returnsSubmitted.total.getOrElse(BigDecimal(0))
         val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
-        val expectedBalance = returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penalties.total + payments.total + repaymentsSummary.total
+        val expectedBalance =
+          returnsTotal + reallocationsDetails.total + otherAssessmentsTotal + penalties.total + payments.total + repaymentsSummary.total
         val body = contentAsString(result)
         body must include("<strong>Total</strong>")
         body must include("Payments")

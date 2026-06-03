@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.assessments.{Penalties, PenaltyItem}
+import models.penalties.{Penalties, PenaltyItem}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar

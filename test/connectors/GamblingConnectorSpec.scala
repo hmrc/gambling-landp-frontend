@@ -17,11 +17,11 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
+import models.assessments.{AssessmentItem, Assessments}
 import models.payments.{PaymentItem, Payments}
+import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
-import models.repayments.{ActualRepaymentItem, ActualRepayments}
-import models.repayments.RepaymentsSummary
+import models.repayments.{ActualRepaymentItem, ActualRepayments, RepaymentsSummary}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -606,11 +606,11 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |""".stripMargin
 
       val expectedActualRepaymentsResponse = ActualRepayments(
-        periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
-        total            = BigDecimal("150.0"),
-        totalRecords     = 1,
-        items = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.0")))
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("150.0"),
+        totalRecords    = 1,
+        items           = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.0")))
       )
 
       "must return a deserialized ActualRepayments for a 200 response" in {

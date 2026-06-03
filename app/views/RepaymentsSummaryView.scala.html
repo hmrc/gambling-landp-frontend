@@ -52,7 +52,7 @@
 @tableRows = @{
     Seq(
         Seq(
-            TableRow(content = linkOrText(messages("repayments.table.actualRepayments"), model.actualRepaymentsAmount, controllers.routes.ReallocationsInController.onPageLoad().url)),
+            TableRow(content = linkOrText(messages("repayments.table.actualRepayments"), model.actualRepaymentsAmount, controllers.routes.ActualRepaymentsController.onPageLoad().url)),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.actualRepaymentsAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-actual-amount"))
         ),
         Seq(

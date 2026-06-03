@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.assessments
+package models.penalties
 
 import play.api.libs.json.*
 

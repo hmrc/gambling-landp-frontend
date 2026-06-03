@@ -18,10 +18,11 @@ package services
 
 import base.SpecBase
 import connectors.GamblingConnector
-import models.assessments.{AssessmentItem, Assessments, Penalties, PenaltyItem}
+import models.assessments.{AssessmentItem, Assessments}
 import models.payments.{PaymentItem, Payments}
+import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
-import models.repayments.{RepaymentsSummary, ActualRepaymentItem, ActualRepayments}
+import models.repayments.{ActualRepaymentItem, ActualRepayments, RepaymentsSummary}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -325,11 +326,11 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
     "getActualRepayments" - {
 
       val actualRepaymentsResponse = ActualRepayments(
-        periodStartDate  = Some(LocalDate.of(2024, 1, 1)),
-        periodEndDate    = Some(LocalDate.of(2024, 12, 31)),
-        total            = BigDecimal("150.00"),
-        totalRecords     = 1,
-        items = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.00")))
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("150.00"),
+        totalRecords    = 1,
+        items           = Seq(ActualRepaymentItem(LocalDate.of(2024, 7, 1), BigDecimal("150.00")))
       )
 
       "must delegate to the connector with the correct arguments and return its result" in {
