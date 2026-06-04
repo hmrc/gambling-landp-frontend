@@ -48,7 +48,7 @@ class RepaymentInterestRepaidController @Inject() (
           gamblingService.getRepaymentInterestRepaid(validRegime.code, regNumber, pageSize, pageNo).map { repaymentInterestRepaid =>
             val pagination = PaginationParams(repaymentInterestRepaid.totalRecords, pageSize, pageNo)
             if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-            else Ok(view(validRegime, regNumber, pagination, repaymentInterestRepaid))
+            else Ok(view(pagination, repaymentInterestRepaid))
           }
         }
       case _ =>

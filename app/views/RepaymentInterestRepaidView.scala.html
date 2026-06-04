@@ -15,7 +15,7 @@
  *@
 
 @import config.CurrencyFormatter
-@import models.{PaginationParams, Regime}
+@import models.PaginationParams
 @import models.repayments.RepaymentInterestRepaid
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import utils.DateTimeFormats
@@ -26,7 +26,7 @@
     pagination: components.Pagination
 )
 
-@(regime: Regime, regNumber: String, paginationParams: PaginationParams, repaymentInterestRepaid: RepaymentInterestRepaid)(implicit request: Request[_], messages: Messages)
+@(paginationParams: PaginationParams, repaymentInterestRepaid: RepaymentInterestRepaid)(implicit request: Request[_], messages: Messages)
 
 @pageUrl(p: Int) = @{controllers.routes.RepaymentInterestRepaidController.onPageLoad(paginationParams.pageSize, p)}
 
