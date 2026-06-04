@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.repayments.RepaymentsSummary
+import models.repayments.{RepaymentInterestRepaid, RepaymentInterestRepaidItem}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -30,27 +30,42 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
+class RepaymentInterestRepaidControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  val repaymentsSummary = RepaymentsSummary(
-    periodStartDate                = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate                  = Some(LocalDate.of(2024, 12, 31)),
-    actualRepaymentsAmount         = BigDecimal(71.84),
-    repaymentsInterestRepaidAmount = BigDecimal(-35.76),
-    total                          = BigDecimal(36.08)
+  private def url = routes.RepaymentInterestRepaidController.onPageLoad().url
+
+  private val singleRecord = RepaymentInterestRepaidItem(
+    transactionDate = LocalDate.of(2024, 8, 1),
+    amount          = BigDecimal("45.60")
   )
 
-  "RepaymentsController" - {
+  private val singlePageResponse = RepaymentInterestRepaid(
+    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+    total           = BigDecimal("45.60"),
+    totalRecords    = 1,
+    items           = Seq(singleRecord)
+  )
 
-    def url = routes.RepaymentsController.onPageLoad().url
+  private val multiPageResponse = singlePageResponse.copy(totalRecords = 25)
+
+  private val emptyResponse = RepaymentInterestRepaid(
+    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+    total           = BigDecimal(0),
+    totalRecords    = 0,
+    items           = Seq.empty
+  )
+
+  "RepaymentInterestRepaidController" - {
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
 
       running(app) {
-        val request = FakeRequest(GET, url).withSession(SessionKeys.regNumber -> regNumber)
+        val request = FakeRequest(GET, url)
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
@@ -83,10 +98,10 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return OK and render the heading for a valid regime and contains the expected messages in the content" in {
+    "must return OK for a valid regime and render the heading and intro paragraph" in {
       val mockService = mock[GamblingService]
-      when(mockService.getRepaymentsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(repaymentsSummary))
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -98,16 +113,15 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Repayments")
-        contentAsString(result) must include("The total amount of repayments HMRC has paid to you.")
+        contentAsString(result) must include("Repayment interest repaid")
+        contentAsString(result) must include("Interest on repayments that HMRC has made, or will make to you.")
       }
     }
 
-    "must return OK and render the page with expected messages in the content when actual repayments/interest repaid are 0" in {
-      val emptySummary = repaymentsSummary.copy(actualRepaymentsAmount = BigDecimal(0), repaymentsInterestRepaidAmount = BigDecimal(0))
+    "must render the empty-state message when the service returns no items" in {
       val mockService = mock[GamblingService]
-      when(mockService.getRepaymentsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(emptySummary))
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(emptyResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -119,19 +133,14 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Repayments")
-        contentAsString(result) must include("The total amount of repayments HMRC has paid to you.")
-        contentAsString(result) must include("There are no repayments for this period")
-        contentAsString(result) must not include "govuk-table"
-        contentAsString(result) must not include "Actual repayments"
-        contentAsString(result) must not include "Repayment interest repaid"
+        contentAsString(result) must include("You have no repayment interest repaid.")
       }
     }
 
-    "must include the intro paragraph in the page content" in {
+    "must render the table when records are present" in {
       val mockService = mock[GamblingService]
-      when(mockService.getRepaymentsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(repaymentsSummary))
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -143,14 +152,14 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("The total amount of repayments HMRC has paid to you.")
+        contentAsString(result) must include("govuk-table")
       }
     }
 
-    "must render a link to the actual repayments page when the amount is non-zero" in {
+    "must render the bold total row on a single page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getRepaymentsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(repaymentsSummary))
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -162,14 +171,14 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include(routes.ActualRepaymentsController.onPageLoad().url)
+        contentAsString(result) must include("<strong>Total</strong>")
       }
     }
 
-    "must render a link to the repayment interest repaid page when the amount is non-zero" in {
+    "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getRepaymentsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(repaymentsSummary))
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -179,17 +188,19 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val request = FakeRequest(GET, url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
+        val body = contentAsString(result)
 
         status(result) mustEqual OK
-        contentAsString(result) must include(routes.RepaymentInterestRepaidController.onPageLoad().url)
+        body must include("govuk-pagination")
+        body must include("The total of the")
+        body must include("Displaying")
       }
     }
 
-    "must render plain text (no link) for repayment interest repaid when the amount is zero" in {
-      val zeroInterest = repaymentsSummary.copy(repaymentsInterestRepaidAmount = BigDecimal(0))
+    "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getRepaymentsSummary(any(), any())(any()))
-        .thenReturn(Future.successful(zeroInterest))
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -201,7 +212,45 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must not include routes.RepaymentInterestRepaidController.onPageLoad().url
+        contentAsString(result) must not include "govuk-pagination"
+      }
+    }
+
+    "must not render the total row when there are multiple pages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) must not include "<strong>Total</strong>"
+      }
+    }
+
+    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.RepaymentInterestRepaidController.onPageLoad(10, 99).url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
       }
     }
 
@@ -210,8 +259,8 @@ class RepaymentsControllerSpec extends SpecBase with MockitoSugar {
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getRepaymentsSummary(any(), any())(any()))
-          .thenReturn(Future.successful(repaymentsSummary))
+        when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(singlePageResponse))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))
