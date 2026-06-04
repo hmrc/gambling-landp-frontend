@@ -185,6 +185,18 @@ actualRepayments.table.total = Total
 actualRepayments.totalSummary = The total of the {0} records is
 actualRepayments.displaying = Displaying {0} to {1} of {2} records
 
+repaymentInterestRepaid.title = Repayment interest repaid
+repaymentInterestRepaid.heading = Repayment interest repaid
+repaymentInterestRepaid.breadcrumb = Repayments
+repaymentInterestRepaid.p1 = Interest on repayments that HMRC has made, or will make to you.
+repaymentInterestRepaid.caption = {0} to {1}
+repaymentInterestRepaid.empty = You have no repayment interest repaid.
+repaymentInterestRepaid.table.transactionDate = Transaction date
+repaymentInterestRepaid.table.amount = Amount
+repaymentInterestRepaid.table.total = Total
+repaymentInterestRepaid.totalSummary = The total of the {0} records is
+repaymentInterestRepaid.displaying = Displaying {0} to {1} of {2} records
+
 site.statement = Statement
 site.pagination.label = Pagination
 site.pagination.previous = Previous

@@ -21,7 +21,7 @@ import models.assessments.{AssessmentItem, Assessments}
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
-import models.repayments.{ActualRepaymentItem, ActualRepayments, RepaymentsSummary}
+import models.repayments.{ActualRepaymentItem, ActualRepayments, RepaymentInterestRepaid, RepaymentInterestRepaidItem, RepaymentsSummary}
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -743,6 +743,84 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getActualRepayments(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedActualRepaymentsResponse
+        }
+      }
+    }
+
+    "getRepaymentInterestRepaid" - {
+
+      val repaymentInterestRepaidResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 45.60,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "transactionDate": "2024-07-01",
+           |      "amount": 45.60
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedRepaymentInterestRepaidResponse = RepaymentInterestRepaid(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("45.6"),
+        totalRecords    = 1,
+        items           = Seq(RepaymentInterestRepaidItem(LocalDate.of(2024, 7, 1), BigDecimal("45.6")))
+      )
+
+      "must return a deserialized RepaymentInterestRepaid for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/repayment-interest-repaid/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(repaymentInterestRepaidResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getRepaymentInterestRepaid(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedRepaymentInterestRepaidResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/repayment-interest-repaid/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(repaymentInterestRepaidResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getRepaymentInterestRepaid(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedRepaymentInterestRepaidResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/repayment-interest-repaid/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(repaymentInterestRepaidResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getRepaymentInterestRepaid(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedRepaymentInterestRepaidResponse
         }
       }
     }

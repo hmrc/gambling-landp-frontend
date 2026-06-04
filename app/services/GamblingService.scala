@@ -21,7 +21,7 @@ import models.assessments.Assessments
 import models.payments.Payments
 import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}
-import models.repayments.{ActualRepayments, RepaymentsSummary}
+import models.repayments.{ActualRepayments, RepaymentInterestRepaid, RepaymentsSummary}
 import models.returns.ReturnsSubmitted
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -60,4 +60,9 @@ class GamblingService @Inject() (connector: GamblingConnector) {
 
   def getActualRepayments(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[ActualRepayments] =
     connector.getActualRepayments(regime, regNumber, pageSize, pageNo)
+
+  def getRepaymentInterestRepaid(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[RepaymentInterestRepaid] =
+    connector.getRepaymentInterestRepaid(regime, regNumber, pageSize, pageNo)
 }
