@@ -18,6 +18,7 @@ package services
 
 import base.SpecBase
 import connectors.GamblingConnector
+import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
@@ -480,6 +481,60 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
 
         val service = new GamblingService(mockConnector)
         val result = service.getRepaymentInterestRepaid(regime, regNumber, pageSize, pageNo).failed.futureValue
+
+        result mustEqual exception
+      }
+    }
+
+    "getStatementOverview" - {
+
+      val statementOverviewResponse = StatementOverview(
+        gtrPeriodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        gtrPeriodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total              = BigDecimal("-700.19"),
+        balance            = BigDecimal("-200.00"),
+        amountDeclared     = BigDecimal("-180.00"),
+        assessments        = BigDecimal("-290.80"),
+        penalties          = BigDecimal("-109.80"),
+        adjustments        = BigDecimal("10.30"),
+        reallocations      = BigDecimal("-9.20"),
+        otherAssessments   = BigDecimal("-20.90"),
+        interest           = BigDecimal("-109.80"),
+        payments           = BigDecimal("100.21"),
+        repayments         = Some(BigDecimal("109.80"))
+      )
+
+      "must delegate to the connector with the correct arguments and return its result" in {
+        val mockConnector = mock[GamblingConnector]
+        when(mockConnector.getStatementOverview(eqTo(regime), eqTo(regNumber))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(statementOverviewResponse))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getStatementOverview(regime, regNumber).futureValue
+
+        result mustEqual statementOverviewResponse
+      }
+
+      "must delegate with the correct regime code when a different regime is provided" in {
+        val mockConnector = mock[GamblingConnector]
+        val otherRegime = "mgd"
+        when(mockConnector.getStatementOverview(eqTo(otherRegime), eqTo(regNumber))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(statementOverviewResponse))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getStatementOverview(otherRegime, regNumber).futureValue
+
+        result mustEqual statementOverviewResponse
+      }
+
+      "must propagate failures from the connector" in {
+        val mockConnector = mock[GamblingConnector]
+        val exception = new RuntimeException("upstream failure")
+        when(mockConnector.getStatementOverview(eqTo(regime), eqTo(regNumber))(using any[HeaderCarrier]()))
+          .thenReturn(Future.failed(exception))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getStatementOverview(regime, regNumber).failed.futureValue
 
         result mustEqual exception
       }

@@ -17,6 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
@@ -821,6 +822,77 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getRepaymentInterestRepaid(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedRepaymentInterestRepaidResponse
+        }
+      }
+    }
+
+    "getStatementOverview" - {
+
+      val statementOverviewResponseJson =
+        s"""
+           |{
+           |  "gtrPeriodStartDate": "2024-01-01",
+           |  "gtrPeriodEndDate": "2024-12-31",
+           |  "total": -700.19,
+           |  "balance": -200.00,
+           |  "amountDeclared": -180.00,
+           |  "assessments": -290.80,
+           |  "penalties": -109.80,
+           |  "adjustments": 10.30,
+           |  "reallocations": -9.20,
+           |  "otherAssessments": -20.90,
+           |  "interest": -109.80,
+           |  "payments": 100.21,
+           |  "repayments": 109.80
+           |}
+           |""".stripMargin
+
+      val expectedStatementOverviewResponse = StatementOverview(
+        gtrPeriodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        gtrPeriodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total              = BigDecimal("-700.19"),
+        balance            = BigDecimal("-200.0"),
+        amountDeclared     = BigDecimal("-180.0"),
+        assessments        = BigDecimal("-290.8"),
+        penalties          = BigDecimal("-109.8"),
+        adjustments        = BigDecimal("10.3"),
+        reallocations      = BigDecimal("-9.2"),
+        otherAssessments   = BigDecimal("-20.9"),
+        interest           = BigDecimal("-109.8"),
+        payments           = BigDecimal("100.21"),
+        repayments         = Some(BigDecimal("109.8"))
+      )
+
+      "must return a deserialized StatementOverview for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/statement-overview/$regime/$regNumber"))
+            .willReturn(okJson(statementOverviewResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getStatementOverview(regime, regNumber).futureValue
+
+          result mustEqual expectedStatementOverviewResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/statement-overview/$otherRegime/$otherRegNumber"))
+            .willReturn(okJson(statementOverviewResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getStatementOverview(otherRegime, otherRegNumber).futureValue
+
+          result mustEqual expectedStatementOverviewResponse
         }
       }
     }

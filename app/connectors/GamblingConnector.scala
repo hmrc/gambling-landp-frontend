@@ -17,6 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.StatementOverview
 import models.assessments.Assessments
 import models.payments.Payments
 import models.penalties.Penalties
@@ -94,4 +95,9 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/repayment-interest-repaid/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[RepaymentInterestRepaid]
+
+  def getStatementOverview(regime: String, regNumber: String)(using hc: HeaderCarrier): Future[StatementOverview] =
+    httpClient
+      .get(url"$baseUrl/statement-overview/$regime/$regNumber")
+      .execute[StatementOverview]
 }
