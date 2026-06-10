@@ -22,7 +22,7 @@ GET        /statement/other-assessments                  controllers.OtherAssess
 
 GET        /statement/assessments                        controllers.AssessmentInAbsenceOfReturnsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
-GET        /statement/interest-breakdown/interest-accruing/details       controllers.InterestAccruingController.onPageLoad(interestId: String, pageSize: Int ?= 10, pageNo: Int ?= 1)
+GET        /statement/interest-breakdown/interest-accruing/details/:interestId       controllers.InterestAccruingController.onPageLoad(interestId: String, pageSize: Int ?= 10, pageNo: Int ?= 1)
 
 GET        /statement/payments                           controllers.PaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
