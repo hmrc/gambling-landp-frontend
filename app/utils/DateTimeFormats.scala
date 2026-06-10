@@ -50,6 +50,4 @@ object DateTimeFormats {
   def formatDateFull(date: Option[LocalDate])(implicit messages: Messages): String =
     date.map(_.format(dateTimeFormatFull()(messages.lang))).getOrElse("")
 
-  val dateTimeHintFormat: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("d M yyyy")
 }
