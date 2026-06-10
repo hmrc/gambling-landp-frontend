@@ -17,6 +17,7 @@
 package services
 
 import connectors.GamblingConnector
+import models.StatementOverview
 import models.assessments.Assessments
 import models.payments.Payments
 import models.penalties.Penalties
@@ -65,4 +66,7 @@ class GamblingService @Inject() (connector: GamblingConnector) {
     hc: HeaderCarrier
   ): Future[RepaymentInterestRepaid] =
     connector.getRepaymentInterestRepaid(regime, regNumber, pageSize, pageNo)
+
+  def getStatementOverview(regime: String, regNumber: String)(implicit hc: HeaderCarrier): Future[StatementOverview] =
+    connector.getStatementOverview(regime, regNumber)
 }

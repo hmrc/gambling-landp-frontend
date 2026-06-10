@@ -16,14 +16,16 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.SessionKeys
+import models.{Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.AccountOverview
+import views.html.{PageNotFoundView, StatementOverviewView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +34,9 @@ class StatementController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gambling: GamblingService,
-  view: AccountOverview
+  view: StatementOverviewView,
+  pageNotFoundView: PageNotFoundView,
+  appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -40,42 +44,16 @@ class StatementController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regime), Some(regNumber)) =>
-        val reallocationDetailsF = gambling.getReallocationsDetails(regime, regNumber)
-        val returnsF = gambling.getReturnsSubmitted(regime, regNumber, pageSize = 1, pageNo = 1)
-        val assessmentsWithoutReturnsF = gambling.getAssessmentsWithoutReturns(regime, regNumber, pageSize = 1, pageNo = 1)
-        val otherAssessmentsF = gambling.getOtherAssessments(regime, regNumber, pageSize = 1, pageNo = 1)
-        val penaltiesF = gambling.getPenalties(regime, regNumber, pageSize = 1, pageNo = 1)
-        val paymentsF = gambling.getPayments(regime, regNumber, pageSize = 1, pageNo = 1)
-        val repaymentsF = gambling.getRepaymentsSummary(regime, regNumber)
-        for {
-          reallocationDetails       <- reallocationDetailsF
-          returns                   <- returnsF
-          assessmentsWithoutReturns <- assessmentsWithoutReturnsF
-          otherAssessments          <- otherAssessmentsF
-          penalties                 <- penaltiesF
-          payments                  <- paymentsF
-          repayments                <- repaymentsF
-        } yield {
-          val returnsTotal = returns.total.getOrElse(BigDecimal(0))
-          val otherAssessmentsTotal = otherAssessments.total.getOrElse(BigDecimal(0))
-          val assessmentWithoutReturnsTotal = assessmentsWithoutReturns.total.getOrElse(BigDecimal(0))
-          val currentBalance =
-            returnsTotal + reallocationDetails.total + otherAssessmentsTotal + assessmentWithoutReturnsTotal + penalties.total + payments.total + repayments.total
-
-          Ok(
-            view(
-              regNumber,
-              returnsTotal,
-              assessmentWithoutReturnsTotal,
-              reallocationDetails.total,
-              otherAssessmentsTotal,
-              penalties.total,
-              payments.total,
-              repayments.total,
-              currentBalance
-            )
-          )
+      case (Some(regimeCode), Some(regNumber)) =>
+        Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))) { regime =>
+          gambling
+            .getStatementOverview(regime.code, regNumber)
+            .map { overview =>
+              Ok(view(regNumber, regime, overview))
+            }
+            .recover { case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
+              NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+            }
         }
       case _ =>
         logger.warn("no regime or regNumber found")
