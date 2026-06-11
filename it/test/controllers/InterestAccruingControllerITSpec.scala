@@ -157,18 +157,51 @@ class InterestAccruingControllerITSpec
 
     "successful page load" - {
 
-      "must return OK and render the heading and paragraph with the resolved description code label" in {
-        val app = buildApp()
-        stubInterestAccruing(regime, regNumber, interestAccruingJson)
+      Seq(
+        (2640, "pplr interest bearing"),
+        (2650, "return charge"),
+        (2655, "return interest"),
+        (2660, "central assessment"),
+        (2670, "officer assessment"),
+        (2680, "late filing penalty"),
+        (2685, "late filing penalty interest"),
+        (2690, "late payment penalty"),
+        (2695, "late payment penalty interest")
+      ).foreach { case (code, label) =>
+        s"must render the heading and paragraph for description code $code ($label)" in {
+          val json =
+            s"""
+               |{
+               |  "periodStartDate": "2024-01-01",
+               |  "periodEndDate": "2024-12-31",
+               |  "total": 123.45,
+               |  "totalRecords": 1,
+               |  "descriptionCode": $code,
+               |  "items": [
+               |    {
+               |      "interestOn": 1000.00,
+               |      "dateFrom": "2024-01-01",
+               |      "dateTo": "2024-03-31",
+               |      "noOfDays": 90,
+               |      "rate": 2.5,
+               |      "amount": 123.45
+               |    }
+               |  ]
+               |}
+               |""".stripMargin
 
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
+          val app = buildApp()
+          stubInterestAccruing(regime, regNumber, json)
 
-          status(result) mustEqual OK
-          contentAsString(result) must include("Interest accruing on [return charge]")
-          contentAsString(result) must include("The amount of unpaid interest on [return charge].")
+          running(app) {
+            val request = FakeRequest(GET, url)
+              .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
+            val result = route(app, request).value
+
+            status(result) mustEqual OK
+            contentAsString(result) must include(s"Interest accruing on [$label]")
+            contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
+          }
         }
       }
 

@@ -95,23 +95,35 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return OK and render the heading and paragraph with the resolved description code label" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestAccruingDetails))
+    Seq(
+      (2640, "pplr interest bearing"),
+      (2650, "return charge"),
+      (2655, "return interest"),
+      (2660, "central assessment"),
+      (2670, "officer assessment"),
+      (2680, "late filing penalty"),
+      (2685, "late filing penalty interest"),
+      (2690, "late payment penalty"),
+      (2695, "late payment penalty interest")
+    ).foreach { case (code, label) =>
+      s"must render the heading and paragraph for description code $code ($label)" in {
+        val mockService = mock[GamblingService]
+        when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(interestAccruingDetails.copy(descriptionCode = code)))
 
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
+        val app = applicationBuilder()
+          .overrides(bind[GamblingService].toInstance(mockService))
+          .build()
 
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
+        running(app) {
+          val request = FakeRequest(GET, url)
+            .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+          val result = route(app, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) must include("Interest accruing on [return charge]")
-        contentAsString(result) must include("The amount of unpaid interest on [return charge].")
+          status(result) mustEqual OK
+          contentAsString(result) must include(s"Interest accruing on [$label]")
+          contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
+        }
       }
     }
 
