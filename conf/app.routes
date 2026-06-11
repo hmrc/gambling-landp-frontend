@@ -27,6 +27,8 @@ GET        /statement/payments                           controllers.PaymentsCon
 GET        /statement/repayments                         controllers.RepaymentsController.onPageLoad()
 GET        /statement/actual-repayments                  controllers.ActualRepaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
+GET        /statement/interest-breakdown/interest                          controllers.InterestDetailsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 GET        /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
 
 GET        /language/:lang                               controllers.LanguageSwitchController.switchToLanguage(lang: String)

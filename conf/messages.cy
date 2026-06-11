@@ -191,6 +191,26 @@ repaymentInterestRepaid.table.total = Total
 repaymentInterestRepaid.totalSummary = The total of the {0} records is
 repaymentInterestRepaid.displaying = Displaying {0} to {1} of {2} records
 
+interestDetails.title = Interest
+interestDetails.heading = Interest
+interestDetails.p1 = The amount of unpaid interest on duty and penalties.
+interestDetails.empty = You have not incurred any penalties.
+interestDetails.table.description = Description
+interestDetails.description.code.2640 = Interest on PPLR interest bearing from {0} to {1}
+interestDetails.description.code.2650 = Interest on return charge from {0} to {1}
+interestDetails.description.code.2655 = Interest on return interest from 1 Aug 2015 to 31 Oct 2015
+interestDetails.description.code.2680 = Interest on late filing penalty from 1 Aug 2015 to 31 Oct 2015
+interestDetails.description.code.2685 = Interest on late filing penalty interest from 1 Sep 2013 to 31 Jul 2015
+interestDetails.description.code.2690 = Interest on late payment penalty from 1 Sep 2013 to 31 Jul 2015
+interestDetails.description.code.2695 = Interest on late payment penalty interest from 1 Sep 2013 to 31 Jul 2015
+interestDetails.description.code.2660 = Interest on central assessment from 1 Sep 2013 to 31 Jul 2015
+interestDetails.description.code.2670 = Interest on officer assessment from 1 Sep 2013 to 31 Jul 2015
+interestDetails.table.period = {0} to {1}
+interestDetails.table.amount = Amount
+interestDetails.table.total = Total
+interestDetails.totalSummary = The total of the {0} records is
+interestDetails.displaying = Displaying {0} to {1} of {2} records
+
 site.statement = Statement
 site.pagination.label = Pagination
 site.pagination.previous = Previous
