@@ -19,6 +19,7 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
+import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
@@ -893,6 +894,102 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getStatementOverview(otherRegime, otherRegNumber).futureValue
 
           result mustEqual expectedStatementOverviewResponse
+        }
+      }
+    }
+
+    "getInterestAccruingDetails" - {
+
+      val interestId = "INT-001"
+
+      val interestAccruingResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 123.45,
+           |  "totalRecords": 1,
+           |  "descriptionCode": 2650,
+           |  "items": [
+           |    {
+           |      "interestOn": 1000.00,
+           |      "dateFrom": "2024-01-01",
+           |      "dateTo": "2024-03-31",
+           |      "noOfDays": 90,
+           |      "rate": 2.5,
+           |      "amount": 123.45
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedInterestAccruingResponse = InterestAccruingDetails(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("123.45"),
+        totalRecords    = 1,
+        descriptionCode = 2650,
+        items = Seq(
+          InterestAccruingDetailsItem(
+            interestOn = BigDecimal("1000.0"),
+            dateFrom   = LocalDate.of(2024, 1, 1),
+            dateTo     = LocalDate.of(2024, 3, 31),
+            noOfDays   = BigDecimal("90"),
+            rate       = BigDecimal("2.5"),
+            amount     = BigDecimal("123.45")
+          )
+        )
+      )
+
+      "must return a deserialized InterestAccruingDetails for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestAccruingResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestAccruingDetails(regime, regNumber, interestId, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestAccruingResponse
+        }
+      }
+
+      "must forward the correct path parameters in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+        val otherId = "INT-999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$otherRegime/$otherRegNumber/$otherId?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestAccruingResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestAccruingDetails(otherRegime, otherRegNumber, otherId, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestAccruingResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(interestAccruingResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestAccruingDetails(regime, regNumber, interestId, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedInterestAccruingResponse
         }
       }
     }
