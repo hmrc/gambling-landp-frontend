@@ -43,7 +43,7 @@ pagination: components.Pagination
     interestDetails.items.zipWithIndex.map { case (item, i) =>
         Seq(
             TableRow(content = linkOrText(messages(s"interestDetails.description.${item.descriptionCode}", DateTimeFormats.formatDate(Some(item.periodStartDate)), DateTimeFormats.formatDate(Some(item.periodEndDate))), item.amount,
-             routes.InterestDetailsController.onPageLoad().url), attributes = Map("data-testid" -> s"description-$i")),
+             routes.InterestAccruingController.onPageLoad(item.interestId).url), attributes = Map("data-testid" -> s"description-$i")),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
