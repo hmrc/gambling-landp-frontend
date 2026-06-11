@@ -19,6 +19,7 @@ package services
 import connectors.GamblingConnector
 import models.StatementOverview
 import models.assessments.Assessments
+import models.interest.InterestAccruingDetails
 import models.interest.InterestOverview
 import models.payments.Payments
 import models.penalties.Penalties
@@ -70,6 +71,11 @@ class GamblingService @Inject() (connector: GamblingConnector) {
 
   def getStatementOverview(regime: String, regNumber: String)(implicit hc: HeaderCarrier): Future[StatementOverview] =
     connector.getStatementOverview(regime, regNumber)
+
+  def getInterestAccruing(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[InterestAccruingDetails] =
+    connector.getInterestAccruingDetails(regime, regNumber, interestId, pageSize, pageNo)
 
   def getInterestOverview(regime: String, regNumber: String)(implicit hc: HeaderCarrier): Future[InterestOverview] =
     connector.getInterestOverview(regime, regNumber)
