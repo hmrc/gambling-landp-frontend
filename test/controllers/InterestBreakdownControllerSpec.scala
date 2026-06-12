@@ -168,7 +168,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        // contentAsString(result) must include(routes. Interest Controller.onPageLoad().url)   TODO !!!!!!!!!!!!!!
+        contentAsString(result) must include(routes.InterestDetailsController.onPageLoad().url)
       }
     }
 
@@ -188,7 +188,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        //        contentAsString(result) must not include routes.Interest  Controller.onPageLoad().url  TODO !!!!!!!!!!!!!1
+        contentAsString(result) must not include routes.InterestDetailsController.onPageLoad().url
       }
     }
 
