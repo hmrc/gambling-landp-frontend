@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
 import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
+import models.interest.InterestOverview
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
@@ -1045,6 +1046,63 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getRepaymentsSummary(otherRegime, otherRegNumber).futureValue
 
           result mustEqual expectedRepaymentsSummaryResponse
+        }
+      }
+    }
+
+    "getInterestOverview" - {
+
+      val interestOverviewResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "interestAmount":-81.84,
+           |  "interestAccruingAmount":-25.76,
+           |  "repaymentInterestAmount":41.23,
+           |  "total":66.37
+           |}
+           |""".stripMargin
+
+      val expectedInterestOverviewResponse = InterestOverview(
+        periodStartDate         = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate           = Some(LocalDate.of(2024, 12, 31)),
+        interestAmount          = BigDecimal(-81.84),
+        interestAccruingAmount  = BigDecimal(-25.76),
+        repaymentInterestAmount = BigDecimal(41.23),
+        total                   = BigDecimal(66.37)
+      )
+
+      "must return a deserialized InterestOverview for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-overview/$regime/$regNumber"))
+            .willReturn(okJson(interestOverviewResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestOverview(regime, regNumber).futureValue
+
+          result mustEqual expectedInterestOverviewResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-overview/$otherRegime/$otherRegNumber"))
+            .willReturn(okJson(interestOverviewResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestOverview(otherRegime, otherRegNumber).futureValue
+
+          result mustEqual expectedInterestOverviewResponse
         }
       }
     }

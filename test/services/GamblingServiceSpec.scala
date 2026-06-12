@@ -20,6 +20,7 @@ import base.SpecBase
 import connectors.GamblingConnector
 import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
+import models.interest.InterestOverview
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
@@ -559,6 +560,29 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
         val result = service.getRepaymentsSummary(regime, regNumber).futureValue
 
         result mustEqual repaymentsSummary
+      }
+    }
+
+    "getInterestOverview" - {
+
+      val interestOverview = InterestOverview(
+        periodStartDate         = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate           = Some(LocalDate.of(2024, 12, 31)),
+        interestAmount          = BigDecimal(-81.84),
+        interestAccruingAmount  = BigDecimal(-25.76),
+        repaymentInterestAmount = BigDecimal(41.23),
+        total                   = BigDecimal(66.37)
+      )
+
+      "must fetch interest overview" in {
+        val mockConnector = mock[GamblingConnector]
+        when(mockConnector.getInterestOverview(eqTo(regime), eqTo(regNumber))(using any[HeaderCarrier]()))
+          .thenReturn(Future.successful(interestOverview))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getInterestOverview(regime, regNumber).futureValue
+
+        result mustEqual interestOverview
       }
     }
   }
