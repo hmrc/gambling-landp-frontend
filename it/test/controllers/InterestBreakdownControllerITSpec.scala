@@ -29,7 +29,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.http.test.WireMockSupport
 
-class InterestOverviewControllerITSpec
+class InterestBreakdownControllerITSpec
     extends AnyFreeSpec
     with Matchers
     with OptionValues
@@ -70,9 +70,9 @@ class InterestOverviewControllerITSpec
       get(urlEqualTo(s"/gambling/interest-overview/$regime/$regNumber")).willReturn(okJson(responseJson))
     )
 
-  private val url = routes.InterestOverviewController.onPageLoad().url
+  private val url = routes.InterestBreakdownController.onPageLoad().url
 
-  "InterestOverviewController" - {
+  "InterestBreakdownController" - {
 
     "session validation" - {
 
