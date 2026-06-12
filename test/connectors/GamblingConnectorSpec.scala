@@ -1054,8 +1054,8 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
       val interestDetailsResponseJson =
         s"""
            |{
-           |  "periodStartDate": "2023-03-01",
-           |  "periodEndDate": "2024-03-11",
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
            |  "total": -800.00,
            |  "totalRecords": 1,
            |  "items": [

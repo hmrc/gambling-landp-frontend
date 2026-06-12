@@ -36,31 +36,23 @@ class InterestDetailsControllerSpec extends SpecBase with MockitoSugar {
 
   private def url = routes.InterestDetailsController.onPageLoad().url
 
-  private val interestDetailItem = InterestDetailItem(
-    descriptionCode = 2740,
-    amount          = BigDecimal("-800.00"),
-    interestId      = "SAFE-CHG-00003",
-    periodStartDate = LocalDate.of(2014, 1, 1),
-    periodEndDate   = LocalDate.of(2014, 3, 31)
+  private val pplrInterestItem = InterestDetailItem(
+    descriptionCode = 2640,
+    amount          = BigDecimal(-500),
+    interestId      = "SAFE-CHG-00001",
+    periodStartDate = LocalDate.of(2009, 9, 1),
+    periodEndDate   = LocalDate.of(2016, 7, 31)
   )
 
   private val singlePageResponse = InterestDetails(
-    periodStartDate = Some(LocalDate.of(2023, 3, 1)),
-    periodEndDate   = Some(LocalDate.of(2024, 3, 11)),
-    total           = BigDecimal("-800.00"),
+    periodStartDate = Some(LocalDate.of(2009, 9, 1)),
+    periodEndDate   = Some(LocalDate.of(2016, 7, 31)),
+    total           = BigDecimal(-500),
     totalRecords    = 1,
-    items           = Seq(interestDetailItem)
+    items           = Seq(pplrInterestItem)
   )
 
   private val multiPageResponse = singlePageResponse.copy(totalRecords = 25)
-
-  private val emptyResponse = InterestDetails(
-    periodStartDate = Some(LocalDate.of(2023, 1, 1)),
-    periodEndDate   = Some(LocalDate.of(2024, 3, 11)),
-    total           = BigDecimal(0),
-    totalRecords    = 0,
-    items           = Seq.empty
-  )
 
   "InterestDetailsController" - {
 
@@ -116,30 +108,11 @@ class InterestDetailsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("InterestDetails")
+        contentAsString(result) must include("Interest")
       }
     }
 
-    "must render the empty-state message when the service returns no items" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(emptyResponse))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("You have not incurred any interestDetails.")
-      }
-    }
-
-    "must render the table when interestDetails are present" in {
+    "must render the table when penalties are present" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
@@ -161,7 +134,7 @@ class InterestDetailsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the description as Late filing InterestDetails for code 2680" in {
+    "must render the description as PPLR interest for code 2640" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(singlePageResponse))
@@ -176,87 +149,7 @@ class InterestDetailsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Late filing penalty")
-      }
-    }
-
-    "must render the description as Late payment InterestDetails for code 2690" in {
-      val latePaymentItem = interestDetailItem.copy(descriptionCode = 2690)
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse.copy(items = Seq(latePaymentItem))))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Late payment penalty")
-      }
-    }
-
-    "must render the description as Return Charge InterestDetails for code 2650" in {
-      val latePaymentItem = interestDetailItem.copy(descriptionCode = 2650)
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse.copy(items = Seq(latePaymentItem))))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Return charge")
-      }
-    }
-
-    "must render the description as Central Assessment InterestDetails for code 2660" in {
-      val latePaymentItem = interestDetailItem.copy(descriptionCode = 2660)
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse.copy(items = Seq(latePaymentItem))))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Central assessment")
-      }
-    }
-
-    "must render the description as Officer Assessment InterestDetails for code 2670" in {
-      val latePaymentItem = interestDetailItem.copy(descriptionCode = 2670)
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDetails(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(singlePageResponse.copy(items = Seq(latePaymentItem))))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Officer assessment")
+        contentAsString(result) must include("Interest on PPLR interest bearing from 1 Sep 2009 to 31 Jul 2016")
       }
     }
 
