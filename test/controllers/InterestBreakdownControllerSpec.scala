@@ -30,7 +30,7 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class InterestOverviewControllerSpec extends SpecBase with MockitoSugar {
+class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
@@ -43,9 +43,9 @@ class InterestOverviewControllerSpec extends SpecBase with MockitoSugar {
     total                   = BigDecimal(66.37)
   )
 
-  "InterestOverviewController" - {
+  "InterestBreakdownController" - {
 
-    def url = routes.InterestOverviewController.onPageLoad().url
+    def url = routes.InterestBreakdownController.onPageLoad().url
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
