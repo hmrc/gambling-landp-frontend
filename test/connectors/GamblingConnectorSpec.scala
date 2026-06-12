@@ -21,6 +21,7 @@ import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
 import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
 import models.interest.InterestOverview
+import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem, InterestDetailItem, InterestDetails}
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
@@ -1103,6 +1104,89 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getInterestOverview(otherRegime, otherRegNumber).futureValue
 
           result mustEqual expectedInterestOverviewResponse
+        }
+      }
+    }
+
+    "getInterestDetails" - {
+
+      val interestDetailsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": -800.00,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "descriptionCode": 2740,
+           |      "amount": -800.00,
+           |      "interestId":"SAFE-CHG-00003",
+           |      "periodStartDate": "2014-01-01",
+           |      "periodEndDate": "2014-03-31"
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedInterestDetailsResponse = InterestDetails(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("-800.0"),
+        totalRecords    = 1,
+        items = Seq(
+          InterestDetailItem(2740, BigDecimal("-800.0"), "SAFE-CHG-00003", LocalDate.of(2014, 1, 1), LocalDate.of(2014, 3, 31))
+        )
+      )
+
+      "must return a deserialized InterestDetails for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDetails(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestDetailsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-details/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDetails(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestDetailsResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-details/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(interestDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDetails(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedInterestDetailsResponse
         }
       }
     }
