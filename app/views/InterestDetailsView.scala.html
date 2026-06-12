@@ -26,11 +26,11 @@ govukTable: GovukTable,
 pagination: components.Pagination
 )
 
-@(regime: Regime, regNumber: String, paginationParams: PaginationParams, interestDetails: InterestDetails)(implicit request: Request[_], messages: Messages)
+@(regime: Regime, regNumber: String, paginationParams: PaginationParams, model: InterestDetails)(implicit request: Request[_], messages: Messages)
 
 @pageUrl(p: Int) = @{controllers.routes.InterestDetailsController.onPageLoad(paginationParams.pageSize, p)}
 
-@dateRange = @{ messages("interestDetails.period", DateTimeFormats.formatDateFull(interestDetails.periodStartDate), DateTimeFormats.formatDateFull(interestDetails.periodEndDate)) }
+@dateRange = @{ messages("interestDetails.period", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate)) }
 
 @linkOrText(label: String, amount: BigDecimal, href: String) = @{
     HtmlContent(
@@ -40,16 +40,19 @@ pagination: components.Pagination
 }
 
 @tableRows = @{
-    interestDetails.items.zipWithIndex.map { case (item, i) =>
+    model.items.zipWithIndex.map { case (item, i) =>
         Seq(
-            TableRow(content = linkOrText(messages(s"interestDetails.description.${item.descriptionCode}", DateTimeFormats.formatDate(Some(item.periodStartDate)), DateTimeFormats.formatDate(Some(item.periodEndDate))), item.amount,
-             routes.InterestAccruingController.onPageLoad(item.interestId).url), attributes = Map("data-testid" -> s"description-$i")),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
-        )
+            TableRow(content = linkOrText(
+                messages(s"interestDetails.description.${item.descriptionCode}", DateTimeFormats.formatDate(Some(item.periodStartDate)), DateTimeFormats.formatDate(Some(item.periodEndDate))),
+                item.amount,
+                routes.InterestAccruingController.onPageLoad(item.interestId).url
+                ), attributes = Map("data-testid" -> s"description-$i")),
+                TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
+            )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
-        TableRow(content = HtmlContent(s"<strong>${messages("interestDetails.table.total")}</strong>")),
-        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(interestDetails.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "interestDetails-total"))
-    )) else Seq.empty)
+                TableRow(content = HtmlContent(s"<strong>${messages("interestDetails.table.total")}</strong>")),
+                TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "interestDetails-total"))
+            )) else Seq.empty)
 }
 
 @breadcrumbs = {
@@ -68,28 +71,31 @@ pagination: components.Pagination
     beforeContent = Some(breadcrumbs)
 ) {
 
-    <h1 class="govuk-heading-l" data-testid="interestDetails-heading">
+<h1 class="govuk-heading-l" data-testid="interestDetails-heading">
     @messages("interestDetails.heading")
-    </h1>
-    <p class="govuk-body">
+</h1>
+<p class="govuk-body">
     @messages("interestDetails.p1")
-    </p>
+</p>
 
-
-    @if(interestDetails.items.isEmpty) {
+    @if(model.items.isEmpty) {
         <p class="govuk-body">@messages("interestDetails.empty")</p>
     } else {
         @if(paginationParams.totalPages > 1) {
-        <p class="govuk-body" data-testid="total-summary">@messages("interestDetails.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(interestDetails.total)</p>
-        <p class="govuk-body" data-testid="pagination-info">@messages("interestDetails.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
+        <p class="govuk-body" data-testid="total-summary">
+        @messages("interestDetails.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(model.total)
+        </p>
+        <p class="govuk-body" data-testid="pagination-info">
+        @messages("interestDetails.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)
+        </p>
     }
 
         @govukTable(Table(
             attributes = Map("data-testid" -> "interestDetails-table"),
             head = Some(Seq(
-                HeadCell(content = Text(messages("interestDetails.table.description"))),
-                HeadCell(content = Text(messages("interestDetails.table.amount")), format = Some("numeric"))
-            )),
+            HeadCell(content = Text(messages("interestDetails.table.description"))),
+            HeadCell(content = Text(messages("interestDetails.table.amount")), format = Some("numeric"))
+        )),
             rows = tableRows
         ))
 
