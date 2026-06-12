@@ -92,7 +92,7 @@
                 TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(overview.otherAssessments).body), format = Some("numeric"), attributes = Map("data-testid" -> "other-assessments-total"))
             ),
             Seq(
-                TableRow(content = Text(messages("statement.table.interest"))),
+                TableRow(content = HtmlContent(s"""<a class="govuk-link" href="${controllers.routes.InterestOverviewController.onPageLoad()}">${messages("statement.table.interest")}</a>""")),
                 TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(overview.interest).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-total"))
             ),
             Seq(

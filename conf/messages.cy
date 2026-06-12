@@ -191,6 +191,17 @@ repaymentInterestRepaid.table.total = Total
 repaymentInterestRepaid.totalSummary = The total of the {0} records is
 repaymentInterestRepaid.displaying = Displaying {0} to {1} of {2} records
 
+interestOverview.title = Breakdown of interest
+interestOverview.heading = Breakdown of interest
+interestOverview.p1 = The amount of unpaid interest on your account.
+interestOverview.empty = There is no unpaid interest on your account.
+interestOverview.table.Interest = Interest
+interestOverview.table.AccruingInterest = Accruing interest
+interestOverview.table.RepaymentInterest  = Repayment interest
+interestOverview.table.description = Description
+interestOverview.table.amount = Amount
+interestOverview.table.total = Total
+
 interestDetails.title = Interest
 interestDetails.heading = Interest
 interestDetails.p1 = The amount of unpaid interest on duty and penalties.
