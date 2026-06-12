@@ -19,8 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import models.StatementOverview
 import models.assessments.Assessments
-import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
-import models.interest.InterestOverview
+import models.interest.{InterestAccruingDetails, InterestOverview}
 import models.payments.Payments
 import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}

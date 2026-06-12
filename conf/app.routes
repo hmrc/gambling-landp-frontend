@@ -22,6 +22,7 @@ GET        /statement/other-assessments                  controllers.OtherAssess
 
 GET        /statement/assessments                        controllers.AssessmentInAbsenceOfReturnsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
+GET        /statement/interest-breakdown                  controllers.InterestBreakdownController.onPageLoad()
 GET        /statement/interest-breakdown/interest-accruing/details/:interestId       controllers.InterestAccruingController.onPageLoad(interestId: String, pageSize: Int ?= 10, pageNo: Int ?= 1)
 
 GET        /statement/payments                           controllers.PaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
@@ -29,7 +30,6 @@ GET        /statement/payments                           controllers.PaymentsCon
 GET        /statement/repayments                         controllers.RepaymentsController.onPageLoad()
 GET        /statement/actual-repayments                  controllers.ActualRepaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 
-GET        /statement/interest-overview                  controllers.InterestOverviewController.onPageLoad()
 
 GET        /assets/*file                                 controllers.Assets.versioned(path="/public", file: Asset)
 

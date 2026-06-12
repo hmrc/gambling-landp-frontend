@@ -23,16 +23,16 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.InterestOverviewView
+import views.html.InterestBreakdownView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class InterestOverviewController @Inject() (
+class InterestBreakdownController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestOverviewView
+  view: InterestBreakdownView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
