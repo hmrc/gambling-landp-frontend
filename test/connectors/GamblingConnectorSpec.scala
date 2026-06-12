@@ -1049,6 +1049,118 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
       }
     }
 
+    "getInterestDrilldown" - {
+
+      val interestId = "INT-001"
+
+      val interestDrilldownResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": 123.45,
+           |  "totalRecords": 1,
+           |  "descriptionCode": 2650,
+           |  "items": [
+           |    {
+           |      "interestOn": 1000.00,
+           |      "dateFrom": "2024-01-01",
+           |      "dateTo": "2024-03-31",
+           |      "noOfDays": 90,
+           |      "rate": 2.5,
+           |      "amount": 123.45
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedInterestDrilldownResponse = InterestDrilldown(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("123.45"),
+        totalRecords    = 1,
+        descriptionCode = 2650,
+        items = Seq(
+          InterestDrilldownItem(
+            interestOn = BigDecimal("1000.0"),
+            dateFrom   = LocalDate.of(2024, 1, 1),
+            dateTo     = LocalDate.of(2024, 3, 31),
+            noOfDays   = BigDecimal("90"),
+            rate       = BigDecimal("2.5"),
+            amount     = BigDecimal("123.45")
+          )
+        )
+      )
+
+      "must return a deserialized InterestDrilldown for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestDrilldownResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDrilldown(regime, regNumber, interestId, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestDrilldownResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-drilldown/$otherRegime/$otherRegNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestDrilldownResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDrilldown(otherRegime, otherRegNumber, interestId, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestDrilldownResponse
+        }
+      }
+
+      "must forward the correct interestId in the URL" in {
+        val otherId = "INT-999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-drilldown/$regime/$regNumber/$otherId?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestDrilldownResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDrilldown(regime, regNumber, otherId, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestDrilldownResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-drilldown/$regime/$regNumber/$interestId?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(interestDrilldownResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestDrilldown(regime, regNumber, interestId, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedInterestDrilldownResponse
+        }
+      }
+    }
+
     "getInterestOverview" - {
 
       val interestOverviewResponseJson =

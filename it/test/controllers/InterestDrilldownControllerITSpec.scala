@@ -29,18 +29,12 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.http.test.WireMockSupport
 
-class InterestAccruingControllerITSpec
-    extends AnyFreeSpec
-    with Matchers
-    with OptionValues
-    with WireMockSupport
-    with ScalaFutures
-    with IntegrationPatience {
+class InterestDrilldownControllerITSpec extends AnyFreeSpec with Matchers with OptionValues with WireMockSupport with ScalaFutures with IntegrationPatience {
 
-  private val regime    = "gbd"
+  private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
-  private val interestAccruingJson =
+  private val interestJson =
     s"""
        |{
        |  "periodStartDate": "2024-01-01",
@@ -96,24 +90,18 @@ class InterestAccruingControllerITSpec
       .build()
 
   private val interestId = "INT-001"
-  private val pageSize   = 10
-  private val pageNo     = 1
+  private val pageSize = 10
+  private val pageNo = 1
 
-  private def stubInterestAccruing(
-    regime: String,
-    regNumber: String,
-    responseJson: String,
-    interestId: String = interestId,
-    page: Int = pageNo
-  ): Unit =
+  private def stubInterest(regime: String, regNumber: String, responseJson: String, interestId: String = interestId, page: Int = pageNo): Unit =
     stubFor(
-      get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$page"))
+      get(urlEqualTo(s"/gambling/interest-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$page"))
         .willReturn(okJson(responseJson))
     )
 
-  private val url = routes.InterestAccruingController.onPageLoad(interestId).url
+  private val url = routes.InterestDrilldownController.onPageLoad(interestId).url
 
-  "InterestAccruingController" - {
+  "InterestDrilldownController" - {
 
     "session validation" - {
 
@@ -122,7 +110,7 @@ class InterestAccruingControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -134,7 +122,7 @@ class InterestAccruingControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -158,6 +146,12 @@ class InterestAccruingControllerITSpec
     "successful page load" - {
 
       Seq(
+        (1940, "pplr interest bearing from"),
+        (1950, "return charge from"),
+        (1960, "central assessment from"),
+        (1970, "officer assessment from"),
+        (1980, "late filing penalty from"),
+        (1990, "late payment penalty from"),
         (2640, "pplr interest bearing"),
         (2650, "return charge"),
         (2655, "return interest"),
@@ -191,7 +185,7 @@ class InterestAccruingControllerITSpec
                |""".stripMargin
 
           val app = buildApp()
-          stubInterestAccruing(regime, regNumber, json)
+          stubInterest(regime, regNumber, json)
 
           running(app) {
             val request = FakeRequest(GET, url)
@@ -199,7 +193,7 @@ class InterestAccruingControllerITSpec
             val result = route(app, request).value
 
             status(result) mustEqual OK
-            contentAsString(result) must include(s"Interest accruing on [$label]")
+            contentAsString(result) must include(s"Interest on [$label]")
             contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
             contentAsString(result) must include("govuk-table")
           }
@@ -208,7 +202,7 @@ class InterestAccruingControllerITSpec
 
       "must render pagination and summary paragraphs when there are multiple pages" in {
         val app = buildApp()
-        stubInterestAccruing(regime, regNumber, multiPageJson)
+        stubInterest(regime, regNumber, multiPageJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
@@ -220,13 +214,13 @@ class InterestAccruingControllerITSpec
           body must include("govuk-pagination")
           body must include("The total of the 25 records is")
           body must include("Displaying 1 to 10 of 25 records")
-          body must not include "interest-accruing-total"
+          body must not include "interest-total"
         }
       }
 
       "must not render pagination when there is only one page" in {
         val app = buildApp()
-        stubInterestAccruing(regime, regNumber, interestAccruingJson)
+        stubInterest(regime, regNumber, interestJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
@@ -243,7 +237,7 @@ class InterestAccruingControllerITSpec
 
       "must not render the total row in the table when there are multiple pages" in {
         val app = buildApp()
-        stubInterestAccruing(regime, regNumber, multiPageJson)
+        stubInterest(regime, regNumber, multiPageJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
@@ -257,10 +251,10 @@ class InterestAccruingControllerITSpec
 
       "must return Not Found with page not found content when pageNo exceeds totalPages" in {
         val app = buildApp()
-        stubInterestAccruing(regime, regNumber, multiPageJson, page = 99)
+        stubInterest(regime, regNumber, multiPageJson, page = 99)
 
         running(app) {
-          val request = FakeRequest(GET, routes.InterestAccruingController.onPageLoad(interestId, pageSize, 99).url)
+          val request = FakeRequest(GET, routes.InterestDrilldownController.onPageLoad(interestId, pageSize, 99).url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
@@ -283,7 +277,7 @@ class InterestAccruingControllerITSpec
              |""".stripMargin
 
         val app = buildApp()
-        stubInterestAccruing(regime, regNumber, emptyJson)
+        stubInterest(regime, regNumber, emptyJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
@@ -301,7 +295,7 @@ class InterestAccruingControllerITSpec
       Seq("gbd", "pbd", "rgd", "mgd").foreach { code =>
 
         s"must pass regime code '$code' through to the backend" in {
-          stubInterestAccruing(code, regNumber, interestAccruingJson)
+          stubInterest(code, regNumber, interestJson)
 
           val app = buildApp()
 
@@ -313,7 +307,7 @@ class InterestAccruingControllerITSpec
             status(result) mustEqual OK
             verify(1,
                    getRequestedFor(
-                     urlEqualTo(s"/gambling/interest-accruing-drilldown/$code/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
+                     urlEqualTo(s"/gambling/interest-drilldown/$code/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
                    )
                   )
           }
@@ -322,7 +316,7 @@ class InterestAccruingControllerITSpec
 
       "must pass the registration number through to the backend unchanged" in {
         val otherRegNumber = "XWM00003102999"
-        stubInterestAccruing(regime, otherRegNumber, interestAccruingJson)
+        stubInterest(regime, otherRegNumber, interestJson)
 
         val app = buildApp()
 
@@ -334,7 +328,7 @@ class InterestAccruingControllerITSpec
           status(result) mustEqual OK
           verify(1,
                  getRequestedFor(
-                   urlEqualTo(s"/gambling/interest-accruing-drilldown/$regime/$otherRegNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
+                   urlEqualTo(s"/gambling/interest-drilldown/$regime/$otherRegNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
                  )
                 )
         }
