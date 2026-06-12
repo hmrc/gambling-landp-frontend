@@ -18,23 +18,23 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.interest.InterestAccruingDetails
+import models.interest.InterestDetails
 import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{InterestAccruingView, PageNotFoundView}
+import views.html.{InterestDetailsView, PageNotFoundView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class InterestAccruingController @Inject() (
+class InterestController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestAccruingView
+  view: InterestDetailsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -44,12 +44,11 @@ class InterestAccruingController @Inject() (
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))) { validRegime =>
-          gamblingService.getInterestAccruing(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
-            case interestAccruing @ InterestAccruingDetails(_, _, _, _, _, items) if items.nonEmpty =>
-              val pagination = PaginationParams(interestAccruing.totalRecords, pageSize, pageNo)
+          gamblingService.getInterest(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
+            case interestDetails @ InterestDetails(_, _, _, _, _, items) if items.nonEmpty =>
+              val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
               if (pagination.isOutOfRange) Redirect(routes.PageNotFoundController.onPageLoad())
-              else
-                Ok(view(interestId, pagination, interestAccruing))
+              else Ok(view(interestId, pagination, interestDetails))
             case _ => Redirect(routes.PageNotFoundController.onPageLoad())
           }
         }

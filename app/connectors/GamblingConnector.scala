@@ -19,7 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import models.StatementOverview
 import models.assessments.Assessments
-import models.interest.{InterestAccruingDetails, InterestOverview}
+import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem, InterestDetails, InterestOverview}
 import models.payments.Payments
 import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}
@@ -108,6 +108,13 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
       .execute[InterestAccruingDetails]
+
+  def getInterestDetails(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(using
+    hc: HeaderCarrier
+  ): Future[InterestDetails] =
+    httpClient
+      .get(url"$baseUrl/interest-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[InterestDetails]
 
   def getInterestOverview(regime: String, regNumber: String)(using hc: HeaderCarrier): Future[InterestOverview] =
     httpClient
