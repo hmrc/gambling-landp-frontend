@@ -19,13 +19,11 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
-import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
-import models.interest.InterestOverview
-import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem, InterestDetailItem, InterestDetails}
+import models.interest.*
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
-import models.repayments.{ActualRepaymentItem, ActualRepayments, RepaymentInterestRepaid, RepaymentInterestRepaidItem, RepaymentsSummary}
+import models.repayments.*
 import models.returns.{AmountDeclared, ReturnsSubmitted}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec

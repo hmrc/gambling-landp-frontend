@@ -49,7 +49,7 @@
 @tableRows = @{
     {Seq(
         Seq(
-            TableRow(content = linkOrText(messages("interestBreakdown.table.Interest"), model.interestAmount, controllers.routes.ActualRepaymentsController.onPageLoad().url)),
+            TableRow(content = linkOrText(messages("interestBreakdown.table.Interest"), model.interestAmount, controllers.routes.InterestDetailsController.onPageLoad().url)),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.interestAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-breakdown-interest-amount"))
         ),
         Seq(

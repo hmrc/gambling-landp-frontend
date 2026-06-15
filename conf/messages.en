@@ -216,6 +216,7 @@ interestBreakdown.table.total = Total
 
 interestDetails.title = Interest
 interestDetails.heading = Interest
+interestDetails.breadcrumb = Interest breakdown
 interestDetails.p1 = The amount of unpaid interest on duty and penalties.
 interestDetails.empty = You have not incurred any penalties.
 interestDetails.table.description = Description
