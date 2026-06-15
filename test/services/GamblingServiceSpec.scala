@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.GamblingConnector
 import models.StatementOverview
 import models.assessments.{AssessmentItem, Assessments}
-import models.interest.InterestOverview
+import models.interest.{InterestDrilldown, InterestDrilldownItem, InterestOverview}
 import models.payments.{PaymentItem, Payments}
 import models.penalties.{Penalties, PenaltyItem}
 import models.reallocations.{ReallocationItem, Reallocations, ReallocationsDetails}
@@ -560,6 +560,76 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
         val result = service.getRepaymentsSummary(regime, regNumber).futureValue
 
         result mustEqual repaymentsSummary
+      }
+    }
+
+    "getInterestDrilldown" - {
+
+      val interestId = "INT-001"
+
+      val interestDrilldownResponse = InterestDrilldown(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("123.45"),
+        totalRecords    = 1,
+        descriptionCode = 2650,
+        items = Seq(
+          InterestDrilldownItem(
+            interestOn = BigDecimal("1000.00"),
+            dateFrom   = LocalDate.of(2024, 1, 1),
+            dateTo     = LocalDate.of(2024, 3, 31),
+            noOfDays   = BigDecimal(90),
+            rate       = BigDecimal("2.5"),
+            amount     = BigDecimal("123.45")
+          )
+        )
+      )
+
+      "must delegate to the connector with the correct arguments and return its result" in {
+        val mockConnector = mock[GamblingConnector]
+        when(
+          mockConnector.getInterestDrilldown(eqTo(regime), eqTo(regNumber), eqTo(interestId), eqTo(pageSize), eqTo(pageNo))(using
+            any[HeaderCarrier]()
+          )
+        )
+          .thenReturn(Future.successful(interestDrilldownResponse))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getInterestDrilldown(regime, regNumber, interestId, pageSize, pageNo).futureValue
+
+        result mustEqual interestDrilldownResponse
+      }
+
+      "must delegate with the correct regime code when a different regime is provided" in {
+        val mockConnector = mock[GamblingConnector]
+        val otherRegime = "mgd"
+        when(
+          mockConnector.getInterestDrilldown(eqTo(otherRegime), eqTo(regNumber), eqTo(interestId), eqTo(pageSize), eqTo(pageNo))(using
+            any[HeaderCarrier]()
+          )
+        )
+          .thenReturn(Future.successful(interestDrilldownResponse))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getInterestDrilldown(otherRegime, regNumber, interestId, pageSize, pageNo).futureValue
+
+        result mustEqual interestDrilldownResponse
+      }
+
+      "must propagate failures from the connector" in {
+        val mockConnector = mock[GamblingConnector]
+        val exception = new RuntimeException("upstream failure")
+        when(
+          mockConnector.getInterestDrilldown(eqTo(regime), eqTo(regNumber), eqTo(interestId), eqTo(pageSize), eqTo(pageNo))(using
+            any[HeaderCarrier]()
+          )
+        )
+          .thenReturn(Future.failed(exception))
+
+        val service = new GamblingService(mockConnector)
+        val result = service.getInterestDrilldown(regime, regNumber, interestId, pageSize, pageNo).failed.futureValue
+
+        result mustEqual exception
       }
     }
 
