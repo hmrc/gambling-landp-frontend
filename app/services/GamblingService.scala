@@ -79,10 +79,10 @@ class GamblingService @Inject() (connector: GamblingConnector) {
   def getInterestDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[InterestDetails] =
     connector.getInterestDetails(regime, regNumber, pageSize, pageNo)
 
-  def getInterestAccruing(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
+  def getInterestAccruingDrilldown(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
     hc: HeaderCarrier
   ): Future[InterestAccruingDrilldown] =
-    connector.getInterestAccruingDetails(regime, regNumber, interestId, pageSize, pageNo)
+    connector.getInterestAccruingDrilldown(regime, regNumber, interestId, pageSize, pageNo)
 
   def getInterestDrilldown(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
     hc: HeaderCarrier

@@ -112,7 +112,7 @@ class GamblingConnector @Inject() (
       .get(url"$baseUrl/interest-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[InterestDetails]
 
-  def getInterestAccruingDetails(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(using
+  def getInterestAccruingDrilldown(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(using
     hc: HeaderCarrier
   ): Future[InterestAccruingDrilldown] =
     httpClient
