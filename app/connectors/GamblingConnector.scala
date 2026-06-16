@@ -102,6 +102,11 @@ class GamblingConnector @Inject() (
       .get(url"$baseUrl/statement-overview/$regime/$regNumber")
       .execute[StatementOverview]
 
+  def getRepaymentInterestDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[InterestDetails] =
+    httpClient
+      .get(url"$baseUrl/repayment-interest-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[InterestDetails]
+
   def getInterestDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[InterestDetails] =
     httpClient
       .get(url"$baseUrl/interest-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")

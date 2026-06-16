@@ -228,6 +228,23 @@ interestDetails.table.total = Total
 interestDetails.totalSummary = The total of the {0} records is
 interestDetails.displaying = Displaying {0} to {1} of {2} records
 
+repaymentInterestDetails.title = Repayment interest
+repaymentInterestDetails.heading = Repayment interest
+repaymentInterestDetails.breadcrumb = Interest breakdown
+repaymentInterestDetails.p1 = The amount of unpaid interest on duty and penalties.
+repaymentInterestDetails.empty = There are no repayment interest details.
+repaymentInterestDetails.table.description = Description
+repaymentInterestDetails.table.amount = Amount
+repaymentInterestDetails.table.total = Total
+repaymentInterestDetails.totalSummary = The total of the {0} records is
+repaymentInterestDetails.displaying = Displaying {0} to {1} of {2} records
+repaymentInterestDetails.description.1940 = Interest on PPLR interest bearing from {0} to {1}
+repaymentInterestDetails.description.1950 = Interest on return charge from {0} to {1}
+repaymentInterestDetails.description.1960 = Interest on central assessment from {0} to {1}
+repaymentInterestDetails.description.1970 = Interest on officer assessment from {0} to {1}
+repaymentInterestDetails.description.1980 = Interest on late filing penalty from {0} to {1}
+repaymentInterestDetails.description.1990 = Interest on late payment penalty from {0} to {1}
+
 interestAccruing.title = Interest accruing
 interestAccruing.heading = Interest accruing on [{0}]
 interestAccruing.p1 = The amount of unpaid interest on [{0}].
