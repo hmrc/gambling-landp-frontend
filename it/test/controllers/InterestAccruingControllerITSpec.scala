@@ -141,7 +141,7 @@ class InterestAccruingControllerITSpec
         }
       }
 
-      "must redirect to PageNotFound when the session contains an unrecognised regime" in {
+      "must return PageNotFound when the session contains an unrecognised regime" in {
         val app = buildApp()
 
         running(app) {
@@ -149,8 +149,8 @@ class InterestAccruingControllerITSpec
             .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
     }
@@ -264,12 +264,12 @@ class InterestAccruingControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
 
-      "must redirect to page not found when data has 0 items" in {
+      "must return page not found when data has 0 items" in {
         val emptyJson =
           s"""
              |{
@@ -290,8 +290,8 @@ class InterestAccruingControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
     }

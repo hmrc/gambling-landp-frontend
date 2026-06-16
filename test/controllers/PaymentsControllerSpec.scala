@@ -86,7 +86,7 @@ class PaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to page not found when session contains an unrecognised regime" in {
+    "must return page not found when session contains an unrecognised regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
@@ -94,8 +94,8 @@ class PaymentsControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
       }
     }
 

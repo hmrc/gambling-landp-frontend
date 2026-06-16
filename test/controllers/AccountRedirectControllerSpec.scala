@@ -75,15 +75,15 @@ class AccountRedirectControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to page not found for an unrecognised regime" in {
+    "must return page not found for an unrecognised regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
         val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("unknown", regNumber).url)
         val result = route(app, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
       }
     }
   }

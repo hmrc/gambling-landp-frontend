@@ -47,7 +47,7 @@ class ReturnsSubmittedController @Inject() (
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
-            Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
+            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
           case Some(validRegime) =>
             gamblingService.getReturnsSubmitted(validRegime.code, regNumber, pageSize, pageNo).map { returns =>
               val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)

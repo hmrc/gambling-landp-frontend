@@ -46,7 +46,7 @@ class ReallocationsOutController @Inject() (
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
-            Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
+            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
           case Some(validRegime) =>
             gamblingService.getReallocationsOut(validRegime.code, regNumber, pageSize, pageNo).map { reallocations =>
               val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
