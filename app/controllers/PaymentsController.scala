@@ -46,7 +46,7 @@ class PaymentsController @Inject() (
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
-            Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
+            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
           case Some(validRegime) =>
             gamblingService.getPayments(validRegime.code, regNumber, pageSize, pageNo).map { payments =>
               val pagination = PaginationParams(payments.totalRecords, pageSize, pageNo)

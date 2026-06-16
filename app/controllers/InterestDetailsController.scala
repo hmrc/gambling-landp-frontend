@@ -46,7 +46,7 @@ class InterestDetailsController @Inject() (
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
           case None =>
-            Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))
+            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
           case Some(validRegime) =>
             gamblingService.getInterestDetails(validRegime.code, regNumber, pageSize, pageNo).map { interestDetails =>
               val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)

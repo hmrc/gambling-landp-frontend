@@ -44,7 +44,7 @@ class AssessmentInAbsenceOfReturnsController @Inject() (
   def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))) { validRegime =>
+        Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
           gamblingService.getAssessmentsWithoutReturns(validRegime.code, regNumber, pageSize, pageNo).map { assessments =>
             val pagination = PaginationParams(assessments.totalRecords.getOrElse(0), pageSize, pageNo)
             if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))

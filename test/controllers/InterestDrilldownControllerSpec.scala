@@ -82,7 +82,7 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to page not found when session contains an unrecognised regime" in {
+    "must return page not found when session contains an unrecognised regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
@@ -90,8 +90,8 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
       }
     }
 
@@ -176,7 +176,7 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to page not found when data has 0 items" in {
+    "must return page not found when data has 0 items" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(interestDrilldown.copy(items = Seq.empty, total = BigDecimal(0))))
@@ -190,8 +190,8 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
       }
     }
 

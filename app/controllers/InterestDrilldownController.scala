@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
 import models.interest.InterestDrilldown
 import models.{PaginationParams, Regime, SessionKeys}
@@ -24,7 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.InterestDrilldownView
+import views.html.{InterestDrilldownView, PageNotFoundView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,7 +34,9 @@ class InterestDrilldownController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestDrilldownView
+  view: InterestDrilldownView,
+  pageNotFoundView: PageNotFoundView,
+  appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -42,13 +45,13 @@ class InterestDrilldownController @Inject() (
   def onPageLoad(interestId: String, pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))) { validRegime =>
+        Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
           gamblingService.getInterestDrilldown(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
             case interestDetails @ InterestDrilldown(_, _, _, _, _, items) if items.nonEmpty =>
               val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
-              if (pagination.isOutOfRange) Redirect(routes.PageNotFoundController.onPageLoad())
+              if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else Ok(view(interestId, pagination, interestDetails))
-            case _ => Redirect(routes.PageNotFoundController.onPageLoad())
+            case _ => NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
           }
         }
       case _ =>
