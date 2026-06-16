@@ -158,15 +158,21 @@ class InterestAccruingControllerITSpec
     "successful page load" - {
 
       Seq(
-        (2640, "pplr interest bearing"),
-        (2650, "return charge"),
-        (2655, "return interest"),
-        (2660, "central assessment"),
-        (2670, "officer assessment"),
-        (2680, "late filing penalty"),
-        (2685, "late filing penalty interest"),
-        (2690, "late payment penalty"),
-        (2695, "late payment penalty interest")
+        (1940, "PPLR Interest Bearing From"),
+        (1950, "Return Charge From"),
+        (1960, "Central Assessment From"),
+        (1970, "Officer Assessment From"),
+        (1980, "Late Filing Penalty From"),
+        (1990, "Late Payment Penalty From"),
+        (2640, "PPLR Interest Bearing"),
+        (2650, "Return Charge"),
+        (2655, "Return Interest"),
+        (2660, "Central Assessment"),
+        (2670, "Officer Assessment"),
+        (2680, "Late Filing Penalty"),
+        (2685, "Late Filing Penalty Interest"),
+        (2690, "Late Payment Penalty"),
+        (2695, "Late Payment Penalty Interest")
       ).foreach { case (code, label) =>
         s"must render the heading, paragraph for description code $code ($label) and table" in {
           val json =
