@@ -53,7 +53,7 @@
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.interestAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-breakdown-interest-amount"))
         ),
         Seq(
-            TableRow(content = linkOrText(messages("interestBreakdown.table.AccruingInterest"), model.interestAccruingAmount, controllers.routes.RepaymentInterestRepaidController.onPageLoad().url)),
+            TableRow(content = linkOrText(messages("interestBreakdown.table.AccruingInterest"), model.interestAccruingAmount, "#")),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.interestAccruingAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-breakdown-interest-accruing-amount"))
         )
     )} ++ (if (regime==Regime.MGD) Seq(Seq(
