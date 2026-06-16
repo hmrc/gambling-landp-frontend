@@ -71,7 +71,7 @@
 }
 
 @layout(
-    pageTitle = titleNoForm(messages("interestAccruing.title")),
+    pageTitle = titleNoForm(messages("interestAccruing.title", messages(s"interestAccruing.description.code.${interestAccruing.descriptionCode}"))),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {

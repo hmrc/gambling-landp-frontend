@@ -25,7 +25,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{InterestAccruingView, PageNotFoundView}
+import views.html.{InterestAccruingDrilldownView, PageNotFoundView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +34,7 @@ class InterestAccruingController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestAccruingView,
+  view: InterestAccruingDrilldownView,
   pageNotFoundView: PageNotFoundView,
   appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)

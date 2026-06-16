@@ -127,8 +127,8 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          contentAsString(result) must include(s"Interest accruing on [$label]")
-          contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
+          contentAsString(result) must include(s"Interest (accruing) on $label")
+          contentAsString(result) must include(s"The amount of unpaid interest on $label.")
           contentAsString(result) must include("govuk-table")
         }
       }
