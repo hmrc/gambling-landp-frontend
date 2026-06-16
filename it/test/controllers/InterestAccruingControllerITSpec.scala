@@ -37,7 +37,7 @@ class InterestAccruingControllerITSpec
     with ScalaFutures
     with IntegrationPatience {
 
-  private val regime    = "gbd"
+  private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
   private val interestAccruingJson =
@@ -96,8 +96,8 @@ class InterestAccruingControllerITSpec
       .build()
 
   private val interestId = "INT-001"
-  private val pageSize   = 10
-  private val pageNo     = 1
+  private val pageSize = 10
+  private val pageNo = 1
 
   private def stubInterestAccruing(
     regime: String,
@@ -122,7 +122,7 @@ class InterestAccruingControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -134,7 +134,7 @@ class InterestAccruingControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -158,12 +158,12 @@ class InterestAccruingControllerITSpec
     "successful page load" - {
 
       Seq(
-        (1940, "PPLR Interest Bearing From"),
-        (1950, "Return Charge From"),
-        (1960, "Central Assessment From"),
-        (1970, "Officer Assessment From"),
-        (1980, "Late Filing Penalty From"),
-        (1990, "Late Payment Penalty From"),
+        (1940, "PPLR Interest Bearing"),
+        (1950, "Return Charge"),
+        (1960, "Central Assessment"),
+        (1970, "Officer Assessment"),
+        (1980, "Late Filing Penalty"),
+        (1990, "Late Payment Penalty"),
         (2640, "PPLR Interest Bearing"),
         (2650, "Return Charge"),
         (2655, "Return Interest"),

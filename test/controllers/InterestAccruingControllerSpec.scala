@@ -96,12 +96,12 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
     }
 
     Seq(
-      (1940, "PPLR Interest Bearing From"),
-      (1950, "Return Charge From"),
-      (1960, "Central Assessment From"),
-      (1970, "Officer Assessment From"),
-      (1980, "Late Filing Penalty From"),
-      (1990, "Late Payment Penalty From"),
+      (1940, "PPLR Interest Bearing"),
+      (1950, "Return Charge"),
+      (1960, "Central Assessment"),
+      (1970, "Officer Assessment"),
+      (1980, "Late Filing Penalty"),
+      (1990, "Late Payment Penalty"),
       (2640, "PPLR Interest Bearing"),
       (2650, "Return Charge"),
       (2655, "Return Interest"),
