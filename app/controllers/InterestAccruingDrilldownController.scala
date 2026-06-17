@@ -18,7 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.interest.InterestAccruingDetails
+import models.interest.InterestAccruingDrilldown
 import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -47,7 +47,7 @@ class InterestAccruingDrilldownController @Inject() (
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
           gamblingService.getInterestAccruing(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
-            case interestAccruing @ InterestAccruingDetails(_, _, _, _, _, items) if items.nonEmpty =>
+            case interestAccruing @ InterestAccruingDrilldown(_, _, _, _, _, items) if items.nonEmpty =>
               val pagination = PaginationParams(interestAccruing.totalRecords, pageSize, pageNo)
               if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else

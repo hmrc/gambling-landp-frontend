@@ -15,7 +15,7 @@
  *@
 
 @import config.CurrencyFormatter
-@import models.interest.InterestAccruingDetails
+@import models.interest.InterestAccruingDrilldown
 @import models.PaginationParams
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import utils.DateTimeFormats
@@ -26,7 +26,7 @@
         pagination: components.Pagination
 )
 
-@(interestId: String, paginationParams: PaginationParams, interestAccruing: InterestAccruingDetails)(implicit request: Request[_], messages: Messages)
+@(interestId: String, paginationParams: PaginationParams, interestAccruing: InterestAccruingDrilldown)(implicit request: Request[_], messages: Messages)
 
 @pageUrl(p: Int) = @{controllers.routes.InterestAccruingDrilldownController.onPageLoad(interestId, paginationParams.pageSize, p)}
 

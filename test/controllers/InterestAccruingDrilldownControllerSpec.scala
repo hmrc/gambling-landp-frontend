@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
+import models.interest.{InterestAccruingDrilldown, InterestAccruingDrilldownItem}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -34,7 +34,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
   private val regNumber = "XWM00003102200"
 
-  private val singleItem = InterestAccruingDetailsItem(
+  private val singleItem = InterestAccruingDrilldownItem(
     interestOn = BigDecimal(1000.00),
     dateFrom   = LocalDate.of(2024, 1, 1),
     dateTo     = LocalDate.of(2024, 3, 31),
@@ -43,7 +43,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
     amount     = BigDecimal(123.45)
   )
 
-  val interestAccruingDetails: InterestAccruingDetails = InterestAccruingDetails(
+  val interestAccruingDrilldown: InterestAccruingDrilldown = InterestAccruingDrilldown(
     periodStartDate = Some(LocalDate.of(2024, 1, 1)),
     periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
     total           = BigDecimal(123.45),
@@ -52,7 +52,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
     items           = Seq(singleItem)
   )
 
-  private val multiPageDetails: InterestAccruingDetails = interestAccruingDetails.copy(totalRecords = 25)
+  private val multiPageDetails: InterestAccruingDrilldown = interestAccruingDrilldown.copy(totalRecords = 25)
 
   "InterestAccruingDrilldownController" - {
 
@@ -115,7 +115,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
       s"must render the heading, paragraph for description code $code ($label) and table" in {
         val mockService = mock[GamblingService]
         when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(interestAccruingDetails.copy(descriptionCode = code)))
+          .thenReturn(Future.successful(interestAccruingDrilldown.copy(descriptionCode = code)))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))
@@ -137,7 +137,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
     "must return page not found when data has 0 items" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestAccruingDetails.copy(items = Seq.empty, total = BigDecimal(0))))
+        .thenReturn(Future.successful(interestAccruingDrilldown.copy(items = Seq.empty, total = BigDecimal(0))))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -179,7 +179,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
     "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestAccruingDetails))
+        .thenReturn(Future.successful(interestAccruingDrilldown))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -243,7 +243,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
         when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(interestAccruingDetails))
+          .thenReturn(Future.successful(interestAccruingDrilldown))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))
