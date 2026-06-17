@@ -898,11 +898,11 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
       }
     }
 
-    "getInterestAccruingDetails" - {
+    "getInterestAccruingDrilldown" - {
 
       val interestId = "INT-001"
 
-      val interestAccruingResponseJson =
+      val interestAccruingDrilldownResponseJson =
         s"""
            |{
            |  "periodStartDate": "2024-01-01",
@@ -923,7 +923,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |}
            |""".stripMargin
 
-      val expectedInterestAccruingResponse = InterestAccruingDrilldown(
+      val expectedInterestAccruingDrilldownResponse = InterestAccruingDrilldown(
         periodStartDate = Some(LocalDate.of(2024, 1, 1)),
         periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
         total           = BigDecimal("123.45"),
@@ -941,18 +941,18 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         )
       )
 
-      "must return a deserialized InterestAccruingDetails for a 200 response" in {
+      "must return a deserialized InterestAccruingDrilldown for a 200 response" in {
         stubFor(
           get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo"))
-            .willReturn(okJson(interestAccruingResponseJson))
+            .willReturn(okJson(interestAccruingDrilldownResponseJson))
         )
 
         val app = buildApp()
         running(app) {
           val connector = app.injector.instanceOf[GamblingConnector]
-          val result = connector.getInterestAccruingDetails(regime, regNumber, interestId, pageSize, pageNo).futureValue
+          val result = connector.getInterestAccruingDrilldown(regime, regNumber, interestId, pageSize, pageNo).futureValue
 
-          result mustEqual expectedInterestAccruingResponse
+          result mustEqual expectedInterestAccruingDrilldownResponse
         }
       }
 
@@ -963,15 +963,15 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
         stubFor(
           get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$otherRegime/$otherRegNumber/$otherId?pageSize=$pageSize&pageNo=$pageNo"))
-            .willReturn(okJson(interestAccruingResponseJson))
+            .willReturn(okJson(interestAccruingDrilldownResponseJson))
         )
 
         val app = buildApp()
         running(app) {
           val connector = app.injector.instanceOf[GamblingConnector]
-          val result = connector.getInterestAccruingDetails(otherRegime, otherRegNumber, otherId, pageSize, pageNo).futureValue
+          val result = connector.getInterestAccruingDrilldown(otherRegime, otherRegNumber, otherId, pageSize, pageNo).futureValue
 
-          result mustEqual expectedInterestAccruingResponse
+          result mustEqual expectedInterestAccruingDrilldownResponse
         }
       }
 
@@ -981,15 +981,15 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
 
         stubFor(
           get(urlEqualTo(s"/gambling/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$customPageSize&pageNo=$customPageNo"))
-            .willReturn(okJson(interestAccruingResponseJson))
+            .willReturn(okJson(interestAccruingDrilldownResponseJson))
         )
 
         val app = buildApp()
         running(app) {
           val connector = app.injector.instanceOf[GamblingConnector]
-          val result = connector.getInterestAccruingDetails(regime, regNumber, interestId, customPageSize, customPageNo).futureValue
+          val result = connector.getInterestAccruingDrilldown(regime, regNumber, interestId, customPageSize, customPageNo).futureValue
 
-          result mustEqual expectedInterestAccruingResponse
+          result mustEqual expectedInterestAccruingDrilldownResponse
         }
       }
     }
@@ -1380,6 +1380,89 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getInterestDetails(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedInterestDetailsResponse
+        }
+      }
+    }
+
+    "getInterestAccruingDetails" - {
+
+      val interestAccruingDetailsResponseJson =
+        s"""
+           |{
+           |  "periodStartDate": "2024-01-01",
+           |  "periodEndDate": "2024-12-31",
+           |  "total": -800.00,
+           |  "totalRecords": 1,
+           |  "items": [
+           |    {
+           |      "descriptionCode": 2740,
+           |      "amount": -800.00,
+           |      "interestId":"SAFE-CHG-00003",
+           |      "periodStartDate": "2014-01-01",
+           |      "periodEndDate": "2014-03-31"
+           |    }
+           |  ]
+           |}
+           |""".stripMargin
+
+      val expectedInterestAccruingDetailsResponse = InterestAccruingDetails(
+        periodStartDate = Some(LocalDate.of(2024, 1, 1)),
+        periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
+        total           = BigDecimal("-800.0"),
+        totalRecords    = 1,
+        items = Seq(
+          InterestAccruingDetailItem(2740, BigDecimal("-800.0"), "SAFE-CHG-00003", LocalDate.of(2014, 1, 1), LocalDate.of(2014, 3, 31))
+        )
+      )
+
+      "must return a deserialized InterestAccruingDetails for a 200 response" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-accruing-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestAccruingDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestAccruingDetails(regime, regNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestAccruingDetailsResponse
+        }
+      }
+
+      "must forward the correct regime and registration number in the URL" in {
+        val otherRegime = "pbd"
+        val otherRegNumber = "XWM00003102999"
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-accruing-details/$otherRegime/$otherRegNumber?pageSize=$pageSize&pageNo=$pageNo"))
+            .willReturn(okJson(interestAccruingDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestAccruingDetails(otherRegime, otherRegNumber, pageSize, pageNo).futureValue
+
+          result mustEqual expectedInterestAccruingDetailsResponse
+        }
+      }
+
+      "must forward custom pageSize and pageNo query parameters" in {
+        val customPageSize = 5
+        val customPageNo = 3
+
+        stubFor(
+          get(urlEqualTo(s"/gambling/interest-accruing-details/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo"))
+            .willReturn(okJson(interestAccruingDetailsResponseJson))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          val result = connector.getInterestAccruingDetails(regime, regNumber, customPageSize, customPageNo).futureValue
+
+          result mustEqual expectedInterestAccruingDetailsResponse
         }
       }
     }

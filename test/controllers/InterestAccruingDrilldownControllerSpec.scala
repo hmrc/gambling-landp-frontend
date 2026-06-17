@@ -114,7 +114,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
     ).foreach { case (code, label) =>
       s"must render the heading, paragraph for description code $code ($label) and table" in {
         val mockService = mock[GamblingService]
-        when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+        when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(interestAccruingDrilldown.copy(descriptionCode = Option(code))))
 
         val app = applicationBuilder()
@@ -136,7 +136,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
     "must return page not found when data has 0 items and description code is None" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(interestAccruingDrilldown.copy(descriptionCode = None, items = Seq.empty, total = BigDecimal(0))))
 
       val app = applicationBuilder()
@@ -155,7 +155,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
     "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageDetails))
 
       val app = applicationBuilder()
@@ -178,7 +178,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
     "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(interestAccruingDrilldown))
 
       val app = applicationBuilder()
@@ -200,7 +200,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
     "must not render the total row in the table when there are multiple pages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageDetails))
 
       val app = applicationBuilder()
@@ -220,7 +220,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
     "must return Not Found with page not found content when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageDetails))
 
       val app = applicationBuilder()
@@ -242,7 +242,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
+        when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(interestAccruingDrilldown))
 
         val app = applicationBuilder()
