@@ -28,7 +28,7 @@
 
 @(interestId: String, paginationParams: PaginationParams, interestAccruing: InterestAccruingDetails)(implicit request: Request[_], messages: Messages)
 
-@pageUrl(p: Int) = @{controllers.routes.InterestAccruingController.onPageLoad(interestId, paginationParams.pageSize, p)}
+@pageUrl(p: Int) = @{controllers.routes.InterestAccruingDrilldownController.onPageLoad(interestId, paginationParams.pageSize, p)}
 
 @tableRows = @{
     interestAccruing.items.zipWithIndex.map { case (item, i) =>
@@ -57,45 +57,45 @@
                 <a class="govuk-breadcrumbs__link" href="@controllers.routes.StatementController.onPageLoad()">@messages("site.statement")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestBreakdownController.onPageLoad()">@messages("interestAccruing.breadcrumb.interestBreakdown")</a>
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestBreakdownController.onPageLoad()">@messages("interestAccruingDrilldown.breadcrumb.interestBreakdown")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="">@messages("interestAccruing.breadcrumb.interestAccruing")</a>
+                <a class="govuk-breadcrumbs__link" href="">@messages("interestAccruingDrilldown.breadcrumb.interestAccruing")</a>
             </li>
         </ol>
     </nav>
 }
 
 @dateRange = @{
-    messages("interestAccruing.caption", DateTimeFormats.formatDateFull(interestAccruing.periodStartDate), DateTimeFormats.formatDateFull(interestAccruing.periodEndDate))
+    messages("interestAccruingDrilldown.caption", DateTimeFormats.formatDateFull(interestAccruing.periodStartDate), DateTimeFormats.formatDateFull(interestAccruing.periodEndDate))
 }
 
 @layout(
-    pageTitle = titleNoForm(messages("interestAccruing.title", messages(s"interestAccruing.description.code.${interestAccruing.descriptionCode}"))),
+    pageTitle = titleNoForm(messages(s"interestAccruingDrilldown.pageTitle.${interestAccruing.descriptionCode}")),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-l" data-testid="interest-accruing-heading">@messages("interestAccruing.heading", messages(s"interestAccruing.description.code.${interestAccruing.descriptionCode}"))</h1>
-            <p class="govuk-body">@messages("interestAccruing.p1", messages(s"interestAccruing.description.code.${interestAccruing.descriptionCode}"))</p>
+            <h1 class="govuk-heading-l" data-testid="interest-accruing-heading">@messages("interestAccruingDrilldown.heading", messages(s"interestAccruingDrilldown.description.code.${interestAccruing.descriptionCode}"))</h1>
+            <p class="govuk-body">@messages("interestAccruingDrilldown.p1", messages(s"interestAccruingDrilldown.description.code.${interestAccruing.descriptionCode}"))</p>
             <h2 class="govuk-heading-s">@dateRange</h2>
 
             @if(paginationParams.totalPages > 1) {
-                <p class="govuk-body" data-testid="total-summary">@messages("interestAccruing.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(interestAccruing.total)</p>
-                <p class="govuk-body" data-testid="pagination-info">@messages("interestAccruing.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
+                <p class="govuk-body" data-testid="total-summary">@messages("interestAccruingDrilldown.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(interestAccruing.total)</p>
+                <p class="govuk-body" data-testid="pagination-info">@messages("interestAccruingDrilldown.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
             }
 
             @govukTable(Table(
                 attributes = Map("data-testid" -> "interest-accruing-table"),
                 head = Some(Seq(
-                    HeadCell(content = Text(messages("interestAccruing.table.interestOn")), format = None),
-                    HeadCell(content = Text(messages("interestAccruing.table.from"))),
-                    HeadCell(content = Text(messages("interestAccruing.table.to"))),
-                    HeadCell(content = Text(messages("interestAccruing.table.days")), format = Some("numeric")),
-                    HeadCell(content = Text(messages("interestAccruing.table.rate")), format = Some("numeric")),
-                    HeadCell(content = Text(messages("interestAccruing.table.amount")), format = Some("numeric"))
+                    HeadCell(content = Text(messages("interestAccruingDrilldown.table.interestOn")), format = None),
+                    HeadCell(content = Text(messages("interestAccruingDrilldown.table.from"))),
+                    HeadCell(content = Text(messages("interestAccruingDrilldown.table.to"))),
+                    HeadCell(content = Text(messages("interestAccruingDrilldown.table.days")), format = Some("numeric")),
+                    HeadCell(content = Text(messages("interestAccruingDrilldown.table.rate")), format = Some("numeric")),
+                    HeadCell(content = Text(messages("interestAccruingDrilldown.table.amount")), format = Some("numeric"))
                 )),
                 rows = tableRows
             ))

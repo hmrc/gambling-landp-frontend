@@ -71,7 +71,7 @@
 }
 
 @layout(
-    pageTitle = titleNoForm(messages("interestDrilldown.title", messages(s"interestDrilldown.description.code.${model.descriptionCode}"))),
+    pageTitle = titleNoForm(messages(s"interestDrilldown.pageTitle.${model.descriptionCode}")),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {

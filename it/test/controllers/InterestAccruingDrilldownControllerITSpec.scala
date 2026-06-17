@@ -29,7 +29,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.http.test.WireMockSupport
 
-class InterestAccruingControllerITSpec
+class InterestAccruingDrilldownControllerITSpec
     extends AnyFreeSpec
     with Matchers
     with OptionValues
@@ -111,9 +111,9 @@ class InterestAccruingControllerITSpec
         .willReturn(okJson(responseJson))
     )
 
-  private val url = routes.InterestAccruingController.onPageLoad(interestId).url
+  private val url = routes.InterestAccruingDrilldownController.onPageLoad(interestId).url
 
-  "InterestAccruingController" - {
+  "InterestAccruingDrilldownController" - {
 
     "session validation" - {
 
@@ -266,7 +266,7 @@ class InterestAccruingControllerITSpec
         stubInterestAccruing(regime, regNumber, multiPageJson, page = 99)
 
         running(app) {
-          val request = FakeRequest(GET, routes.InterestAccruingController.onPageLoad(interestId, pageSize, 99).url)
+          val request = FakeRequest(GET, routes.InterestAccruingDrilldownController.onPageLoad(interestId, pageSize, 99).url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 

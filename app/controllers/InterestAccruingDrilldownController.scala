@@ -30,7 +30,7 @@ import views.html.{InterestAccruingDrilldownView, PageNotFoundView}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class InterestAccruingController @Inject() (
+class InterestAccruingDrilldownController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,

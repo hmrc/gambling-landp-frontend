@@ -30,7 +30,7 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
+class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
@@ -54,9 +54,9 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
 
   private val multiPageDetails: InterestAccruingDetails = interestAccruingDetails.copy(totalRecords = 25)
 
-  "InterestAccruingController" - {
+  "InterestAccruingDrilldownController" - {
 
-    def url = routes.InterestAccruingController.onPageLoad("INT-001").url
+    def url = routes.InterestAccruingDrilldownController.onPageLoad("INT-001").url
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
@@ -228,7 +228,7 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
         .build()
 
       running(app) {
-        val request = FakeRequest(GET, routes.InterestAccruingController.onPageLoad("INT-001", 10, 99).url)
+        val request = FakeRequest(GET, routes.InterestAccruingDrilldownController.onPageLoad("INT-001", 10, 99).url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
