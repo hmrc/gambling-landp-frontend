@@ -29,28 +29,27 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.http.test.WireMockSupport
 
-class ActualRepaymentsControllerITSpec
-    extends AnyFreeSpec
-    with Matchers
-    with OptionValues
-    with WireMockSupport
-    with ScalaFutures
-    with IntegrationPatience {
+class InterestDrilldownControllerITSpec extends AnyFreeSpec with Matchers with OptionValues with WireMockSupport with ScalaFutures with IntegrationPatience {
 
-  private val regime    = "gbd"
+  private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
-  private val singlePageJson =
+  private val interestJson =
     s"""
        |{
        |  "periodStartDate": "2024-01-01",
        |  "periodEndDate": "2024-12-31",
-       |  "total": 45.60,
+       |  "total": 123.45,
        |  "totalRecords": 1,
+       |  "descriptionCode": 2650,
        |  "items": [
        |    {
-       |      "transactionDate": "2024-08-01",
-       |      "amount": 45.60
+       |      "interestOn": 1000.00,
+       |      "dateFrom": "2024-01-01",
+       |      "dateTo": "2024-03-31",
+       |      "noOfDays": 90,
+       |      "rate": 2.5,
+       |      "amount": 123.45
        |    }
        |  ]
        |}
@@ -61,25 +60,19 @@ class ActualRepaymentsControllerITSpec
        |{
        |  "periodStartDate": "2024-01-01",
        |  "periodEndDate": "2024-12-31",
-       |  "total": 600.00,
+       |  "total": 123.45,
        |  "totalRecords": 25,
+       |  "descriptionCode": 2650,
        |  "items": [
        |    {
-       |      "transactionDate": "2024-08-01",
-       |      "amount": 45.60
+       |      "interestOn": 1000.00,
+       |      "dateFrom": "2024-01-01",
+       |      "dateTo": "2024-03-31",
+       |      "noOfDays": 90,
+       |      "rate": 2.5,
+       |      "amount": 123.45
        |    }
        |  ]
-       |}
-       |""".stripMargin
-
-  private val emptyPageJson =
-    s"""
-       |{
-       |  "periodStartDate": "2024-01-01",
-       |  "periodEndDate": "2024-12-31",
-       |  "total": 0,
-       |  "totalRecords": 0,
-       |  "items": []
        |}
        |""".stripMargin
 
@@ -96,15 +89,19 @@ class ActualRepaymentsControllerITSpec
       )
       .build()
 
-  private def stubActualRepayments(regime: String, regNumber: String, pageSize: Int, pageNo: Int, responseJson: String): Unit =
+  private val interestId = "INT-001"
+  private val pageSize = 10
+  private val pageNo = 1
+
+  private def stubInterest(regime: String, regNumber: String, responseJson: String, interestId: String = interestId, page: Int = pageNo): Unit =
     stubFor(
-      get(urlEqualTo(s"/gambling/actual-repayments/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo"))
+      get(urlEqualTo(s"/gambling/interest-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$page"))
         .willReturn(okJson(responseJson))
     )
 
-  private val url = routes.ActualRepaymentsController.onPageLoad().url
+  private val url = routes.InterestDrilldownController.onPageLoad(interestId).url
 
-  "ActualRepaymentsController" - {
+  "InterestDrilldownController" - {
 
     "session validation" - {
 
@@ -113,7 +110,7 @@ class ActualRepaymentsControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -125,7 +122,7 @@ class ActualRepaymentsControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -148,123 +145,142 @@ class ActualRepaymentsControllerITSpec
 
     "successful page load" - {
 
-      "must return OK and render the page heading, paragraph in the page body" in {
-        val app = buildApp()
+      Seq(
+        (1940, "PPLR Interest Bearing"),
+        (1950, "Return Charge"),
+        (1960, "Central Assessment"),
+        (1970, "Officer Assessment"),
+        (1980, "Late Filing Penalty"),
+        (1990, "Late Payment Penalty"),
+        (2640, "PPLR Interest Bearing"),
+        (2650, "Return Charge"),
+        (2655, "Return Interest"),
+        (2660, "Central Assessment"),
+        (2670, "Officer Assessment"),
+        (2680, "Late Filing Penalty"),
+        (2685, "Late Filing Penalty Interest"),
+        (2690, "Late Payment Penalty"),
+        (2695, "Late Payment Penalty Interest")
+      ).foreach { case (code, label) =>
+        s"must render the heading, paragraph for description code $code ($label) and table" in {
+          val json =
+            s"""
+               |{
+               |  "periodStartDate": "2024-01-01",
+               |  "periodEndDate": "2024-12-31",
+               |  "total": 123.45,
+               |  "totalRecords": 1,
+               |  "descriptionCode": $code,
+               |  "items": [
+               |    {
+               |      "interestOn": 1000.00,
+               |      "dateFrom": "2024-01-01",
+               |      "dateTo": "2024-03-31",
+               |      "noOfDays": 90,
+               |      "rate": 2.5,
+               |      "amount": 123.45
+               |    }
+               |  ]
+               |}
+               |""".stripMargin
 
-        stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 1, singlePageJson)
+          val app = buildApp()
+          stubInterest(regime, regNumber, json)
+
+          running(app) {
+            val request = FakeRequest(GET, url)
+              .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
+            val result = route(app, request).value
+
+            status(result) mustEqual OK
+            contentAsString(result) must include(s"Interest on [$label]")
+            contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
+            contentAsString(result) must include("govuk-table")
+          }
+        }
+      }
+
+      "must render pagination and summary paragraphs when there are multiple pages" in {
+        val app = buildApp()
+        stubInterest(regime, regNumber, multiPageJson)
 
         running(app) {
           val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsString(result) must include("Actual repayments")
-          contentAsString(result) must include("Repayments HMRC has made, or will make to you.")
-          contentAsString(result) must include("1 January 2024 to 31 December 2024")
-        }
-      }
-
-      "must render the data table when records are returned" in {
-        val app = buildApp()
-
-        stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 1, singlePageJson)
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result  = route(app, request).value
-          val body    = contentAsString(result)
-
-          status(result) mustEqual OK
-          body must include("govuk-table")
-        }
-      }
-
-      "must render the empty-state message when the backend returns no items" in {
-        val app = buildApp()
-
-        stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 1, emptyPageJson)
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsString(result) must include("Actual repayments")
-          contentAsString(result) must include("Repayments HMRC has made, or will make to you.")
-          contentAsString(result) must include("1 January 2024 to 31 December 2024")
-          contentAsString(result) must include("You have no actual repayments.")
-        }
-      }
-    }
-
-    "pagination" - {
-
-      "must not include pagination markup when the response fits on a single page" in {
-        val app = buildApp()
-
-        stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 1, singlePageJson)
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsString(result) must not include "govuk-pagination"
-          contentAsString(result) must not include("The total of the")
-          contentAsString(result) must not include("Displaying 1 to 10 of")
-        }
-      }
-
-      "must include pagination markup and summary paragraphs when totalRecords spans multiple pages" in {
-        val app = buildApp()
-
-        stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 1, multiPageJson)
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-          val body   = contentAsString(result)
+          val body = contentAsString(result)
 
           status(result) mustEqual OK
           body must include("govuk-pagination")
           body must include("The total of the 25 records is")
           body must include("Displaying 1 to 10 of 25 records")
+          body must not include "interest-total"
         }
       }
 
-      "must forward custom pageSize and pageNo query parameters to the backend" in {
-        val customPageSize = 5
-        val customPageNo   = 3
-
-        stubActualRepayments(regime, regNumber, pageSize = customPageSize, pageNo = customPageNo, multiPageJson)
-
+      "must not render pagination when there is only one page" in {
         val app = buildApp()
+        stubInterest(regime, regNumber, interestJson)
 
         running(app) {
-          val customUrl = routes.ActualRepaymentsController.onPageLoad(pageSize = customPageSize, pageNo = customPageNo).url
-          val request   = FakeRequest(GET, customUrl)
+          val request = FakeRequest(GET, url)
+            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
+          val result = route(app, request).value
+          val body = contentAsString(result)
+
+          status(result) mustEqual OK
+          body must not include "govuk-pagination"
+          body must not include "The total of the"
+          body must not include "Displaying"
+        }
+      }
+
+      "must not render the total row in the table when there are multiple pages" in {
+        val app = buildApp()
+        stubInterest(regime, regNumber, multiPageJson)
+
+        running(app) {
+          val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/actual-repayments/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
-          ))
+          contentAsString(result) must not include "interest-accruing-total"
         }
       }
 
       "must return Not Found with page not found content when pageNo exceeds totalPages" in {
         val app = buildApp()
-
-        stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 99, multiPageJson)
+        stubInterest(regime, regNumber, multiPageJson, page = 99)
 
         running(app) {
-          val request = FakeRequest(GET, routes.ActualRepaymentsController.onPageLoad(pageSize = 10, pageNo = 99).url)
+          val request = FakeRequest(GET, routes.InterestDrilldownController.onPageLoad(interestId, pageSize, 99).url)
+            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
+          val result = route(app, request).value
+
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
+        }
+      }
+
+      "must return page not found when data has 0 items" in {
+        val emptyJson =
+          s"""
+             |{
+             |  "periodStartDate": "2024-01-01",
+             |  "periodEndDate": "2024-12-31",
+             |  "total": 0,
+             |  "totalRecords": 0,
+             |  "descriptionCode": 2650,
+             |  "items": []
+             |}
+             |""".stripMargin
+
+        val app = buildApp()
+        stubInterest(regime, regNumber, emptyJson)
+
+        running(app) {
+          val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
@@ -279,7 +295,7 @@ class ActualRepaymentsControllerITSpec
       Seq("gbd", "pbd", "rgd", "mgd").foreach { code =>
 
         s"must pass regime code '$code' through to the backend" in {
-          stubActualRepayments(code, regNumber, pageSize = 10, pageNo = 1, singlePageJson)
+          stubInterest(code, regNumber, interestJson)
 
           val app = buildApp()
 
@@ -289,17 +305,18 @@ class ActualRepaymentsControllerITSpec
             val result = route(app, request).value
 
             status(result) mustEqual OK
-            verify(1, getRequestedFor(
-              urlEqualTo(s"/gambling/actual-repayments/$code/$regNumber?pageSize=10&pageNo=1")
-            ))
+            verify(1,
+                   getRequestedFor(
+                     urlEqualTo(s"/gambling/interest-drilldown/$code/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
+                   )
+                  )
           }
         }
       }
 
       "must pass the registration number through to the backend unchanged" in {
         val otherRegNumber = "XWM00003102999"
-
-        stubActualRepayments(regime, otherRegNumber, pageSize = 10, pageNo = 1, singlePageJson)
+        stubInterest(regime, otherRegNumber, interestJson)
 
         val app = buildApp()
 
@@ -309,9 +326,11 @@ class ActualRepaymentsControllerITSpec
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/actual-repayments/$regime/$otherRegNumber?pageSize=10&pageNo=1")
-          ))
+          verify(1,
+                 getRequestedFor(
+                   urlEqualTo(s"/gambling/interest-drilldown/$regime/$otherRegNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
+                 )
+                )
         }
       }
     }

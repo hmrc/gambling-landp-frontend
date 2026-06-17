@@ -136,7 +136,7 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
         }
       }
 
-      "must redirect to PageNotFound when the session contains an unrecognised regime" in {
+      "must return PageNotFound when the session contains an unrecognised regime" in {
         val app = buildApp()
 
         running(app) {
@@ -144,8 +144,8 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
             .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
     }

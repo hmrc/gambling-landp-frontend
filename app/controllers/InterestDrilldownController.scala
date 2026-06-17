@@ -18,22 +18,23 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import models.interest.InterestDrilldown
 import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{PageNotFoundView, PaymentsView}
+import views.html.{InterestDrilldownView, PageNotFoundView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class PaymentsController @Inject() (
+class InterestDrilldownController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: PaymentsView,
+  view: InterestDrilldownView,
   pageNotFoundView: PageNotFoundView,
   appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
@@ -41,20 +42,17 @@ class PaymentsController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(interestId: String, pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode) match {
-          case None =>
-            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
-          case Some(validRegime) =>
-            gamblingService.getPayments(validRegime.code, regNumber, pageSize, pageNo).map { payments =>
-              val pagination = PaginationParams(payments.totalRecords, pageSize, pageNo)
-              if (pagination.isOutOfRange)
-                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-              else
-                Ok(view(validRegime, regNumber, pagination, payments))
-            }
+        Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
+          gamblingService.getInterestDrilldown(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
+            case interestDetails @ InterestDrilldown(_, _, _, _, _, items) if items.nonEmpty =>
+              val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
+              if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+              else Ok(view(interestId, pagination, interestDetails))
+            case _ => NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+          }
         }
       case _ =>
         logger.warn("no regime or regNumber found")

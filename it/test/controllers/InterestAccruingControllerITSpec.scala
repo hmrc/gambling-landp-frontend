@@ -37,7 +37,7 @@ class InterestAccruingControllerITSpec
     with ScalaFutures
     with IntegrationPatience {
 
-  private val regime    = "gbd"
+  private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
   private val interestAccruingJson =
@@ -96,8 +96,8 @@ class InterestAccruingControllerITSpec
       .build()
 
   private val interestId = "INT-001"
-  private val pageSize   = 10
-  private val pageNo     = 1
+  private val pageSize = 10
+  private val pageNo = 1
 
   private def stubInterestAccruing(
     regime: String,
@@ -122,7 +122,7 @@ class InterestAccruingControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
@@ -134,14 +134,14 @@ class InterestAccruingControllerITSpec
 
         running(app) {
           val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result  = route(app, request).value
+          val result = route(app, request).value
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
         }
       }
 
-      "must redirect to PageNotFound when the session contains an unrecognised regime" in {
+      "must return PageNotFound when the session contains an unrecognised regime" in {
         val app = buildApp()
 
         running(app) {
@@ -149,8 +149,8 @@ class InterestAccruingControllerITSpec
             .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
     }
@@ -158,17 +158,23 @@ class InterestAccruingControllerITSpec
     "successful page load" - {
 
       Seq(
-        (2640, "pplr interest bearing"),
-        (2650, "return charge"),
-        (2655, "return interest"),
-        (2660, "central assessment"),
-        (2670, "officer assessment"),
-        (2680, "late filing penalty"),
-        (2685, "late filing penalty interest"),
-        (2690, "late payment penalty"),
-        (2695, "late payment penalty interest")
+        (1940, "PPLR Interest Bearing"),
+        (1950, "Return Charge"),
+        (1960, "Central Assessment"),
+        (1970, "Officer Assessment"),
+        (1980, "Late Filing Penalty"),
+        (1990, "Late Payment Penalty"),
+        (2640, "PPLR Interest Bearing"),
+        (2650, "Return Charge"),
+        (2655, "Return Interest"),
+        (2660, "Central Assessment"),
+        (2670, "Officer Assessment"),
+        (2680, "Late Filing Penalty"),
+        (2685, "Late Filing Penalty Interest"),
+        (2690, "Late Payment Penalty"),
+        (2695, "Late Payment Penalty Interest")
       ).foreach { case (code, label) =>
-        s"must render the heading and paragraph for description code $code ($label)" in {
+        s"must render the heading, paragraph for description code $code ($label) and table" in {
           val json =
             s"""
                |{
@@ -201,21 +207,8 @@ class InterestAccruingControllerITSpec
             status(result) mustEqual OK
             contentAsString(result) must include(s"Interest accruing on [$label]")
             contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
+            contentAsString(result) must include("govuk-table")
           }
-        }
-      }
-
-      "must render the table when items are non-empty" in {
-        val app = buildApp()
-        stubInterestAccruing(regime, regNumber, interestAccruingJson)
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsString(result) must include("govuk-table")
         }
       }
 
@@ -278,10 +271,11 @@ class InterestAccruingControllerITSpec
           val result = route(app, request).value
 
           status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
 
-      "must redirect to page not found when data has 0 items" in {
+      "must return page not found when data has 0 items" in {
         val emptyJson =
           s"""
              |{
@@ -302,8 +296,8 @@ class InterestAccruingControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PageNotFoundController.onPageLoad().url
+          status(result) mustEqual NOT_FOUND
+          contentAsString(result) must include("Page not found")
         }
       }
     }

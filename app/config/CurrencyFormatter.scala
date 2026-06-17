@@ -26,7 +26,7 @@ trait CurrencyFormatter {
   def formatAmountHtml(amount: BigDecimal): Html =
     Html(
       if (amount < 0)
-        s"""&#8722;${currencyFormat(amount.abs)}"""
+        s"""<span style="white-space:nowrap">&#8722;${currencyFormat(amount.abs)}</span>"""
       else
         currencyFormat(amount)
     )

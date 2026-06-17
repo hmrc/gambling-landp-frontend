@@ -102,6 +102,11 @@ class GamblingConnector @Inject() (
       .get(url"$baseUrl/statement-overview/$regime/$regNumber")
       .execute[StatementOverview]
 
+  def getRepaymentInterestDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[InterestDetails] =
+    httpClient
+      .get(url"$baseUrl/repayment-interest-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[InterestDetails]
+
   def getInterestDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(using hc: HeaderCarrier): Future[InterestDetails] =
     httpClient
       .get(url"$baseUrl/interest-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
@@ -113,6 +118,13 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/interest-accruing-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
       .execute[InterestAccruingDetails]
+
+  def getInterestDrilldown(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(using
+    hc: HeaderCarrier
+  ): Future[InterestDrilldown] =
+    httpClient
+      .get(url"$baseUrl/interest-drilldown/$regime/$regNumber/$interestId?pageSize=$pageSize&pageNo=$pageNo")
+      .execute[InterestDrilldown]
 
   def getInterestOverview(regime: String, regNumber: String)(using hc: HeaderCarrier): Future[InterestOverview] =
     httpClient

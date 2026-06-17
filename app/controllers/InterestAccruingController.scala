@@ -45,15 +45,14 @@ class InterestAccruingController @Inject() (
   def onPageLoad(interestId: String, pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode).fold(Future.successful(Redirect(routes.PageNotFoundController.onPageLoad()))) { validRegime =>
+        Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
           gamblingService.getInterestAccruing(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
             case interestAccruing @ InterestAccruingDetails(_, _, _, _, _, items) if items.nonEmpty =>
               val pagination = PaginationParams(interestAccruing.totalRecords, pageSize, pageNo)
-              if (pagination.isOutOfRange)
-                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+              if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else
                 Ok(view(interestId, pagination, interestAccruing))
-            case _ => Redirect(routes.PageNotFoundController.onPageLoad())
+            case _ => NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
           }
         }
       case _ =>
