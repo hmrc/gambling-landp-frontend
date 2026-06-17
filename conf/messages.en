@@ -320,7 +320,7 @@ interestDrilldown.description.code.2695 = Late Payment Penalty Interest
 interestDrilldown.description.code.2660 = Central Assessment
 interestDrilldown.description.code.2670 = Officer Assessment
 
-interestAccruingDetails.title = Interest accruing // TODO: Finish and query no interest screen
+interestAccruingDetails.title = Interest accruing
 interestAccruingDetails.heading = Interest accruing
 interestAccruingDetails.p1 = The amount of unpaid interest since your last return.
 interestAccruingDetails.empty = There are no accruing interest details.
