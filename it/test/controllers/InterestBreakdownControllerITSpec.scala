@@ -129,7 +129,7 @@ class InterestBreakdownControllerITSpec
           contentAsString(result) must include("Breakdown of interest")
           contentAsString(result) must include("govuk-table")
           contentAsString(result) must include("Interest")
-          contentAsString(result) must include("Accruing interest")
+          contentAsString(result) must include("Interest accruing")
           contentAsString(result) must include("Repayment interest")
         }
       }

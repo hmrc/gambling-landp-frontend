@@ -173,7 +173,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "must render plain text (no link) for 'Interest' when the amount is zero" in {
-      val zeroInterest = interestOverview.copy(interestAmount = BigDecimal(0))
+      val zeroInterest = interestOverview.copy(interestAccruingAmount = BigDecimal(0))
       val mockService = mock[GamblingService]
       when(mockService.getInterestOverview(any(), any())(any()))
         .thenReturn(Future.successful(zeroInterest))
@@ -188,7 +188,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must not include routes.InterestDetailsController.onPageLoad().url
+        contentAsString(result) must not include routes.InterestAccruingDetailsController.onPageLoad().url
       }
     }
 
@@ -310,7 +310,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
           status(result) mustEqual OK
           contentAsString(result) must not include "Repayment interest"
           contentAsString(result) must include("Interest")
-          contentAsString(result) must include("Accruing interest")
+          contentAsString(result) must include("Interest accruing")
         }
       }
     }
@@ -332,7 +332,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
         status(result) mustEqual OK
         contentAsString(result) must include("Repayment interest")
         contentAsString(result) must include("Interest")
-        contentAsString(result) must include("Accruing interest")
+        contentAsString(result) must include("Interest accruing")
       }
     }
   }
