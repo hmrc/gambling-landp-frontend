@@ -923,14 +923,14 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
            |}
            |""".stripMargin
 
-      val expectedInterestAccruingResponse = InterestAccruingDetails(
+      val expectedInterestAccruingResponse = InterestAccruingDrilldown(
         periodStartDate = Some(LocalDate.of(2024, 1, 1)),
         periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
         total           = BigDecimal("123.45"),
         totalRecords    = 1,
         descriptionCode = 2650,
         items = Seq(
-          InterestAccruingDetailsItem(
+          InterestAccruingDrilldownItem(
             interestOn = BigDecimal("1000.0"),
             dateFrom   = LocalDate.of(2024, 1, 1),
             dateTo     = LocalDate.of(2024, 3, 31),

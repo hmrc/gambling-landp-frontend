@@ -64,14 +64,14 @@
                 <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestBreakdownController.onPageLoad()">@messages("interestDrilldown.breadcrumb.interestBreakdown")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="">@messages("interestDrilldown.breadcrumb.interest")</a>
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestDetailsController.onPageLoad()">@messages("interestDrilldown.breadcrumb.interest")</a>
             </li>
         </ol>
     </nav>
 }
 
 @layout(
-    pageTitle = titleNoForm(messages("interestDrilldown.title")),
+    pageTitle = titleNoForm(messages(s"interestDrilldown.pageTitle.${model.descriptionCode}")),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {
