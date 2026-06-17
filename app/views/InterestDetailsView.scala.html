@@ -29,9 +29,7 @@ pagination: components.Pagination
 @(regime: Regime, regNumber: String, paginationParams: PaginationParams, model: InterestDetails)(implicit request: Request[_], messages: Messages)
 
 @pageUrl(p: Int) = @{controllers.routes.InterestDetailsController.onPageLoad(paginationParams.pageSize, p)}
-
-@dateRange = @{ messages("interestDetails.period", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate)) }
-
+    
 @linkOrText(label: String, amount: BigDecimal, href: String) = @{
     HtmlContent(
         if (amount == 0) s"""<span>$label</span>"""
