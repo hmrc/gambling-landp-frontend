@@ -275,5 +275,24 @@ class RepaymentInterestRepaidControllerSpec extends SpecBase with MockitoSugar {
         }
       }
     }
+
+    "must render the breadcrumb back to the parent page" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) must include(routes.RepaymentsController.onPageLoad().url)
+      }
+    }
   }
 }
