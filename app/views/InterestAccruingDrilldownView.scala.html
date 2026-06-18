@@ -26,12 +26,12 @@
         pagination: components.Pagination
 )
 
-@(interestId: String, paginationParams: PaginationParams, interestAccruing: InterestAccruingDrilldown)(implicit request: Request[_], messages: Messages)
+@(interestId: String, paginationParams: PaginationParams, model: InterestAccruingDrilldown)(implicit request: Request[_], messages: Messages)
 
 @pageUrl(p: Int) = @{controllers.routes.InterestAccruingDrilldownController.onPageLoad(interestId, paginationParams.pageSize, p)}
 
 @tableRows = @{
-    interestAccruing.items.zipWithIndex.map { case (item, i) =>
+    model.items.zipWithIndex.map { case (item, i) =>
         Seq(
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.interestOn).body), format = Some("numeric"), attributes = Map("data-testid" -> s"interest-on-$i")),
             TableRow(content = Text(DateTimeFormats.formatDate(Some(item.dateFrom))), attributes = Map("data-testid" -> s"date-from-$i")),
@@ -41,12 +41,12 @@
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
-        TableRow(content = HtmlContent(s"<strong>${messages("interestAccruing.table.total")}</strong>")),
+        TableRow(content = HtmlContent(s"<strong>${messages("interestAccruingDrilldown.table.total")}</strong>")),
         TableRow(content = Empty),
         TableRow(content = Empty),
         TableRow(content = Empty),
         TableRow(content = Empty),
-        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(interestAccruing.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "interest-accruing-total"))
+        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "interest-accruing-total"))
     )) else Seq.empty)
 }
 
@@ -67,23 +67,23 @@
 }
 
 @dateRange = @{
-    messages("interestAccruingDrilldown.caption", DateTimeFormats.formatDateFull(interestAccruing.periodStartDate), DateTimeFormats.formatDateFull(interestAccruing.periodEndDate))
+    messages("interestAccruingDrilldown.caption", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate))
 }
 
 @layout(
-    pageTitle = titleNoForm(messages(s"interestAccruingDrilldown.pageTitle.${interestAccruing.descriptionCode}")),
+    pageTitle = titleNoForm(messages(s"interestAccruingDrilldown.title", messages(s"interestAccruingDrilldown.description.code.${model.descriptionCode}"))),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-l" data-testid="interest-accruing-heading">@messages("interestAccruingDrilldown.heading", messages(s"interestAccruingDrilldown.description.code.${interestAccruing.descriptionCode}"))</h1>
-            <p class="govuk-body">@messages("interestAccruingDrilldown.p1", messages(s"interestAccruingDrilldown.description.code.${interestAccruing.descriptionCode}"))</p>
+            <h1 class="govuk-heading-l" data-testid="interest-accruing-heading">@messages("interestAccruingDrilldown.heading", messages(s"interestAccruingDrilldown.description.code.${model.descriptionCode}"))</h1>
+            <p class="govuk-body">@messages("interestAccruingDrilldown.p1", messages(s"interestAccruingDrilldown.description.code.${model.descriptionCode}"))</p>
             <h2 class="govuk-heading-s">@dateRange</h2>
 
             @if(paginationParams.totalPages > 1) {
-                <p class="govuk-body" data-testid="total-summary">@messages("interestAccruingDrilldown.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(interestAccruing.total)</p>
+                <p class="govuk-body" data-testid="total-summary">@messages("interestAccruingDrilldown.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(model.total)</p>
                 <p class="govuk-body" data-testid="pagination-info">@messages("interestAccruingDrilldown.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
             }
 
