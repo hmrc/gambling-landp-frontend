@@ -38,7 +38,7 @@ final case class InterestDrilldown(
   periodEndDate: Option[LocalDate],
   total: BigDecimal,
   totalRecords: Int,
-  descriptionCode: Int,
+  descriptionCode: Option[Int],
   items: Seq[InterestDrilldownItem]
 )
 

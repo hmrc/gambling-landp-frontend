@@ -47,7 +47,7 @@ class InterestDrilldownController @Inject() (
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
           gamblingService.getInterestDrilldown(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
-            case interestDetails @ InterestDrilldown(_, _, _, _, _, items) if items.nonEmpty =>
+            case interestDetails @ InterestDrilldown(_, _, _, _, Some(code), items) if items.nonEmpty =>
               val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
               if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else Ok(view(interestId, pagination, interestDetails))

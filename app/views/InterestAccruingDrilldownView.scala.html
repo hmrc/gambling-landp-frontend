@@ -70,16 +70,18 @@
     messages("interestAccruingDrilldown.caption", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate))
 }
 
+@descriptionCode = @{model.descriptionCode.map(_.toString).getOrElse("")}
+
 @layout(
-    pageTitle = titleNoForm(messages(s"interestAccruingDrilldown.title", messages(s"interestAccruingDrilldown.description.code.${model.descriptionCode}"))),
+    pageTitle = titleNoForm(messages(s"interestAccruingDrilldown.title", messages(s"interestAccruingDrilldown.description.code.$descriptionCode"))),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-l" data-testid="interest-accruing-heading">@messages("interestAccruingDrilldown.heading", messages(s"interestAccruingDrilldown.description.code.${model.descriptionCode}"))</h1>
-            <p class="govuk-body">@messages("interestAccruingDrilldown.p1", messages(s"interestAccruingDrilldown.description.code.${model.descriptionCode}"))</p>
+            <h1 class="govuk-heading-l" data-testid="interest-accruing-heading">@messages("interestAccruingDrilldown.heading", messages(s"interestAccruingDrilldown.description.code.$descriptionCode"))</h1>
+            <p class="govuk-body">@messages("interestAccruingDrilldown.p1", messages(s"interestAccruingDrilldown.description.code.$descriptionCode"))</p>
             <h2 class="govuk-heading-s">@dateRange</h2>
 
             @if(paginationParams.totalPages > 1) {

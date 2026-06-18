@@ -928,7 +928,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
         total           = BigDecimal("123.45"),
         totalRecords    = 1,
-        descriptionCode = 2650,
+        descriptionCode = Option(2650),
         items = Seq(
           InterestAccruingDrilldownItem(
             interestOn = BigDecimal("1000.0"),
@@ -1079,7 +1079,7 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
         periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
         total           = BigDecimal("123.45"),
         totalRecords    = 1,
-        descriptionCode = 2650,
+        descriptionCode = Option(2650),
         items = Seq(
           InterestDrilldownItem(
             interestOn = BigDecimal("1000.0"),
