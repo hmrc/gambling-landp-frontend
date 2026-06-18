@@ -46,7 +46,7 @@ class InterestAccruingDrilldownController @Inject() (
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
-          gamblingService.getInterestAccruing(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
+          gamblingService.getInterestAccruingDrilldown(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
             case interestAccruing @ InterestAccruingDrilldown(_, _, _, _, Some(code), items) if items.nonEmpty =>
               val pagination = PaginationParams(interestAccruing.totalRecords, pageSize, pageNo)
               if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
