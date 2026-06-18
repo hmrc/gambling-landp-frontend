@@ -47,7 +47,7 @@ pagination: components.Pagination
                     s"""<a class="govuk-link" href="${routes.InterestDrilldownController.onPageLoad(item.interestId).url}">
                         <span style="white-space:nowrap">
                         ${messages(
-                          s"interestDetails.description.${item.descriptionCode}",
+                          s"interestAccruingDetails.description.${item.descriptionCode}",
                           DateTimeFormats.formatDate(Some(item.periodStartDate)),
                           DateTimeFormats.formatDate(Some(item.periodEndDate))
                         )}
@@ -67,7 +67,7 @@ pagination: components.Pagination
             Seq(
                 TableRow(
                     content = HtmlContent(
-                        s"<strong>${messages("interestDetails.table.total")}</strong>"
+                        s"<strong>${messages("interestAccruingDetails.table.total")}</strong>"
                     )
                 ),
                 TableRow(
@@ -75,7 +75,7 @@ pagination: components.Pagination
                         s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"
                     ),
                     format = Some("numeric"),
-                    attributes = Map("data-testid" -> "interestDetails-total")
+                    attributes = Map("data-testid" -> "interestAccruingDetails-total")
                 )
             )
         )
