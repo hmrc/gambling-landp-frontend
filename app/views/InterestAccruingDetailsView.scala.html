@@ -16,7 +16,7 @@
 
 @import config.CurrencyFormatter
 @import models.{PaginationParams, Regime}
-@import models.interest.InterestDetails
+@import models.interest.InterestAccruingDetails
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 @import utils.DateTimeFormats
 
@@ -26,10 +26,12 @@ govukTable: GovukTable,
 pagination: components.Pagination
 )
 
-@(regime: Regime, regNumber: String, paginationParams: PaginationParams, model: InterestDetails)(implicit request: Request[_], messages: Messages)
+@(regime: Regime, regNumber: String, paginationParams: PaginationParams, model: InterestAccruingDetails)(implicit request: Request[_], messages: Messages)
 
-@pageUrl(p: Int) = @{controllers.routes.InterestDetailsController.onPageLoad(paginationParams.pageSize, p)}
-    
+@pageUrl(p: Int) = @{controllers.routes.InterestAccruingDetailsController.onPageLoad(paginationParams.pageSize, p)}
+
+@dateRange = @{ messages("interestAccruingDetails.period", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate)) }
+
 @linkOrText(label: String, amount: BigDecimal, href: String) = @{
     HtmlContent(
         if (amount == 0) s"""<span>$label</span>"""
@@ -45,7 +47,7 @@ pagination: components.Pagination
                     s"""<a class="govuk-link" href="${routes.InterestDrilldownController.onPageLoad(item.interestId).url}">
                         <span style="white-space:nowrap">
                         ${messages(
-                          s"interestDetails.description.${item.descriptionCode}",
+                          s"interestAccruingDetails.description.${item.descriptionCode}",
                           DateTimeFormats.formatDate(Some(item.periodStartDate)),
                           DateTimeFormats.formatDate(Some(item.periodEndDate))
                         )}
@@ -65,7 +67,7 @@ pagination: components.Pagination
             Seq(
                 TableRow(
                     content = HtmlContent(
-                        s"<strong>${messages("interestDetails.table.total")}</strong>"
+                        s"<strong>${messages("interestAccruingDetails.table.total")}</strong>"
                     )
                 ),
                 TableRow(
@@ -73,7 +75,7 @@ pagination: components.Pagination
                         s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"
                     ),
                     format = Some("numeric"),
-                    attributes = Map("data-testid" -> "interestDetails-total")
+                    attributes = Map("data-testid" -> "interestAccruingDetails-total")
                 )
             )
         )
@@ -88,42 +90,42 @@ pagination: components.Pagination
             <a class="govuk-breadcrumbs__link" href="@controllers.routes.StatementController.onPageLoad()">@messages("site.statement")</a>
         </li>
         <li class="govuk-breadcrumbs__list-item">
-            <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestBreakdownController.onPageLoad()">@messages("interestDetails.breadcrumb")</a>
+            <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestBreakdownController.onPageLoad()">@messages("interestAccruingDetails.breadcrumb")</a>
         </li>
     </ol>
 </nav>
 }
 
 @layout(
-    pageTitle     = titleNoForm(messages("interestDetails.title")),
+    pageTitle     = titleNoForm(messages("interestAccruingDetails.title")),
     showBackLink  = false,
     beforeContent = Some(breadcrumbs)
 ) {
 
-<h1 class="govuk-heading-l" data-testid="interestDetails-heading">
-    @messages("interestDetails.heading")
+<h1 class="govuk-heading-l" data-testid="interestAccruingDetails-heading">
+    @messages("interestAccruingDetails.heading")
 </h1>
 <p class="govuk-body">
-    @messages("interestDetails.p1")
+    @messages("interestAccruingDetails.p1")
 </p>
 
     @if(model.items.isEmpty) {
-        <p class="govuk-body">@messages("interestDetails.empty")</p>
+        <p class="govuk-body">@messages("interestAccruingDetails.empty")</p>
     } else {
         @if(paginationParams.totalPages > 1) {
         <p class="govuk-body" data-testid="total-summary">
-        @messages("interestDetails.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(model.total)
+        @messages("interestAccruingDetails.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(model.total)
         </p>
         <p class="govuk-body" data-testid="pagination-info">
-        @messages("interestDetails.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)
+        @messages("interestAccruingDetails.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)
         </p>
     }
 
         @govukTable(Table(
-            attributes = Map("data-testid" -> "interestDetails-table"),
+            attributes = Map("data-testid" -> "interestAccruingDetails-table"),
             head = Some(Seq(
-            HeadCell(content = Text(messages("interestDetails.table.description"))),
-            HeadCell(content = Text(messages("interestDetails.table.amount")), format = Some("numeric"))
+            HeadCell(content = Text(messages("interestAccruingDetails.table.description"))),
+            HeadCell(content = Text(messages("interestAccruingDetails.table.amount")), format = Some("numeric"))
         )),
             rows = tableRows
         ))

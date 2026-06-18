@@ -19,7 +19,7 @@ package services
 import connectors.GamblingConnector
 import models.StatementOverview
 import models.assessments.Assessments
-import models.interest.{InterestAccruingDrilldown, InterestDetails, InterestDrilldown, InterestOverview}
+import models.interest.{InterestAccruingDetails, InterestAccruingDrilldown, InterestDetails, InterestDrilldown, InterestOverview}
 import models.payments.Payments
 import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}
@@ -79,10 +79,10 @@ class GamblingService @Inject() (connector: GamblingConnector) {
   def getInterestDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit hc: HeaderCarrier): Future[InterestDetails] =
     connector.getInterestDetails(regime, regNumber, pageSize, pageNo)
 
-  def getInterestAccruing(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
+  def getInterestAccruingDrilldown(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
     hc: HeaderCarrier
   ): Future[InterestAccruingDrilldown] =
-    connector.getInterestAccruingDetails(regime, regNumber, interestId, pageSize, pageNo)
+    connector.getInterestAccruingDrilldown(regime, regNumber, interestId, pageSize, pageNo)
 
   def getInterestDrilldown(regime: String, regNumber: String, interestId: String, pageSize: Int, pageNo: Int)(implicit
     hc: HeaderCarrier
@@ -91,4 +91,9 @@ class GamblingService @Inject() (connector: GamblingConnector) {
 
   def getInterestOverview(regime: String, regNumber: String)(implicit hc: HeaderCarrier): Future[InterestOverview] =
     connector.getInterestOverview(regime, regNumber)
+
+  def getInterestAccruingDetails(regime: String, regNumber: String, pageSize: Int, pageNo: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[InterestAccruingDetails] =
+    connector.getInterestAccruingDetails(regime, regNumber, pageSize, pageNo)
 }
