@@ -573,7 +573,7 @@ class GamblingServiceSpec extends SpecBase with MockitoSugar {
         periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
         total           = BigDecimal("123.45"),
         totalRecords    = 1,
-        descriptionCode = 2650,
+        descriptionCode = Option(2650),
         items = Seq(
           InterestDrilldownItem(
             interestOn = BigDecimal("1000.00"),
