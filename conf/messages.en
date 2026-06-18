@@ -258,8 +258,8 @@ repaymentInterestDetails.description.1970 = Interest on officer assessment from 
 repaymentInterestDetails.description.1980 = Interest on late filing penalty from {0} to {1}
 repaymentInterestDetails.description.1990 = Interest on late payment penalty from {0} to {1}
 
-interestAccruingDrilldown.title = Interest (accruing) on {0}
-interestAccruingDrilldown.heading = Interest (accruing) on {0}
+interestAccruingDrilldown.title = Interest accruing on {0}
+interestAccruingDrilldown.heading = Interest accruing on {0}
 interestAccruingDrilldown.p1 = The amount of unpaid interest on {0}.
 interestAccruingDrilldown.caption = {0} to {1}
 interestAccruingDrilldown.breadcrumb.interestBreakdown = Interest breakdown
