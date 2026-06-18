@@ -342,6 +342,7 @@ interestAccruingDetails.description.1970 = Interest on officer assessment from {
 interestAccruingDetails.description.1980 = Interest on late filing penalty from {0} to {1}
 interestAccruingDetails.description.1990 = Interest on late payment penalty from {0} to {1}
 interestAccruingDetails.table.period = {0} to {1}
+interestAccruingDetails.period=From {0} to {1}
 interestAccruingDetails.table.amount = Amount
 interestAccruingDetails.table.total = Total
 interestAccruingDetails.totalSummary = The total of the {0} records is
