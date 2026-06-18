@@ -40,11 +40,11 @@ pagination: components.Pagination
 }
 
 @tableRows = @{
-model.items.zipWithIndex.map { case (item, i) =>
-Seq(
-TableRow(
-content = HtmlContent(
-s"""<a class="govuk-link" href="${routes.InterestDrilldownController.onPageLoad(item.interestId).url}">
+    model.items.zipWithIndex.map { case (item, i) =>
+        Seq(
+            TableRow(
+                content = HtmlContent(
+                    s"""<a class="govuk-link" href="${routes.InterestDrilldownController.onPageLoad(item.interestId).url}">
                         <span style="white-space:nowrap">
                         ${messages(
                           s"interestDetails.description.${item.descriptionCode}",
@@ -52,27 +52,36 @@ s"""<a class="govuk-link" href="${routes.InterestDrilldownController.onPageLoad(
                           DateTimeFormats.formatDate(Some(item.periodEndDate))
                         )}
                         </span>
-</a>"""
-),
-attributes = Map("data-testid" -> s"description-$i")
-),
-TableRow(
-content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body),
-format = Some("numeric"),
-attributes = Map("data-testid" -> s"amount-$i")
-)
-)
-} ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
-TableRow(
-content = HtmlContent(s"<strong>${messages("interestDetails.table.total")}</strong>")
-),
-TableRow(
-content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"),
-format = Some("numeric"),
-attributes = Map("data-testid" -> "interestDetails-total")
-)
-)) else Seq.empty)
+                       </a>"""
+                ),
+                attributes = Map("data-testid" -> s"description-$i")
+            ),
+            TableRow(
+                content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body),
+                format = Some("numeric"),
+                attributes = Map("data-testid" -> s"amount-$i")
+            )
+        )
+    } ++ (if (paginationParams.totalPages <= 1)
+        Seq(
+            Seq(
+                TableRow(
+                    content = HtmlContent(
+                        s"<strong>${messages("interestDetails.table.total")}</strong>"
+                    )
+                ),
+                TableRow(
+                    content = HtmlContent(
+                        s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"
+                    ),
+                    format = Some("numeric"),
+                    attributes = Map("data-testid" -> "interestDetails-total")
+                )
+            )
+        )
+    else Seq.empty)
 }
+
 
 @breadcrumbs = {
 <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
