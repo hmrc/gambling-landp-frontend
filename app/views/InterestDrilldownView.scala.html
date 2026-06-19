@@ -34,6 +34,8 @@
     messages("interestDrilldown.caption", DateTimeFormats.formatDateFull(model.periodStartDate), DateTimeFormats.formatDateFull(model.periodEndDate))
 }
 
+@descriptionCode = @{model.descriptionCode.map(_.toString).getOrElse("")}
+
 @tableRows = @{
     model.items.zipWithIndex.map { case (item, i) =>
         Seq(
@@ -64,22 +66,22 @@
                 <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestBreakdownController.onPageLoad()">@messages("interestDrilldown.breadcrumb.interestBreakdown")</a>
             </li>
             <li class="govuk-breadcrumbs__list-item">
-                <a class="govuk-breadcrumbs__link" href="">@messages("interestDrilldown.breadcrumb.interest")</a>
+                <a class="govuk-breadcrumbs__link" href="@controllers.routes.InterestDetailsController.onPageLoad()">@messages("interestDrilldown.breadcrumb.interest")</a>
             </li>
         </ol>
     </nav>
 }
 
 @layout(
-    pageTitle = titleNoForm(messages("interestDrilldown.title")),
+    pageTitle = titleNoForm(messages(s"interestDrilldown.title", messages(s"interestDrilldown.description.code.$descriptionCode"))),
     showBackLink = false,
     beforeContent = Some(breadcrumbs)
 ) {
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-            <h1 class="govuk-heading-l" data-testid="interest-heading">@messages("interestDrilldown.heading", messages(s"interestDrilldown.description.code.${model.descriptionCode}"))</h1>
-            <p class="govuk-body">@messages("interestDrilldown.p1", messages(s"interestDrilldown.description.code.${model.descriptionCode}"))</p>
+            <h1 class="govuk-heading-l" data-testid="interest-heading">@messages("interestDrilldown.heading", messages(s"interestDrilldown.description.code.$descriptionCode"))</h1>
+            <p class="govuk-body">@messages("interestDrilldown.p1", messages(s"interestDrilldown.description.code.$descriptionCode"))</p>
             <h2 class="govuk-heading-s">@dateRange</h2>
 
             @if(paginationParams.totalPages > 1) {

@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.interest.{InterestAccruingDetails, InterestAccruingDetailsItem}
+import models.interest.{InterestAccruingDetailItem, InterestAccruingDetails}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -30,39 +30,37 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
+class InterestAccruingDetailsControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  private val singleItem = InterestAccruingDetailsItem(
-    interestOn = BigDecimal(1000.00),
-    dateFrom   = LocalDate.of(2024, 1, 1),
-    dateTo     = LocalDate.of(2024, 3, 31),
-    noOfDays   = BigDecimal(90),
-    rate       = BigDecimal(2.5),
-    amount     = BigDecimal(123.45)
+  private def url = routes.InterestAccruingDetailsController.onPageLoad().url
+
+  private val pplrInterestItem = InterestAccruingDetailItem(
+    descriptionCode = 2640,
+    amount          = BigDecimal(-500),
+    interestId      = "SAFE-CHG-00001",
+    periodStartDate = LocalDate.of(2009, 9, 1),
+    periodEndDate   = LocalDate.of(2016, 7, 31)
   )
 
-  val interestAccruingDetails: InterestAccruingDetails = InterestAccruingDetails(
-    periodStartDate = Some(LocalDate.of(2024, 1, 1)),
-    periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
-    total           = BigDecimal(123.45),
+  private val singlePageResponse = InterestAccruingDetails(
+    periodStartDate = Some(LocalDate.of(2009, 9, 1)),
+    periodEndDate   = Some(LocalDate.of(2016, 7, 31)),
+    total           = BigDecimal(-500),
     totalRecords    = 1,
-    descriptionCode = 2650,
-    items           = Seq(singleItem)
+    items           = Seq(pplrInterestItem)
   )
 
-  private val multiPageDetails: InterestAccruingDetails = interestAccruingDetails.copy(totalRecords = 25)
+  private val multiPageResponse = singlePageResponse.copy(totalRecords = 25)
 
-  "InterestAccruingController" - {
-
-    def url = routes.InterestAccruingController.onPageLoad("INT-001").url
+  "InterestAccruingDetailsController" - {
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
 
       running(app) {
-        val request = FakeRequest(GET, url).withSession(SessionKeys.regNumber -> regNumber)
+        val request = FakeRequest(GET, url)
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
@@ -95,49 +93,10 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    Seq(
-      (1940, "PPLR Interest Bearing"),
-      (1950, "Return Charge"),
-      (1960, "Central Assessment"),
-      (1970, "Officer Assessment"),
-      (1980, "Late Filing Penalty"),
-      (1990, "Late Payment Penalty"),
-      (2640, "PPLR Interest Bearing"),
-      (2650, "Return Charge"),
-      (2655, "Return Interest"),
-      (2660, "Central Assessment"),
-      (2670, "Officer Assessment"),
-      (2680, "Late Filing Penalty"),
-      (2685, "Late Filing Penalty Interest"),
-      (2690, "Late Payment Penalty"),
-      (2695, "Late Payment Penalty Interest")
-    ).foreach { case (code, label) =>
-      s"must render the heading, paragraph for description code $code ($label) and table" in {
-        val mockService = mock[GamblingService]
-        when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(interestAccruingDetails.copy(descriptionCode = code)))
-
-        val app = applicationBuilder()
-          .overrides(bind[GamblingService].toInstance(mockService))
-          .build()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual OK
-          contentAsString(result) must include(s"Interest accruing on [$label]")
-          contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
-          contentAsString(result) must include("govuk-table")
-        }
-      }
-    }
-
-    "must return page not found when data has 0 items" in {
+    "must return OK and render the heading for a valid regime" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestAccruingDetails.copy(items = Seq.empty, total = BigDecimal(0))))
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -148,15 +107,15 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual OK
+        contentAsString(result) must include("Interest")
       }
     }
 
-    "must render pagination and summary paragraphs when there are multiple pages" in {
+    "must render the table when penalties are present" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(multiPageDetails))
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -169,17 +128,96 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
         val body = contentAsString(result)
 
         status(result) mustEqual OK
-        body must include("govuk-pagination")
-        body must include("The total of the 25 records is")
-        body must include("Displaying 1 to 10 of 25 records")
-        body must not include "interest-accruing-total"
+        body must include("govuk-table")
+        body must not include "The total of the"
+        body must not include "Displaying"
+      }
+    }
+
+    "must render the description as PPLR interest for code 2640" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) must include("Interest on PPLR interest bearing from 1 Sep 2009 to 31 Jul 2016")
+      }
+    }
+
+    "must render the bold total row on a single page" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        body must include("<strong>Total</strong>")
+      }
+    }
+
+    "must render the summary paragraphs and table when there are multiple pages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        body must include("The total of the")
+        body must include("Displaying")
+        body must include("govuk-table")
+      }
+    }
+
+    "must render pagination when there are multiple pages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) must include("govuk-pagination")
       }
     }
 
     "must not render pagination when there is only one page" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestAccruingDetails))
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(singlePageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -192,43 +230,20 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual OK
         contentAsString(result) must not include "govuk-pagination"
-        contentAsString(result) must not include "The total of the"
-        contentAsString(result) must not include "Displaying"
-        contentAsString(result) must include("interest-accruing-total")
-      }
-    }
-
-    "must not render the total row in the table when there are multiple pages" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(multiPageDetails))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-        val body = contentAsString(result)
-
-        status(result) mustEqual OK
-        body must not include "interest-accruing-total"
       }
     }
 
     "must return Not Found with page not found content when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(multiPageDetails))
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageResponse))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
         .build()
 
       running(app) {
-        val request = FakeRequest(GET, routes.InterestAccruingController.onPageLoad("INT-001", 10, 99).url)
+        val request = FakeRequest(GET, routes.InterestAccruingDetailsController.onPageLoad(10, 99).url)
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
@@ -242,8 +257,8 @@ class InterestAccruingControllerSpec extends SpecBase with MockitoSugar {
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getInterestAccruing(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(interestAccruingDetails))
+        when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(singlePageResponse))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))

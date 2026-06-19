@@ -193,8 +193,8 @@ class InterestDrilldownControllerITSpec extends AnyFreeSpec with Matchers with O
             val result = route(app, request).value
 
             status(result) mustEqual OK
-            contentAsString(result) must include(s"Interest on [$label]")
-            contentAsString(result) must include(s"The amount of unpaid interest on [$label].")
+            contentAsString(result) must include(s"Interest on $label")
+            contentAsString(result) must include(s"The amount of unpaid interest on $label.")
             contentAsString(result) must include("govuk-table")
           }
         }

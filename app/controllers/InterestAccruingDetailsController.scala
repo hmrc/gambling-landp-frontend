@@ -18,23 +18,22 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.interest.InterestAccruingDetails
 import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{InterestAccruingView, PageNotFoundView}
+import views.html.{InterestAccruingDetailsView, PageNotFoundView}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class InterestAccruingController @Inject() (
+class InterestAccruingDetailsController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestAccruingView,
+  view: InterestAccruingDetailsView,
   pageNotFoundView: PageNotFoundView,
   appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
@@ -42,18 +41,20 @@ class InterestAccruingController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(interestId: String, pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
-          gamblingService.getInterestAccruing(validRegime.code, regNumber, interestId, pageSize, pageNo).map {
-            case interestAccruing @ InterestAccruingDetails(_, _, _, _, _, items) if items.nonEmpty =>
-              val pagination = PaginationParams(interestAccruing.totalRecords, pageSize, pageNo)
-              if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+        Regime.fromString(regimeCode) match {
+          case None =>
+            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
+          case Some(validRegime) =>
+            gamblingService.getInterestAccruingDetails(validRegime.code, regNumber, pageSize, pageNo).map { interestAccruingDetails =>
+              val pagination = PaginationParams(interestAccruingDetails.totalRecords, pageSize, pageNo)
+              if (pagination.isOutOfRange)
+                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
               else
-                Ok(view(interestId, pagination, interestAccruing))
-            case _ => NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-          }
+                Ok(view(validRegime, regNumber, pagination, interestAccruingDetails))
+            }
         }
       case _ =>
         logger.warn("no regime or regNumber found")

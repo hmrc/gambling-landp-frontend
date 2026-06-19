@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.SessionKeys
-import models.interest.{InterestDrilldown, InterestDrilldownItem}
+import models.interest.{InterestAccruingDrilldown, InterestAccruingDrilldownItem}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -30,33 +30,33 @@ import services.GamblingService
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
+class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar {
 
   private val regNumber = "XWM00003102200"
 
-  val interestDrilldown: InterestDrilldown = InterestDrilldown(
+  private val singleItem = InterestAccruingDrilldownItem(
+    interestOn = BigDecimal(1000.00),
+    dateFrom   = LocalDate.of(2024, 1, 1),
+    dateTo     = LocalDate.of(2024, 3, 31),
+    noOfDays   = BigDecimal(90),
+    rate       = BigDecimal(2.5),
+    amount     = BigDecimal(123.45)
+  )
+
+  val interestAccruingDrilldown: InterestAccruingDrilldown = InterestAccruingDrilldown(
     periodStartDate = Some(LocalDate.of(2024, 1, 1)),
     periodEndDate   = Some(LocalDate.of(2024, 12, 31)),
     total           = BigDecimal(123.45),
     totalRecords    = 1,
     descriptionCode = Option(2650),
-    items = Seq(
-      InterestDrilldownItem(
-        interestOn = BigDecimal(1000.00),
-        dateFrom   = LocalDate.of(2024, 1, 1),
-        dateTo     = LocalDate.of(2024, 3, 31),
-        noOfDays   = BigDecimal(90),
-        rate       = BigDecimal(2.5),
-        amount     = BigDecimal(123.45)
-      )
-    )
+    items           = Seq(singleItem)
   )
 
-  private val multiPageDetails = interestDrilldown.copy(totalRecords = 25)
+  private val multiPageDetails: InterestAccruingDrilldown = interestAccruingDrilldown.copy(totalRecords = 25)
 
-  "InterestDrilldownController" - {
+  "InterestAccruingDrilldownController" - {
 
-    def url = routes.InterestDrilldownController.onPageLoad("INT-001").url
+    def url = routes.InterestAccruingDrilldownController.onPageLoad("INT-001").url
 
     "must redirect to Unauthorised when regime is missing from session" in {
       val app = applicationBuilder().build()
@@ -112,10 +112,10 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
       (2690, "Late Payment Penalty"),
       (2695, "Late Payment Penalty Interest")
     ).foreach { case (code, label) =>
-      s"must render the heading and paragraph for description code $code ($label)" in {
+      s"must render the heading, paragraph for description code $code ($label) and table" in {
         val mockService = mock[GamblingService]
-        when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(interestDrilldown.copy(descriptionCode = Option(code))))
+        when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(interestAccruingDrilldown.copy(descriptionCode = Option(code))))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))
@@ -127,59 +127,17 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          contentAsString(result) must include(s"Interest on $label")
+          contentAsString(result) must include(s"Interest accruing on $label")
           contentAsString(result) must include(s"The amount of unpaid interest on $label.")
           contentAsString(result) must include("govuk-table")
         }
       }
     }
 
-    "must not render pagination when there is only one page" in {
+    "must return page not found when data has 0 items and description code is None" in {
       val mockService = mock[GamblingService]
-      when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestDrilldown))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual OK
-        contentAsString(result) must not include "govuk-pagination"
-        contentAsString(result) must not include "The total of the"
-        contentAsString(result) must not include "Displaying"
-        contentAsString(result) must include("interest-total")
-      }
-    }
-
-    "must not render the total row in the table when there are multiple pages" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(multiPageDetails))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-        val body = contentAsString(result)
-
-        status(result) mustEqual OK
-        body must not include "interest-total"
-      }
-    }
-
-    "must return page not found when data has 0 items and description code is none" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestDrilldown.copy(descriptionCode = None, items = Seq.empty, total = BigDecimal(0))))
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(interestAccruingDrilldown.copy(descriptionCode = None, items = Seq.empty, total = BigDecimal(0))))
 
       val app = applicationBuilder()
         .overrides(bind[GamblingService].toInstance(mockService))
@@ -195,13 +153,97 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must render pagination and summary paragraphs when there are multiple pages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageDetails))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        body must include("govuk-pagination")
+        body must include("The total of the 25 records is")
+        body must include("Displaying 1 to 10 of 25 records")
+        body must not include "interest-accruing-total"
+      }
+    }
+
+    "must not render pagination when there is only one page" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(interestAccruingDrilldown))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual OK
+        contentAsString(result) must not include "govuk-pagination"
+        contentAsString(result) must not include "The total of the"
+        contentAsString(result) must not include "Displaying"
+        contentAsString(result) must include("interest-accruing-total")
+      }
+    }
+
+    "must not render the total row in the table when there are multiple pages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageDetails))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+        val body = contentAsString(result)
+
+        status(result) mustEqual OK
+        body must not include "interest-accruing-total"
+      }
+    }
+
+    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(multiPageDetails))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.InterestAccruingDrilldownController.onPageLoad("INT-001", 10, 99).url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) must include("Page not found")
+      }
+    }
+
     "must support all valid regime codes" in {
       val regimes = Seq("gbd", "pbd", "rgd", "mgd")
 
       regimes.foreach { code =>
         val mockService = mock[GamblingService]
-        when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(interestDrilldown))
+        when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(interestAccruingDrilldown))
 
         val app = applicationBuilder()
           .overrides(bind[GamblingService].toInstance(mockService))

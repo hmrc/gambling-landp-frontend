@@ -25,8 +25,10 @@ GET        /statement/assessments                        controllers.AssessmentI
 GET        /statement/interest-breakdown                  controllers.InterestBreakdownController.onPageLoad()
 GET        /statement/interest-breakdown/interest         controllers.InterestDetailsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /statement/interest-breakdown/repayment-interest  controllers.RepaymentInterestDetailsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
-GET        /statement/interest-breakdown/interest-accruing/details/:interestId       controllers.InterestAccruingController.onPageLoad(interestId: String, pageSize: Int ?= 10, pageNo: Int ?= 1)
+GET        /statement/interest-breakdown/interest-accruing/details/:interestId       controllers.InterestAccruingDrilldownController.onPageLoad(interestId: String, pageSize: Int ?= 10, pageNo: Int ?= 1)
 GET        /statement/interest-breakdown/interest/details/:interestId                controllers.InterestDrilldownController.onPageLoad(interestId: String, pageSize: Int ?= 10, pageNo: Int ?= 1)
+GET        /statement/interest-breakdown/interest-accruing               controllers.InterestAccruingDetailsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
+
 
 GET        /statement/payments                           controllers.PaymentsController.onPageLoad(pageSize: Int ?= 10, pageNo: Int ?= 1)
 

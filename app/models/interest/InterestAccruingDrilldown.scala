@@ -16,32 +16,32 @@
 
 package models.interest
 
-import play.api.libs.json.*
+import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-final case class InterestAccruingDetailItem(
-  descriptionCode: Int,
-  amount: BigDecimal,
-  interestId: String,
-  periodStartDate: LocalDate,
-  periodEndDate: LocalDate
+final case class InterestAccruingDrilldownItem(
+  interestOn: BigDecimal,
+  dateFrom: LocalDate,
+  dateTo: LocalDate,
+  noOfDays: BigDecimal,
+  rate: BigDecimal,
+  amount: BigDecimal
 )
 
-object InterestAccruingDetailItem {
-  implicit val localDateReads: Reads[LocalDate] = Reads.localDateReads("yyyy-MM-dd")
-  implicit val format: OFormat[InterestAccruingDetailItem] = Json.format[InterestAccruingDetailItem]
+object InterestAccruingDrilldownItem {
+  implicit val format: OFormat[InterestAccruingDrilldownItem] = Json.format[InterestAccruingDrilldownItem]
 }
 
-final case class InterestAccruingDetails(
+final case class InterestAccruingDrilldown(
   periodStartDate: Option[LocalDate],
   periodEndDate: Option[LocalDate],
   total: BigDecimal,
   totalRecords: Int,
-  items: Seq[InterestAccruingDetailItem]
+  descriptionCode: Option[Int],
+  items: Seq[InterestAccruingDrilldownItem]
 )
 
-object InterestAccruingDetails {
-  import InterestAccruingDetailItem.localDateReads
-  implicit val format: OFormat[InterestAccruingDetails] = Json.format[InterestAccruingDetails]
+object InterestAccruingDrilldown {
+  implicit val format: OFormat[InterestAccruingDrilldown] = Json.format[InterestAccruingDrilldown]
 }
