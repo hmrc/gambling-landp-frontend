@@ -39,9 +39,9 @@
     </nav>
 }
 
-@linkOrText(label: String, total: BigDecimal, href: String) = @{
+@linkOrText(label: String, predicate: Boolean, href: String) = @{
     HtmlContent(
-        if (total == 0) s"""<span>$label</span>"""
+        if (predicate == false) s"""<span>$label</span>"""
         else s"""<a class="govuk-link" href="$href">$label</a>"""
     )
 }
@@ -49,17 +49,17 @@
 @tableRows = @{
     {Seq(
         Seq(
-            TableRow(content = linkOrText(messages("interestBreakdown.table.Interest"), model.interestAmount, controllers.routes.InterestDetailsController.onPageLoad().url)),
+            TableRow(content = linkOrText(messages("interestBreakdown.table.Interest"), model.interestAmount!=0.00, controllers.routes.InterestDetailsController.onPageLoad().url)),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.interestAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-breakdown-interest-amount"))
         ),
         Seq(
-            TableRow(content = linkOrText(messages("interestBreakdown.table.AccruingInterest"), model.interestAccruingAmount, controllers.routes.InterestAccruingDetailsController.onPageLoad().url)),
+            TableRow(content = linkOrText(messages("interestBreakdown.table.AccruingInterest"), model.interestAccruingAmount!=0.00, controllers.routes.InterestAccruingDetailsController.onPageLoad().url)),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.interestAccruingAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-breakdown-interest-accruing-amount"))
-        )
-    )} ++ (if (regime==Regime.MGD) Seq(Seq(
-            TableRow(content = linkOrText(messages("interestBreakdown.table.RepaymentInterest"), model.repaymentInterestAmount, controllers.routes.RepaymentInterestDetailsController.onPageLoad().url)),
+        ),
+        Seq(
+            TableRow(content = linkOrText(messages("interestBreakdown.table.RepaymentInterest"), (model.repaymentInterestAmount!=0.00) && (regime==Regime.MGD), controllers.routes.RepaymentInterestDetailsController.onPageLoad().url)),
             TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(model.repaymentInterestAmount).body), format = Some("numeric"), attributes = Map("data-testid" -> "interest-breakdown-repayment-interest-amount"))
-        )) else Seq.empty)
+        ))}
 }
 
 @layout(
