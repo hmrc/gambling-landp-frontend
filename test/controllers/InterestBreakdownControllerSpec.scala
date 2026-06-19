@@ -290,7 +290,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "Repayment interest not shown for regime codes != MGD" in {
+    "Repayment interest link not shown for regime codes != MGD" in {
       val regimesExcludingMGD = Seq("gbd", "pbd", "rgd")
 
       regimesExcludingMGD.foreach { code =>
@@ -308,14 +308,16 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          contentAsString(result) must not include "Repayment interest"
+          contentAsString(result) must include ("<span>Repayment interest</span>")
+          contentAsString(result) must not include ">Repayment interest</a>"
+          contentAsString(result) must not include routes.RepaymentInterestDetailsController.onPageLoad().url
           contentAsString(result) must include("Interest")
           contentAsString(result) must include("Interest accruing")
         }
       }
     }
 
-    "Repayment interest is shown for regime code MGD" in {
+    "Repayment interest link is shown for regime code MGD" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestOverview(any(), any())(any()))
         .thenReturn(Future.successful(interestOverview))
@@ -330,7 +332,9 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Repayment interest")
+        contentAsString(result) must not include "<span>Repayment interest</span>"
+        contentAsString(result) must include(">Repayment interest</a>")
+        contentAsString(result) must include(routes.RepaymentInterestDetailsController.onPageLoad().url)
         contentAsString(result) must include("Interest")
         contentAsString(result) must include("Interest accruing")
       }
