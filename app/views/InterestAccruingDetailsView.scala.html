@@ -44,7 +44,7 @@ pagination: components.Pagination
         Seq(
             TableRow(
                 content = HtmlContent(
-                    s"""<a class="govuk-link" href="${routes.InterestDrilldownController.onPageLoad(item.interestId).url}">
+                    s"""<a class="govuk-link" href="${routes.InterestAccruingDrilldownController.onPageLoad(item.interestId).url}">
                         <span style="white-space:nowrap">
                         ${messages(
                           s"interestAccruingDetails.description.${item.descriptionCode}",
