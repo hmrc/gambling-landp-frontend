@@ -308,7 +308,7 @@ class InterestBreakdownControllerSpec extends SpecBase with MockitoSugar {
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          contentAsString(result) must include ("<span>Repayment interest</span>")
+          contentAsString(result) must include("<span>Repayment interest</span>")
           contentAsString(result) must not include ">Repayment interest</a>"
           contentAsString(result) must not include routes.RepaymentInterestDetailsController.onPageLoad().url
           contentAsString(result) must include("Interest")
