@@ -132,7 +132,7 @@ class ReallocationsOutControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Payments are sometimes credited from the wrong account.")
+        contentAsString(result) must include("Payments are sometimes credited to the wrong account.")
       }
     }
 
