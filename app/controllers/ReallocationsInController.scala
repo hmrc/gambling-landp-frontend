@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.IdentifierAction
+import controllers.actions.{IdentifierAction, ValidateAction}
 import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -32,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ReallocationsInController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
+  validate: ValidateAction,
   gamblingService: GamblingService,
   view: ReallocationsInView,
   pageNotFoundView: PageNotFoundView,
@@ -41,7 +42,7 @@ class ReallocationsInController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = (identify andThen validate).async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {
