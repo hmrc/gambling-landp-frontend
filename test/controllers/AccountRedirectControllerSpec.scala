@@ -24,7 +24,7 @@ import play.api.test.Helpers.*
 
 class AccountRedirectControllerSpec extends SpecBase {
 
-  private val regNumber = "XWM00003102200"
+  private val regNumber = "XRM00003102200"
 
   "AccountRedirectController" - {
 
@@ -59,31 +59,48 @@ class AccountRedirectControllerSpec extends SpecBase {
     }
 
     "must support all valid regime codes" in {
-      Seq("gbd", "pbd", "rgd", "mgd").foreach { code =>
+      Seq(
+        ("gbd", "XWA00003000000"),
+        ("pbd", "XNA00003200000"),
+        ("rgd", "XEA00003400000"),
+        ("mgd", "XVM33333333333")
+      ).foreach { case (regimeCode, regNo) =>
         val app = applicationBuilder().build()
 
         running(app) {
           implicit val mat: Materializer = app.materializer
           val controller = app.injector.instanceOf[AccountRedirectController]
-          val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad(code, regNumber).url)
-          val result = call(controller.onPageLoad(code, regNumber), request)
+          val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad(regimeCode, regNo).url)
+          val result = call(controller.onPageLoad(regimeCode, regNo), request)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.StatementController.onPageLoad().url
-          result.futureValue.newSession.value.get(SessionKeys.regime) mustEqual Some(code)
+          result.futureValue.newSession.value.get(SessionKeys.regime) mustEqual Some(regimeCode)
         }
       }
     }
 
-    "must return page not found for an unrecognised regime" in {
+    "must redirect to UnauthorisedController for an unrecognised regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
         val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("unknown", regNumber).url)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+      }
+    }
+
+    "must redirect to UnauthorisedController for an invalid regNo" in {
+      val app = applicationBuilder().build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("gbd", "XEA00003400000").url)
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
       }
     }
   }

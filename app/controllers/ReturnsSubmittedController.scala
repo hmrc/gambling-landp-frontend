@@ -17,23 +17,21 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.{IdentifierAction, ValidateAction}
+import controllers.actions.IdentifierAction
 import models.{PaginationParams, Regime, SessionKeys}
 import play.api.Logging
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{PageNotFoundView, ReturnsSubmittedView}
 
 import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class ReturnsSubmittedController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
-  validate: ValidateAction,
   gamblingService: GamblingService,
   view: ReturnsSubmittedView,
   pageNotFoundView: PageNotFoundView,
@@ -43,7 +41,7 @@ class ReturnsSubmittedController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = (identify andThen validate).async { implicit request =>
+  def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
     (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
       case (Some(regimeCode), Some(regNumber)) =>
         Regime.fromString(regimeCode) match {

@@ -16,39 +16,8 @@
 
 package controllers.actions
 
-import models.{Regime, SessionKeys}
+import models.Regime
 import play.api.Logging
-import play.api.mvc.Results.Redirect
-import play.api.mvc.{ActionFilter, Request, Result}
-
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
-
-class ValidateActionImpl @Inject() (implicit val executionContext: ExecutionContext) extends ValidateAction with Logging {
-
-  override protected def filter[A](request: Request[A]): Future[Option[Result]] = {
-
-    (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode) match {
-          case None =>
-            Future.successful(Some(Redirect(controllers.routes.AccessDeniedController.onPageLoad())))
-          case Some(validRegime) =>
-            if (GRNValidator.validateRegNoRegime(validRegime, regNumber)) {
-              Future.successful(None)
-            } else {
-              logger.warn("Invalid regime")
-              Future.successful(Some(Redirect(controllers.routes.AccessDeniedController.onPageLoad())))
-            }
-        }
-      case _ =>
-        logger.warn("no regime or regNumber found")
-        Future.successful(Some(Redirect(controllers.routes.AccessDeniedController.onPageLoad())))
-    }
-  }
-}
-
-trait ValidateAction extends ActionFilter[Request]
 
 object GRNValidator extends Logging {
   private val REF_NO_LENGTH = 7
