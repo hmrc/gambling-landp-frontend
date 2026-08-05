@@ -23,13 +23,12 @@ trait CurrencyFormatter {
     f"£${amt.abs}%,1.2f".replace(".00", "")
   }
 
-  def formatAmountHtml(amount: BigDecimal): Html =
-    Html(
-      if (amount < 0)
-        s"""<span style="white-space:nowrap">&#8722;${currencyFormat(amount.abs)}</span>"""
-      else
-        currencyFormat(amount)
-    )
+  def formatAmountString(amount: BigDecimal): String =
+    if (amount < 0)
+      s"&#8722;${currencyFormat(amount.abs)}"
+    else
+      currencyFormat(amount)
+
 }
 
 object CurrencyFormatter extends CurrencyFormatter

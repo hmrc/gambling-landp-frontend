@@ -112,7 +112,7 @@ trait Constraints {
       if (input >= minimum) {
         Valid
       } else {
-        Invalid(errorKey, CurrencyFormatter.formatAmountHtml(minimum).body)
+        Invalid(errorKey, CurrencyFormatter.formatAmountString(minimum))
       }
     }
 
@@ -121,7 +121,7 @@ trait Constraints {
       if (input <= maximum) {
         Valid
       } else {
-        Invalid(errorKey, CurrencyFormatter.formatAmountHtml(maximum).body)
+        Invalid(errorKey, CurrencyFormatter.formatAmountString(maximum))
       }
     }
 }

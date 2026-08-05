@@ -36,11 +36,11 @@
     repaymentInterestRepaid.items.zipWithIndex.map { case (item, i) =>
         Seq(
             TableRow(content = Text(DateTimeFormats.formatDate(Some(item.transactionDate))), attributes = Map("data-testid" -> s"transaction-date-$i")),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountString(item.amount)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
         TableRow(content = HtmlContent(s"<strong>${messages("repaymentInterestRepaid.table.total")}</strong>")),
-        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountHtml(repaymentInterestRepaid.total).body}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repayment-interest-repaid-total"))
+        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountString(repaymentInterestRepaid.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repayment-interest-repaid-total"))
     )) else Seq.empty)
 }
 
@@ -75,7 +75,7 @@
                 <p class="govuk-body">@messages("repaymentInterestRepaid.empty")</p>
             } else {
                 @if(paginationParams.totalPages > 1) {
-                    <p class="govuk-body" data-testid="total-summary">@messages("repaymentInterestRepaid.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(repaymentInterestRepaid.total)</p>
+                    <p class="govuk-body" data-testid="total-summary">@messages("repaymentInterestRepaid.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountString(repaymentInterestRepaid.total)</p>
                     <p class="govuk-body" data-testid="pagination-info">@messages("repaymentInterestRepaid.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
                 }
 

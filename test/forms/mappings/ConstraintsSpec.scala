@@ -195,7 +195,7 @@ class ConstraintsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyC
 
     "must return Invalid for a number below the threshold" in {
       val result = minimumCurrency(1, "error.min").apply(0.99)
-      result mustEqual Invalid("error.min", CurrencyFormatter.formatAmountHtml(1).body)
+      result mustEqual Invalid("error.min", CurrencyFormatter.formatAmountString(1))
     }
   }
 
@@ -213,7 +213,7 @@ class ConstraintsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyC
 
     "must return Invalid for a number above the threshold" in {
       val result = maximumCurrency(1, "error.max").apply(1.01)
-      result mustEqual Invalid("error.max", CurrencyFormatter.formatAmountHtml(1).body)
+      result mustEqual Invalid("error.max", CurrencyFormatter.formatAmountString(1))
     }
   }
 }
