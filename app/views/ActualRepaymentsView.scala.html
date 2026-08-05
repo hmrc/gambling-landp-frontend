@@ -44,6 +44,10 @@
     )) else Seq.empty)
 }
 
+@amountText(label: String) = @{
+    HtmlContent(s"""<p class="govuk-body" data-testid="total-summary">$label</p>""")
+}
+
 @breadcrumbs = {
 <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
     <ol class="govuk-breadcrumbs__list">
@@ -75,7 +79,9 @@
                 <p class="govuk-body">@messages("actualRepayments.empty")</p>
             } else {
                 @if(paginationParams.totalPages > 1) {
-                    <p class="govuk-body" data-testid="total-summary">@messages("actualRepayments.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountString(actualRepayments.total)</p>
+                    1=@{ amountText(CurrencyFormatter.formatAmountString(actualRepayments.total)) }
+                    2=<p class="govuk-body" data-testid="total-summary">HtmlContent( s"${CurrencyFormatter.formatAmountString(actualRepayments.total)}")</p>
+                    3=<p class="govuk-body" data-testid="total-summary">@messages("actualRepayments.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountString(actualRepayments.total)</p>
                     <p class="govuk-body" data-testid="pagination-info">@messages("actualRepayments.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
                 }
 

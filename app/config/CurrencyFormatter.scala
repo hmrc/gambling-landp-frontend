@@ -24,11 +24,15 @@ trait CurrencyFormatter {
   }
 
   def formatAmountString(amount: BigDecimal): String =
+    s"""<span style="white-space:nowrap">${if (amount < 0) "&#8722;" else ""}${currencyFormat(amount)}</span>"""
+}
+
+def formatAmountHtml(amount: BigDecimal): Html =
+  Html(
     if (amount < 0)
-      s"&#8722;${currencyFormat(amount.abs)}"
+      s"""<span style="white-space:nowrap">&#8722;${currencyFormat(amount)}</span>"""
     else
       currencyFormat(amount)
-
-}
+  )
 
 object CurrencyFormatter extends CurrencyFormatter

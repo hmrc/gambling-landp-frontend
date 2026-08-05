@@ -78,7 +78,7 @@
                 <p class="govuk-body">@messages("assessmentInAbsenceOfReturns.empty")</p>
             } else {
                 @if(paginationParams.totalPages > 1) {
-                    <p class="govuk-body" data-testid="total-summary">@messages("assessmentInAbsenceOfReturns.totalSummary", paginationParams.totalRecords) @assessments.total.map(CurrencyFormatter.formatAmountString) &#8722;£25,300</p>
+                    <p class="govuk-body" data-testid="total-summary">@messages("assessmentInAbsenceOfReturns.totalSummary", paginationParams.totalRecords) @assessments.total.map(CurrencyFormatter.formatAmountString)</p>
                     <p class="govuk-body" data-testid="pagination-info">@messages("assessmentInAbsenceOfReturns.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
                 }
 
