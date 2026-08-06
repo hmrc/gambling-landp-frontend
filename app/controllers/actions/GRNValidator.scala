@@ -73,13 +73,13 @@ object GRNValidator extends Logging {
       if (regNum.matches(regEx)) {
         val calculatedRegime = regimeFromRegNo(regNum.takeRight(REF_NO_LENGTH).toLong)
         if (!calculatedRegime.equals(regime.code)) {
-          logger.warn(s"validateRegime Regime does not match RegNum $regime calc=$calculatedRegime $regNum")
+          logger.warn(s"Regime RANGE does not match RegNum $regime calc=<$calculatedRegime> $regNum")
           false
         } else {
           true
         }
       } else {
-        logger.warn(s"validateRegime RegNum is invalid '$regNum'")
+        logger.warn(s"validateRegime '$regNum' does not match regEx")
         false
       }
     } else {
