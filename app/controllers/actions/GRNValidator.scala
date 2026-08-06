@@ -76,7 +76,6 @@ object GRNValidator extends Logging {
           logger.warn(s"validateRegime Regime does not match RegNum $regime calc=$calculatedRegime $regNum")
           false
         } else {
-          logger.info(s"validateRegime Regime matches RegNum '$regime':'$calculatedRegime' '$regNum'")
           true
         }
       } else {
