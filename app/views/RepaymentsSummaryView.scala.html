@@ -18,7 +18,7 @@
 @import play.api.i18n.Messages
 @import models.repayments.RepaymentsSummary
 @import utils.DateTimeFormats
-@import config.CurrencyFormatter
+@import views.CurrencyFormatter
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
@@ -53,11 +53,11 @@
     Seq(
         Seq(
             TableRow(content = linkOrText(messages("repayments.table.actualRepayments"), model.actualRepaymentsAmount, controllers.routes.ActualRepaymentsController.onPageLoad().url)),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountString(model.actualRepaymentsAmount)), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-actual-amount"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formattedAmountHtml(model.actualRepaymentsAmount)), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-actual-amount"))
         ),
         Seq(
             TableRow(content = linkOrText(messages("repayments.table.repaymentInterestRepaid"), model.repaymentsInterestRepaidAmount, controllers.routes.RepaymentInterestRepaidController.onPageLoad().url)),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountString(model.repaymentsInterestRepaidAmount)), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-interest-amount"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formattedAmountHtml(model.repaymentsInterestRepaidAmount)), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-interest-amount"))
         )
     )
 }
@@ -85,7 +85,7 @@
             rows = tableRows ++ Seq(
                 Seq(
                     TableRow(content = HtmlContent(s"<strong>${messages("repayments.table.total")}</strong>")),
-                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountString(model.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-grand-total"))
+                    TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formattedAmountHtml(model.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repayments-summary-grand-total"))
                 )
             )
         ))

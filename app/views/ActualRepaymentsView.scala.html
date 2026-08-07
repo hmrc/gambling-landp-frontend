@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import config.CurrencyFormatter
+@import views.CurrencyFormatter
 @import models.{PaginationParams, Regime}
 @import models.repayments.ActualRepayments
 @import uk.gov.hmrc.govukfrontend.views.html.components._
@@ -36,16 +36,12 @@
     actualRepayments.items.zipWithIndex.map { case (item, i) =>
         Seq(
             TableRow(content = Text(DateTimeFormats.formatDate(Some(item.transactionDate))), attributes = Map("data-testid" -> s"transaction-date-$i")),
-            TableRow(content = HtmlContent(CurrencyFormatter.formatAmountString(item.amount)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
+            TableRow(content = HtmlContent(CurrencyFormatter.formattedAmountHtml(item.amount)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
         )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
         TableRow(content = HtmlContent(s"<strong>${messages("actualRepayments.table.total")}</strong>")),
-        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountString(actualRepayments.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "actual-repayments-total"))
+        TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formattedAmountHtml(actualRepayments.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "actual-repayments-total"))
     )) else Seq.empty)
-}
-
-@amountText(label: String) = @{
-    HtmlContent(s"""<p class="govuk-body" data-testid="total-summary">$label</p>""")
 }
 
 @breadcrumbs = {
@@ -79,9 +75,7 @@
                 <p class="govuk-body">@messages("actualRepayments.empty")</p>
             } else {
                 @if(paginationParams.totalPages > 1) {
-                    1=@{ amountText(CurrencyFormatter.formatAmountString(actualRepayments.total)) }
-                    2=<p class="govuk-body" data-testid="total-summary">HtmlContent( s"${CurrencyFormatter.formatAmountString(actualRepayments.total)}")</p>
-                    3=<p class="govuk-body" data-testid="total-summary">@messages("actualRepayments.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountString(actualRepayments.total)</p>
+                    <p class="govuk-body" data-testid="total-summary">@messages("actualRepayments.totalSummary", paginationParams.totalRecords) @Html(CurrencyFormatter.formattedAmountHtml(actualRepayments.total))</p>
                     <p class="govuk-body" data-testid="pagination-info">@messages("actualRepayments.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)</p>
                 }
 

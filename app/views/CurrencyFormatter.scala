@@ -14,26 +14,15 @@
  * limitations under the License.
  */
 
-package config
-
-import play.twirl.api.Html
+package views
 
 trait CurrencyFormatter {
   private def currencyFormat(amt: BigDecimal): String = {
     f"£${amt.abs}%,1.2f".replace(".00", "")
   }
 
-  // try with ActualRepaymentsView.scala.html
-  def formatAmountString(amount: BigDecimal): String =
+  def formattedAmountHtml(amount: BigDecimal): String =
     s"""<span style="white-space:nowrap">${if (amount < 0) "&#8722;" else ""}${currencyFormat(amount)}</span>"""
-
-  def formatAmountHtml(amount: BigDecimal): Html =
-    Html(
-      if (amount < 0)
-        s"""<span style="white-space:nowrap">&#8722;${currencyFormat(amount)}</span>"""
-      else
-        currencyFormat(amount)
-    )
 }
 
 object CurrencyFormatter extends CurrencyFormatter

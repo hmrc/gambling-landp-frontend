@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import config.CurrencyFormatter
+@import views.CurrencyFormatter
 @import models.{PaginationParams, Regime}
 @import models.interest.InterestDetails
 @import uk.gov.hmrc.govukfrontend.views.html.components._
@@ -36,11 +36,11 @@ pagination: components.Pagination
             TableRow(content = Text(
                 messages(s"repaymentInterestDetails.description.${item.descriptionCode}", DateTimeFormats.formatDate(Some(item.periodStartDate)), DateTimeFormats.formatDate(Some(item.periodEndDate)))
                 ), attributes = Map("data-testid" -> s"description-$i")),
-                TableRow(content = HtmlContent(CurrencyFormatter.formatAmountString(item.amount)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
+                TableRow(content = HtmlContent(CurrencyFormatter.formattedAmountHtml(item.amount)), format = Some("numeric"), attributes = Map("data-testid" -> s"amount-$i"))
             )
     } ++ (if (paginationParams.totalPages <= 1) Seq(Seq(
                 TableRow(content = HtmlContent(s"<strong>${messages("repaymentInterestDetails.table.total")}</strong>")),
-                TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formatAmountString(model.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repaymentInterestDetails-total"))
+                TableRow(content = HtmlContent(s"<strong>${CurrencyFormatter.formattedAmountHtml(model.total)}</strong>"), format = Some("numeric"), attributes = Map("data-testid" -> "repaymentInterestDetails-total"))
             )) else Seq.empty)
 }
 
@@ -75,7 +75,7 @@ pagination: components.Pagination
     } else {
         @if(paginationParams.totalPages > 1) {
         <p class="govuk-body" data-testid="total-summary">
-        @messages("repaymentInterestDetails.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountString(model.total)
+        @messages("repaymentInterestDetails.totalSummary", paginationParams.totalRecords) @Html(CurrencyFormatter.formattedAmountHtml(model.total))
         </p>
         <p class="govuk-body" data-testid="pagination-info">
         @messages("repaymentInterestDetails.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)
