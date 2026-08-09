@@ -118,7 +118,7 @@ object AuthenticatedIdentifierAction {
     }
 }
 
-/** Lightweight auth check used at entry points (e.g. AccountRedirectController) that establish the session. Verifies the user is logged in as an
+/** Lightweight auth check used at entry points (e.g. StatementRedirectController) that establish the session. Verifies the user is logged in as an
   * Organisation or Agent — does NOT check session regime/regNumber.
   */
 @ImplementedBy(classOf[AuthenticatedLoginAction])
