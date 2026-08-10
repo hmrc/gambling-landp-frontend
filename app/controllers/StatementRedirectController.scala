@@ -16,6 +16,7 @@
 
 package controllers
 
+import controllers.actions.LoginAction
 import config.FrontendAppConfig
 import controllers.actions.{GRNValidator, LoginAction}
 import models.{Regime, SessionKeys}
@@ -23,15 +24,12 @@ import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.PageNotFoundView
 
 import javax.inject.Inject
 
-class AccountRedirectController @Inject() (
+class StatementRedirectController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify: LoginAction,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  identify: LoginAction
 ) extends FrontendBaseController
     with I18nSupport
     with Logging {
@@ -39,6 +37,7 @@ class AccountRedirectController @Inject() (
   def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
     Regime.fromString(regime) match {
       case None =>
+        Redirect(routes.AccessDeniedController.onPageLoad())
         logger.warn("no regime found")
         Redirect(routes.UnauthorisedController.onPageLoad())
       case Some(validRegime) =>

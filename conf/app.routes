@@ -2,7 +2,7 @@
 
 ->         /hmrc-frontend                               hmrcfrontend.Routes
 
-GET        /:regime/:regNumber/current/account           controllers.AccountRedirectController.onPageLoad(regime: String, regNumber: String)
+GET        /statement/:regime/:regNumber/current         controllers.StatementRedirectController.onPageLoad(regime: String, regNumber: String)
 
 GET        /statement                                    controllers.StatementController.onPageLoad()
 
