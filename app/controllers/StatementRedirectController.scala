@@ -16,8 +16,6 @@
 
 package controllers
 
-import controllers.actions.LoginAction
-import config.FrontendAppConfig
 import controllers.actions.{GRNValidator, LoginAction}
 import models.{Regime, SessionKeys}
 import play.api.Logging
@@ -37,9 +35,8 @@ class StatementRedirectController @Inject() (
   def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
     Regime.fromString(regime) match {
       case None =>
-        Redirect(routes.AccessDeniedController.onPageLoad())
         logger.warn("no regime found")
-        Redirect(routes.UnauthorisedController.onPageLoad())
+        Redirect(routes.AccessDeniedController.onPageLoad())
       case Some(validRegime) =>
         if (GRNValidator.validateRegNoRegime(validRegime, regNumber)) {
           Redirect(routes.StatementController.onPageLoad())
@@ -49,7 +46,7 @@ class StatementRedirectController @Inject() (
             )
         } else {
           logger.warn(s"Invalid regime or regNumber $validRegime $regNumber")
-          Redirect(routes.UnauthorisedController.onPageLoad())
+          Redirect(routes.AccessDeniedController.onPageLoad())
         }
     }
   }

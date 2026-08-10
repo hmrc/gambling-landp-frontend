@@ -96,11 +96,11 @@ class StatementRedirectControllerSpec extends SpecBase {
       val app = applicationBuilder().build()
 
       running(app) {
-        val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("gbd", "XEA00003400000").url)
+        val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad("gbd", "XEA00003400000").url)
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.AccessDeniedController.onPageLoad().url
       }
     }
   }
