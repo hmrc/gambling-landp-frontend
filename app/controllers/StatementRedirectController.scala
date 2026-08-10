@@ -16,28 +16,24 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.LoginAction
 import models.{Regime, SessionKeys}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.PageNotFoundView
 
 import javax.inject.Inject
 
-class AccountRedirectController @Inject() (
+class StatementRedirectController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify: LoginAction,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  identify: LoginAction
 ) extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
     Regime.fromString(regime) match {
       case None =>
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+        Redirect(routes.AccessDeniedController.onPageLoad())
       case Some(validRegime) =>
         Redirect(routes.StatementController.onPageLoad())
           .addingToSession(

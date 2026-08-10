@@ -22,19 +22,19 @@ import org.apache.pekko.stream.Materializer
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 
-class AccountRedirectControllerSpec extends SpecBase {
+class StatementRedirectControllerSpec extends SpecBase {
 
   private val regNumber = "XWM00003102200"
 
-  "AccountRedirectController" - {
+  "StatementRedirectController" - {
 
     "must redirect to StatementController and save regime and regNumber in session for a valid regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
         implicit val mat: Materializer = app.materializer
-        val controller = app.injector.instanceOf[AccountRedirectController]
-        val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("gbd", regNumber).url)
+        val controller = app.injector.instanceOf[StatementRedirectController]
+        val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad("gbd", regNumber).url)
         val result = call(controller.onPageLoad("gbd", regNumber), request)
 
         status(result) mustEqual SEE_OTHER
@@ -49,8 +49,8 @@ class AccountRedirectControllerSpec extends SpecBase {
 
       running(app) {
         implicit val mat: Materializer = app.materializer
-        val controller = app.injector.instanceOf[AccountRedirectController]
-        val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("GBD", regNumber).url)
+        val controller = app.injector.instanceOf[StatementRedirectController]
+        val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad("GBD", regNumber).url)
         val result = call(controller.onPageLoad("GBD", regNumber), request)
 
         status(result) mustEqual SEE_OTHER
@@ -64,8 +64,8 @@ class AccountRedirectControllerSpec extends SpecBase {
 
         running(app) {
           implicit val mat: Materializer = app.materializer
-          val controller = app.injector.instanceOf[AccountRedirectController]
-          val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad(code, regNumber).url)
+          val controller = app.injector.instanceOf[StatementRedirectController]
+          val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad(code, regNumber).url)
           val result = call(controller.onPageLoad(code, regNumber), request)
 
           status(result) mustEqual SEE_OTHER
@@ -75,15 +75,15 @@ class AccountRedirectControllerSpec extends SpecBase {
       }
     }
 
-    "must return page not found for an unrecognised regime" in {
+    "must redirect to Access Denied for an unrecognised regime" in {
       val app = applicationBuilder().build()
 
       running(app) {
-        val request = FakeRequest(GET, routes.AccountRedirectController.onPageLoad("unknown", regNumber).url)
+        val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad("unknown", regNumber).url)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.AccessDeniedController.onPageLoad().url
       }
     }
   }
