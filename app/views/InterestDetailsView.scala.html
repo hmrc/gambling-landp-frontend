@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import config.CurrencyFormatter
+@import views.CurrencyFormatter
 @import models.{PaginationParams, Regime}
 @import models.interest.InterestDetails
 @import uk.gov.hmrc.govukfrontend.views.html.components._
@@ -55,7 +55,7 @@ pagination: components.Pagination
                 attributes = Map("data-testid" -> s"description-$i")
             ),
             TableRow(
-                content = HtmlContent(CurrencyFormatter.formatAmountHtml(item.amount).body),
+                content = HtmlContent(CurrencyFormatter.formattedAmountHtml(item.amount)),
                 format = Some("numeric"),
                 attributes = Map("data-testid" -> s"amount-$i")
             )
@@ -70,7 +70,7 @@ pagination: components.Pagination
                 ),
                 TableRow(
                     content = HtmlContent(
-                        s"<strong>${CurrencyFormatter.formatAmountHtml(model.total).body}</strong>"
+                        s"<strong>${CurrencyFormatter.formattedAmountHtml(model.total)}</strong>"
                     ),
                     format = Some("numeric"),
                     attributes = Map("data-testid" -> "interestDetails-total")
@@ -112,7 +112,7 @@ pagination: components.Pagination
     } else {
         @if(paginationParams.totalPages > 1) {
         <p class="govuk-body" data-testid="total-summary">
-        @messages("interestDetails.totalSummary", paginationParams.totalRecords) @CurrencyFormatter.formatAmountHtml(model.total)
+        @messages("interestDetails.totalSummary", paginationParams.totalRecords) @Html(CurrencyFormatter.formattedAmountHtml(model.total))
         </p>
         <p class="govuk-body" data-testid="pagination-info">
         @messages("interestDetails.displaying", paginationParams.firstRecord, paginationParams.lastRecord, paginationParams.totalRecords)
