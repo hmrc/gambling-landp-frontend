@@ -17,6 +17,7 @@
 package controllers.actions
 
 import javax.inject.Inject
+import models.{Regime, SessionKeys}
 import models.requests.IdentifierRequest
 import play.api.mvc.*
 
@@ -24,8 +25,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FakeIdentifierAction @Inject() (bodyParsers: PlayBodyParsers) extends IdentifierAction {
 
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] =
-    block(IdentifierRequest(request, "id"))
+  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
+    val regime = request.session.get(SessionKeys.regime).flatMap(Regime.fromString).getOrElse(Regime.GBD)
+    val regNumber = request.session.get(SessionKeys.regNumber).getOrElse("regNumber")
+    block(IdentifierRequest(request, "id", regime, regNumber))
+  }
 
   override def parser: BodyParser[AnyContent] =
     bodyParsers.default

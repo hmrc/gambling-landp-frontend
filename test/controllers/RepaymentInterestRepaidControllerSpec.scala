@@ -61,43 +61,6 @@ class RepaymentInterestRepaidControllerSpec extends SpecBase with MockitoSugar {
 
   "RepaymentInterestRepaidController" - {
 
-    "must redirect to Unauthorised when regime is missing from session" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Unauthorised when regNumber is missing from session" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> "gbd")
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-      }
-    }
-
-    "must return page not found when session contains an unrecognised regime" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
-      }
-    }
-
     "must return OK for a valid regime and render the heading and intro paragraph" in {
       val mockService = mock[GamblingService]
       when(mockService.getRepaymentInterestRepaid(any(), any(), any(), any())(any()))

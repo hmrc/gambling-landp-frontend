@@ -63,43 +63,6 @@ class OtherAssessmentsControllerSpec extends SpecBase with MockitoSugar {
 
   "OtherAssessmentsController" - {
 
-    "must redirect to Unauthorised when regime is missing from session" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, returnsUrl)
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Unauthorised when regNumber is missing from session" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, returnsUrl).withSession(SessionKeys.regime -> "gbd")
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-      }
-    }
-
-    "must return page not found when session contains an unrecognised regime" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, returnsUrl)
-          .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
-      }
-    }
-
     "must return OK and render the heading for a valid regime" in {
       val mockService = mock[GamblingService]
       when(mockService.getOtherAssessments(any(), any(), any(), any())(any()))

@@ -58,43 +58,6 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
 
     def url = routes.InterestAccruingDrilldownController.onPageLoad("INT-001").url
 
-    "must redirect to Unauthorised when regime is missing from session" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, url).withSession(SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Unauthorised when regNumber is missing from session" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> "gbd")
-        val result = route(app, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-      }
-    }
-
-    "must return page not found when session contains an unrecognised regime" in {
-      val app = applicationBuilder().build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
-      }
-    }
-
     Seq(
       (1940, "PPLR interest bearing"),
       (1950, "return charge"),
