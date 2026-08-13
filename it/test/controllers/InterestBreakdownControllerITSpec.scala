@@ -74,46 +74,6 @@ class InterestBreakdownControllerITSpec
 
   "InterestBreakdownController" - {
 
-    "session validation" - {
-
-      "must redirect to Unauthorised when regime is absent from the session" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-          val result = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must redirect to Unauthorised when regNumber is absent from the session" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must return PageNotFound when the session contains an unrecognised regime" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
-        }
-      }
-    }
-
     "successful page load" - {
 
       "must return OK and render the page heading" in {

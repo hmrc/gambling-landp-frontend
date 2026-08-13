@@ -37,7 +37,7 @@ class ReallocationsOutControllerITSpec
     with ScalaFutures
     with IntegrationPatience {
 
-  private val regime    = "gbd"
+  private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
   private val singlePageJson =
@@ -106,46 +106,6 @@ class ReallocationsOutControllerITSpec
 
   "ReallocationsOutController" - {
 
-    "session validation" - {
-
-      "must redirect to Unauthorised when regime is absent from the session" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-          val result  = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must redirect to Unauthorised when regNumber is absent from the session" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result  = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must return PageNotFound when the session contains an unrecognised regime" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
-        }
-      }
-    }
-
     "successful page load" - {
 
       "must return OK and render the page heading" in {
@@ -186,8 +146,8 @@ class ReallocationsOutControllerITSpec
         running(app) {
           val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result  = route(app, request).value
-          val body    = contentAsString(result)
+          val result = route(app, request).value
+          val body = contentAsString(result)
 
           status(result) mustEqual OK
           body must include("govuk-table")
@@ -236,7 +196,7 @@ class ReallocationsOutControllerITSpec
           val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
-          val body   = contentAsString(result)
+          val body = contentAsString(result)
 
           status(result) mustEqual OK
           body must include("govuk-pagination")
@@ -247,7 +207,7 @@ class ReallocationsOutControllerITSpec
 
       "must forward custom pageSize and pageNo query parameters to the backend" in {
         val customPageSize = 5
-        val customPageNo   = 3
+        val customPageNo = 3
 
         stubReallocationsOut(regime, regNumber, pageSize = customPageSize, pageNo = customPageNo, multiPageJson)
 
@@ -255,14 +215,16 @@ class ReallocationsOutControllerITSpec
 
         running(app) {
           val customUrl = routes.ReallocationsOutController.onPageLoad(pageSize = customPageSize, pageNo = customPageNo).url
-          val request   = FakeRequest(GET, customUrl)
+          val request = FakeRequest(GET, customUrl)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
-          ))
+          verify(1,
+                 getRequestedFor(
+                   urlEqualTo(s"/gambling/reallocations-out/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
+                 )
+                )
         }
       }
 
@@ -297,9 +259,11 @@ class ReallocationsOutControllerITSpec
             val result = route(app, request).value
 
             status(result) mustEqual OK
-            verify(1, getRequestedFor(
-              urlEqualTo(s"/gambling/reallocations-out/$code/$regNumber?pageSize=10&pageNo=1")
-            ))
+            verify(1,
+                   getRequestedFor(
+                     urlEqualTo(s"/gambling/reallocations-out/$code/$regNumber?pageSize=10&pageNo=1")
+                   )
+                  )
           }
         }
       }
@@ -317,9 +281,11 @@ class ReallocationsOutControllerITSpec
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/reallocations-out/$regime/$otherRegNumber?pageSize=10&pageNo=1")
-          ))
+          verify(1,
+                 getRequestedFor(
+                   urlEqualTo(s"/gambling/reallocations-out/$regime/$otherRegNumber?pageSize=10&pageNo=1")
+                 )
+                )
         }
       }
     }

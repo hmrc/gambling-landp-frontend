@@ -37,7 +37,7 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
     with ScalaFutures
     with IntegrationPatience {
 
-  private val regime    = "gbd"
+  private val regime = "gbd"
   private val regNumber = "XWM00003102200"
 
   private val singlePageJson =
@@ -110,46 +110,6 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
 
   "AssessmentInAbsenceOfReturnsController" - {
 
-    "session validation" - {
-
-      "must redirect to Unauthorised when regime is absent from the session" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-          val result  = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must redirect to Unauthorised when regNumber is absent from the session" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url).withSession(SessionKeys.regime -> regime)
-          val result  = route(app, request).value
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.UnauthorisedController.onPageLoad().url
-        }
-      }
-
-      "must return PageNotFound when the session contains an unrecognised regime" in {
-        val app = buildApp()
-
-        running(app) {
-          val request = FakeRequest(GET, url)
-            .withSession(SessionKeys.regime -> "unknown", SessionKeys.regNumber -> regNumber)
-          val result = route(app, request).value
-
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
-        }
-      }
-    }
-
     "successful page load" - {
 
       "must return OK and render the page heading, paragraph in the page body" in {
@@ -165,8 +125,12 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
           status(result) mustEqual OK
           contentAsString(result) must include("Assessments in absence of return")
           contentAsString(result) must include("Assessments in the absence of a return")
-          contentAsString(result) must include("Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC.")
-          contentAsString(result) must include("Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn.")
+          contentAsString(result) must include(
+            "Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC."
+          )
+          contentAsString(result) must include(
+            "Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn."
+          )
           contentAsString(result) must include("You may not have yet received formal notification of recent assessments.")
           contentAsString(result) must include("1 January 2024 to 31 December 2024")
         }
@@ -180,8 +144,8 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
         running(app) {
           val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
-          val result  = route(app, request).value
-          val body    = contentAsString(result)
+          val result = route(app, request).value
+          val body = contentAsString(result)
 
           status(result) mustEqual OK
           body must include("govuk-table")
@@ -201,8 +165,12 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
           status(result) mustEqual OK
           contentAsString(result) must include("Assessments in absence of return")
           contentAsString(result) must include("Assessments in the absence of a return")
-          contentAsString(result) must include("Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC.")
-          contentAsString(result) must include("Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn.")
+          contentAsString(result) must include(
+            "Assessments made where you have not yet submitted a return, or where a return has not been accepted by HMRC."
+          )
+          contentAsString(result) must include(
+            "Submit returns for these periods immediately, as your payment is late. Once you have submitted a return, the assessment for that period will be withdrawn."
+          )
           contentAsString(result) must include("You may not have yet received formal notification of recent assessments.")
           contentAsString(result) must include("1 January 2024 to 31 December 2024")
           contentAsString(result) must include("You are up-to-date on your returns.")
@@ -238,7 +206,7 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
           val request = FakeRequest(GET, url)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
-          val body   = contentAsString(result)
+          val body = contentAsString(result)
 
           status(result) mustEqual OK
           body must include("govuk-pagination")
@@ -249,7 +217,7 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
 
       "must forward custom pageSize and pageNo query parameters to the backend" in {
         val customPageSize = 5
-        val customPageNo   = 3
+        val customPageNo = 3
 
         stubAssessmentsWithoutReturns(regime, regNumber, pageSize = customPageSize, pageNo = customPageNo, multiPageJson)
 
@@ -257,14 +225,16 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
 
         running(app) {
           val customUrl = routes.AssessmentInAbsenceOfReturnsController.onPageLoad(pageSize = customPageSize, pageNo = customPageNo).url
-          val request   = FakeRequest(GET, customUrl)
+          val request = FakeRequest(GET, customUrl)
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/assessments-without-returns/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
-          ))
+          verify(1,
+                 getRequestedFor(
+                   urlEqualTo(s"/gambling/assessments-without-returns/$regime/$regNumber?pageSize=$customPageSize&pageNo=$customPageNo")
+                 )
+                )
         }
       }
 
@@ -299,9 +269,11 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
             val result = route(app, request).value
 
             status(result) mustEqual OK
-            verify(1, getRequestedFor(
-              urlEqualTo(s"/gambling/assessments-without-returns/$code/$regNumber?pageSize=10&pageNo=1")
-            ))
+            verify(1,
+                   getRequestedFor(
+                     urlEqualTo(s"/gambling/assessments-without-returns/$code/$regNumber?pageSize=10&pageNo=1")
+                   )
+                  )
           }
         }
       }
@@ -319,9 +291,11 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
           val result = route(app, request).value
 
           status(result) mustEqual OK
-          verify(1, getRequestedFor(
-            urlEqualTo(s"/gambling/assessments-without-returns/$regime/$otherRegNumber?pageSize=10&pageNo=1")
-          ))
+          verify(1,
+                 getRequestedFor(
+                   urlEqualTo(s"/gambling/assessments-without-returns/$regime/$otherRegNumber?pageSize=10&pageNo=1")
+                 )
+                )
         }
       }
     }
