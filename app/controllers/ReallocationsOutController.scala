@@ -18,8 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.{PaginationParams, Regime, SessionKeys}
-import play.api.Logging
+import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
@@ -27,7 +26,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{PageNotFoundView, ReallocationsOutView}
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class ReallocationsOutController @Inject() (
   val controllerComponents: MessagesControllerComponents,
@@ -38,27 +37,17 @@ class ReallocationsOutController @Inject() (
   appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
-    (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode) match {
-          case None =>
-            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
-          case Some(validRegime) =>
-            gamblingService.getReallocationsOut(validRegime.code, regNumber, pageSize, pageNo).map { reallocations =>
-              val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
-              if (pagination.isOutOfRange)
-                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-              else
-                Ok(view(validRegime, regNumber, pagination, reallocations))
-            }
-        }
-      case _ =>
-        logger.warn("no regime or regNumber found")
-        Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+    val regime = request.regime
+    val regNumber = request.regNumber
+    gamblingService.getReallocationsOut(regime.code, regNumber, pageSize, pageNo).map { reallocations =>
+      val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
+      if (pagination.isOutOfRange)
+        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+      else
+        Ok(view(regime, regNumber, pagination, reallocations))
     }
   }
 }

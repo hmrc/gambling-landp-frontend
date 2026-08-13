@@ -20,7 +20,7 @@ import com.google.inject.{ImplementedBy, Inject}
 import config.FrontendAppConfig
 import controllers.routes
 import models.{AuthContext, Regime, SessionKeys}
-import models.requests.IdentifierRequest
+import models.requests.{IdentifierRequest, LoginRequest}
 import play.api.Logging
 import play.api.mvc.Results.*
 import play.api.mvc.*
@@ -52,18 +52,18 @@ class AuthenticatedIdentifierAction @Inject() (
 
         case Some(affinityGroup @ (AffinityGroup.Organisation | AffinityGroup.Agent)) ~ enrolments ~ Some(credentials) =>
           val authContext = AuthContext(affinityGroup, enrolments, credentials.providerId)
-          val isAuthorisedForRegime = (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-            case (Some(regime), Some(regNumber)) =>
-              AuthenticatedIdentifierAction.isAuthorisedForRegime(authContext, regime, regNumber)
-            case _ =>
-              false
-          }
+          val regime = request.session.get(SessionKeys.regime).flatMap(Regime.fromString)
+          val regNumber = request.session.get(SessionKeys.regNumber)
 
-          if (!isAuthorisedForRegime) {
-            logger.warn(s"user is not authorised for regime")
-            Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
-          } else {
-            block(IdentifierRequest(request, authContext.providerId))
+          (regime, regNumber) match {
+            case (Some(regime), Some(regNumber)) if AuthenticatedIdentifierAction.isAuthorisedForRegime(authContext, regime, regNumber) =>
+              block(IdentifierRequest(request, authContext.providerId, regime, regNumber))
+            case (Some(regime), Some(_)) =>
+              logger.warn(s"user not authorised for regime ${regime.code}")
+              Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
+            case _ =>
+              logger.warn("no regime or regNumber in session")
+              Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
           }
 
         case _ =>
@@ -105,8 +105,8 @@ object AuthenticatedIdentifierAction {
       .flatMap(_.getIdentifier(identifierKey))
       .map(_.value)
 
-  private def isAuthorisedForRegime(authContext: AuthContext, regime: String, regNumber: String): Boolean =
-    Regime.fromString(regime).flatMap(regimeConfig.get).exists { config =>
+  private def isAuthorisedForRegime(authContext: AuthContext, regime: Regime, regNumber: String): Boolean =
+    regimeConfig.get(regime).exists { config =>
       authContext.affinityGroup match {
         case AffinityGroup.Organisation =>
           activeIdentifierValue(authContext.enrolments, config.orgEnrolmentKey, config.orgIdentifierKey)
@@ -122,7 +122,7 @@ object AuthenticatedIdentifierAction {
   * Organisation or Agent — does NOT check session regime/regNumber.
   */
 @ImplementedBy(classOf[AuthenticatedLoginAction])
-trait LoginAction extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
+trait LoginAction extends ActionBuilder[LoginRequest, AnyContent] with ActionFunction[Request, LoginRequest]
 
 class AuthenticatedLoginAction @Inject() (
   override val authConnector: AuthConnector,
@@ -133,7 +133,7 @@ class AuthenticatedLoginAction @Inject() (
     with AuthorisedFunctions
     with Logging {
 
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
+  override def invokeBlock[A](request: Request[A], block: LoginRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
@@ -141,7 +141,7 @@ class AuthenticatedLoginAction @Inject() (
       .retrieve(Retrievals.affinityGroup.and(Retrievals.credentials)) {
 
         case Some(AffinityGroup.Organisation | AffinityGroup.Agent) ~ Some(credentials) =>
-          block(IdentifierRequest(request, credentials.providerId))
+          block(LoginRequest(request, credentials.providerId))
 
         case _ =>
           Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
@@ -151,24 +151,6 @@ class AuthenticatedLoginAction @Inject() (
         Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
       case _: AuthorisationException =>
         Redirect(routes.UnauthorisedController.onPageLoad())
-    }
-  }
-}
-
-class SessionIdentifierAction @Inject() (
-  val parser: BodyParsers.Default
-)(implicit val executionContext: ExecutionContext)
-    extends IdentifierAction {
-
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
-
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-
-    hc.sessionId match {
-      case Some(session) =>
-        block(IdentifierRequest(request, session.value))
-      case None =>
-        Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }
   }
 }

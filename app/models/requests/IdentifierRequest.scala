@@ -16,6 +16,13 @@
 
 package models.requests
 
+import models.Regime
 import play.api.mvc.{Request, WrappedRequest}
 
-case class IdentifierRequest[A](request: Request[A], userId: String) extends WrappedRequest[A](request)
+/** A request that has passed authentication and whose session regime/regNumber have been validated against the user's enrolments. */
+case class IdentifierRequest[A](request: Request[A], userId: String, regime: Regime, regNumber: String) extends WrappedRequest[A](request)
+
+/** A request that has only passed the lightweight login check (Organisation/Agent signed in). Used at entry points that establish the session, before
+  * a regime/regNumber are known.
+  */
+case class LoginRequest[A](request: Request[A], userId: String) extends WrappedRequest[A](request)

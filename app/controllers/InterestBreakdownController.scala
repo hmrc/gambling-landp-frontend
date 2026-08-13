@@ -16,40 +16,28 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.{Regime, SessionKeys}
-import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{InterestBreakdownView, PageNotFoundView}
+import views.html.InterestBreakdownView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class InterestBreakdownController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestBreakdownView,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  view: InterestBreakdownView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
-    (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode).fold(Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))) { validRegime =>
-          gamblingService.getInterestOverview(validRegime.code, regNumber).map(overview => Ok(view(overview, validRegime)))
-        }
-      case _ =>
-        logger.warn("no regime or regNumber found")
-        Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
-    }
+    val regime = request.regime
+    val regNumber = request.regNumber
+    gamblingService.getInterestOverview(regime.code, regNumber).map(overview => Ok(view(overview, regime)))
   }
 }
