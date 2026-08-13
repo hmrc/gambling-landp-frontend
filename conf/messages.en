@@ -342,7 +342,7 @@ interestAccruingDetails.description.1970 = Interest on officer assessment from {
 interestAccruingDetails.description.1980 = Interest on late filing penalty from {0} to {1}
 interestAccruingDetails.description.1990 = Interest on late payment penalty from {0} to {1}
 interestAccruingDetails.table.period = {0} to {1}
-interestAccruingDetails.period=From {0} to {1}
+interestAccruingDetails.period = From {0} to {1}
 interestAccruingDetails.table.amount = Amount
 interestAccruingDetails.table.total = Total
 interestAccruingDetails.totalSummary = The total of the {0} records is
@@ -381,6 +381,7 @@ accessDenied.title = Sorry, there is a problem with the service
 accessDenied.heading = Sorry, there is a problem with the service
 accessDenied.p1 = You do not have access to this service.
 accessDenied.p1.link = Continue to your account
+
 pageNotFound.title = Page not found
 pageNotFound.heading = Page not found
 pageNotFound.p1 = If you typed the web address, check it is correct.
