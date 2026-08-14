@@ -19,14 +19,13 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
 import models.PaginationParams
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{PageNotFoundView, ReturnsSubmittedView}
 
 import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-
 import scala.concurrent.ExecutionContext
 
 class ReturnsSubmittedController @Inject() (

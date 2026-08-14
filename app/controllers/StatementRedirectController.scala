@@ -16,8 +16,9 @@
 
 package controllers
 
-import controllers.actions.LoginAction
+import controllers.actions.{GRNValidator, LoginAction}
 import models.{Regime, SessionKeys}
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -28,18 +29,25 @@ class StatementRedirectController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: LoginAction
 ) extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
     Regime.fromString(regime) match {
       case None =>
+        logger.warn("no regime found")
         Redirect(routes.AccessDeniedController.onPageLoad())
       case Some(validRegime) =>
-        Redirect(routes.StatementController.onPageLoad())
-          .addingToSession(
-            SessionKeys.regime    -> validRegime.code,
-            SessionKeys.regNumber -> regNumber
-          )
+        if (GRNValidator.validateRegNoRegime(validRegime, regNumber)) {
+          Redirect(routes.StatementController.onPageLoad())
+            .addingToSession(
+              SessionKeys.regime    -> validRegime.code,
+              SessionKeys.regNumber -> regNumber
+            )
+        } else {
+          logger.warn(s"Invalid regime or regNumber $validRegime $regNumber")
+          Redirect(routes.AccessDeniedController.onPageLoad())
+        }
     }
   }
 }

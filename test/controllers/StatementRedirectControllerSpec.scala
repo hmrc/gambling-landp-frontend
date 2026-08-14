@@ -24,7 +24,7 @@ import play.api.test.Helpers.*
 
 class StatementRedirectControllerSpec extends SpecBase {
 
-  private val regNumber = "XWM00003102200"
+  private val regNumber = "XRM00003102200"
 
   "StatementRedirectController" - {
 
@@ -59,18 +59,23 @@ class StatementRedirectControllerSpec extends SpecBase {
     }
 
     "must support all valid regime codes" in {
-      Seq("gbd", "pbd", "rgd", "mgd").foreach { code =>
+      Seq(
+        ("gbd", "XWA00003000000"),
+        ("pbd", "XNA00003200000"),
+        ("rgd", "XEA00003400000"),
+        ("mgd", "XVM33333333333")
+      ).foreach { case (regimeCode, regNo) =>
         val app = applicationBuilder().build()
 
         running(app) {
           implicit val mat: Materializer = app.materializer
           val controller = app.injector.instanceOf[StatementRedirectController]
-          val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad(code, regNumber).url)
-          val result = call(controller.onPageLoad(code, regNumber), request)
+          val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad(regimeCode, regNo).url)
+          val result = call(controller.onPageLoad(regimeCode, regNo), request)
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.StatementController.onPageLoad().url
-          result.futureValue.newSession.value.get(SessionKeys.regime) mustEqual Some(code)
+          result.futureValue.newSession.value.get(SessionKeys.regime) mustEqual Some(regimeCode)
         }
       }
     }
@@ -80,6 +85,18 @@ class StatementRedirectControllerSpec extends SpecBase {
 
       running(app) {
         val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad("unknown", regNumber).url)
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.AccessDeniedController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Access Denied for an invalid regNo" in {
+      val app = applicationBuilder().build()
+
+      running(app) {
+        val request = FakeRequest(GET, routes.StatementRedirectController.onPageLoad("gbd", "XEA00003400000").url)
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
