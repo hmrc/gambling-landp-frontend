@@ -18,15 +18,15 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
-import models.{PaginationParams, Regime, SessionKeys}
-import play.api.Logging
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import models.PaginationParams
 import services.GamblingService
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.{PageNotFoundView, ReturnsSubmittedView}
 
 import javax.inject.Inject
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class ReturnsSubmittedController @Inject() (
@@ -38,27 +38,17 @@ class ReturnsSubmittedController @Inject() (
   appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(pageSize: Int = 10, pageNo: Int = 1): Action[AnyContent] = identify.async { implicit request =>
-    (request.session.get(SessionKeys.regime), request.session.get(SessionKeys.regNumber)) match {
-      case (Some(regimeCode), Some(regNumber)) =>
-        Regime.fromString(regimeCode) match {
-          case None =>
-            Future.successful(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
-          case Some(validRegime) =>
-            gamblingService.getReturnsSubmitted(validRegime.code, regNumber, pageSize, pageNo).map { returns =>
-              val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)
-              if (pagination.isOutOfRange)
-                NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-              else
-                Ok(view(validRegime, regNumber, pagination, returns))
-            }
-        }
-      case _ =>
-        logger.warn("no regime or regNumber found")
-        Future.successful(Redirect(routes.UnauthorisedController.onPageLoad()))
+    val regime = request.regime
+    val regNumber = request.regNumber
+    gamblingService.getReturnsSubmitted(regime.code, regNumber, pageSize, pageNo).map { returns =>
+      val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)
+      if (pagination.isOutOfRange)
+        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+      else
+        Ok(view(regime, regNumber, pagination, returns))
     }
   }
 }

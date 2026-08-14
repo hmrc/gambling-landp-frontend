@@ -17,15 +17,15 @@
 package controllers.actions
 
 import javax.inject.Inject
-import models.requests.IdentifierRequest
+import models.requests.LoginRequest
 import play.api.mvc.*
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeLoginAction @Inject() (bodyParsers: PlayBodyParsers) extends LoginAction {
 
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] =
-    block(IdentifierRequest(request, "id"))
+  override def invokeBlock[A](request: Request[A], block: LoginRequest[A] => Future[Result]): Future[Result] =
+    block(LoginRequest(request, "id"))
 
   override def parser: BodyParser[AnyContent] =
     bodyParsers.default
