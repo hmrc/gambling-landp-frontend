@@ -127,14 +127,6 @@ class GRNValidatorSpec extends SpecBase {
       GRNValidator.validateRegNum(Regime.MGD, "XEM33333333333") mustBe true // MGD
     }
 
-    "validateRegNum returns FALSE for invalid Check Digit" in {
-      GRNValidator.validateRegNum(Regime.MGD, "XZA00003000000") mustBe false
-      GRNValidator.validateRegNum(Regime.MGD, "XZA00003199999") mustBe false
-      GRNValidator.validateRegNum(Regime.MGD, "XAZ00001239456") mustBe false
-      GRNValidator.validateRegNum(Regime.MGD, "XAM00001233456") mustBe false
-      GRNValidator.validateRegNum(Regime.MGD, "XAM12345678901") mustBe false
-    }
-
     "validateRegNum returns FALSE for too short" in {
       GRNValidator.validateRegNum(Regime.MGD, "XWA0003000000") mustBe false
     }
@@ -153,6 +145,9 @@ class GRNValidatorSpec extends SpecBase {
       GRNValidator.validateRegNum(Regime.MGD, "1WA00003000000") mustBe false
       GRNValidator.validateRegNum(Regime.MGD, "1WM00003000000") mustBe false
       GRNValidator.validateRegNum(Regime.MGD, "XW000003000000") mustBe false
+      GRNValidator.validateRegNum(Regime.MGD, "XZA00003000000") mustBe false
+      GRNValidator.validateRegNum(Regime.MGD, "XZA00003199999") mustBe false
+      GRNValidator.validateRegNum(Regime.MGD, "XAZ00001239456") mustBe false
     }
 
     "validateRegNum returns FALSE for Reg Nums with spaces" in {

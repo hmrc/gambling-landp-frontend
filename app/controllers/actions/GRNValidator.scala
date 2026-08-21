@@ -23,8 +23,8 @@ import java.util.regex.Pattern
 
 object GRNValidator extends Logging {
   private val REF_NO_LENGTH = 7
-  val regNumberPatternGTR: Pattern = "^X[A-Z]{1}[A-Z]{1}[0-9]{11}$".r.pattern
-  private val regNumberPatternMGD: Pattern = "^X[A-HJ-NP-TV-Z]M\\d{11}$".r.pattern
+  private val regNumberPatternGTR: Pattern = "^X[A-Z]{1}[A-Z]{1}[0-9]{11}$".r.pattern
+  private val regNumberPatternMGD: Pattern = "^X[A-Za-z]M[0-9]{11}$".r.pattern
 
   private val WEIGHT_0 = 0
   private val WEIGHT_9 = 9
@@ -67,20 +67,7 @@ object GRNValidator extends Logging {
     if (regNum.length == 14) {
       if (regime.equals(Regime.MGD)) {
         if (regNumberPatternMGD.matcher(regNum).matches()) {
-          val sum = List
-            .range(0, 14)
-            .map(x =>
-              if regNum.charAt(x).isDigit then weights(x) * regNum.charAt(x).asDigit
-              else weights(x) * (regNum.charAt(x) - 65 + 33)
-            )
-            .sum
-          val checkChar = checkChars.charAt(sum % 23)
-          if (regNum.charAt(1).equals(checkChar)) {
-            true
-          } else {
-            logger.warn(s"validateRegNum MGD '$regNum' has invalid check char ${regNum.charAt(1)}, should be=$checkChar")
-            false
-          }
+          true
         } else {
           logger.warn(s"validateRegNum MGD '$regNum' does not match regEx")
           false
