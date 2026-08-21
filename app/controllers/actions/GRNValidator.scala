@@ -23,7 +23,7 @@ import java.util.regex.Pattern
 
 object GRNValidator extends Logging {
   private val REF_NO_LENGTH = 7
-  val regNumberPatternGTR: Pattern = "^[A-Z]{3}[0-9]{11}$".r.pattern
+  val regNumberPatternGTR: Pattern = "^X[A-Z]{1}[A-Z]{1}[0-9]{11}$".r.pattern
   private val regNumberPatternMGD: Pattern = "^X[A-HJ-NP-TV-Z]M\\d{11}$".r.pattern
 
   private val WEIGHT_0 = 0
