@@ -19,10 +19,14 @@ package controllers.actions
 import models.Regime
 import play.api.Logging
 
+import java.util.regex.Pattern
+
 object GRNValidator extends Logging {
   private val REF_NO_LENGTH = 7
-  private val regEx = "X[A-Z]{1}[A-Z]{1}[0-9]{11}"
+  private val regNumberPatternGTR: Pattern = "^X[A-Z]{1}[A-Z]{1}[0-9]{11}$".r.pattern
+  private val regNumberPatternMGD: Pattern = "^X[A-Za-z]M[0-9]{11}$".r.pattern
 
+  private val WEIGHT_0 = 0
   private val WEIGHT_9 = 9
   private val WEIGHT_10 = 10
   private val WEIGHT_11 = 11
@@ -37,29 +41,52 @@ object GRNValidator extends Logging {
   private val WEIGHT_2 = 2
 
   private val weights =
-    List(WEIGHT_9, WEIGHT_10, WEIGHT_11, WEIGHT_12, WEIGHT_13, WEIGHT_8, WEIGHT_7, WEIGHT_6, WEIGHT_5, WEIGHT_4, WEIGHT_3, WEIGHT_2)
-  private val checkChars = List("A", "B", "C", "D", "E", "F", "G", "H", "X", "J", "K", "L", "M", "N", "Y", "P", "Q", "R", "S", "T", "Z", "V", "W")
+    List(WEIGHT_0,
+         WEIGHT_0,
+         WEIGHT_9,
+         WEIGHT_10,
+         WEIGHT_11,
+         WEIGHT_12,
+         WEIGHT_13,
+         WEIGHT_8,
+         WEIGHT_7,
+         WEIGHT_6,
+         WEIGHT_5,
+         WEIGHT_4,
+         WEIGHT_3,
+         WEIGHT_2
+        )
+  private val checkChars = "ABCDEFGHXJKLMNYPQRSTZVW"
 
   def validateRegNoRegime(regime: Regime, regNum: String): Boolean = {
-    validateRegNum(regNum) && validateRegime(regime, regNum)
+    validateRegNum(regime, regNum) && validateRegime(regime, regNum)
   }
 
-  def validateRegNum(regNumber: String): Boolean = {
+  def validateRegNum(regime: Regime, regNumber: String): Boolean = {
     val regNum = regNumber.toUpperCase().trim
     if (regNum.length == 14) {
-      if (regNum.matches(regEx)) {
-        val char3 = (regNum.substring(2, 3).toCharArray.head.toInt - 32) * WEIGHT_9
-        val sum = List.range(1, 11).map(x => weights(x) * regNum.substring(x + 2, x + 3).toInt).sum + char3
-        val checkChar = checkChars(sum % 23)
-        if (regNum.substring(1, 2).equals(checkChar)) {
+      if (regime.equals(Regime.MGD)) {
+        if (regNumberPatternMGD.matcher(regNum).matches()) {
           true
         } else {
-          logger.warn(s"validateRegNum '$regNum' has invalid check char ${regNum.substring(1, 2)}, should be=$checkChar")
+          logger.warn(s"validateRegNum MGD '$regNum' does not match regEx")
           false
         }
       } else {
-        logger.warn(s"validateRegNum '$regNum' does not match regEx")
-        false
+        if (regNumberPatternGTR.matcher(regNum).matches()) {
+          val char3 = (regNum.charAt(2).toInt - 32) * WEIGHT_9
+          val sum = List.range(3, 14).map(x => weights(x) * regNum.charAt(x).asDigit).sum + char3
+          val checkChar = checkChars.charAt(sum % 23)
+          if (regNum.charAt(1).equals(checkChar)) {
+            true
+          } else {
+            logger.warn(s"validateRegNum GTR '$regNum' has invalid check char ${regNum.charAt(1)}, should be=$checkChar")
+            false
+          }
+        } else {
+          logger.warn(s"validateRegNum GTR '$regNum' does not match regNumberPatternGTR")
+          false
+        }
       }
     } else {
       logger.warn(s"validateRegNum '$regNum' is not 14 chars")
@@ -70,7 +97,7 @@ object GRNValidator extends Logging {
   def validateRegime(regime: Regime, regNumber: String): Boolean =
     val regNum = regNumber.toUpperCase().trim
     if (!regime.equals(Regime.MGD)) {
-      if (regNum.matches(regEx)) {
+      if (regNumberPatternGTR.matcher(regNum).matches()) {
         val calculatedRegime = regimeFromRegNo(regNum.takeRight(REF_NO_LENGTH).toLong)
         if (!calculatedRegime.equals(regime.code)) {
           logger.warn(s"$regNum is not within the expected range for $regime")

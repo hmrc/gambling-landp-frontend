@@ -63,7 +63,7 @@ class StatementRedirectControllerSpec extends SpecBase {
         ("gbd", "XWA00003000000"),
         ("pbd", "XNA00003200000"),
         ("rgd", "XEA00003400000"),
-        ("mgd", "XVM33333333333")
+        ("mgd", "XEM33333333333")
       ).foreach { case (regimeCode, regNo) =>
         val app = applicationBuilder().build()
 
