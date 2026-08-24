@@ -26,7 +26,6 @@ object GRNValidator extends Logging {
   private val regNumberPatternGTR: Pattern = "^X[A-Z]{1}[A-Z]{1}[0-9]{11}$".r.pattern
   private val regNumberPatternMGD: Pattern = "^X[A-Za-z]M[0-9]{11}$".r.pattern
 
-  private val WEIGHT_0 = 0
   private val WEIGHT_9 = 9
   private val WEIGHT_10 = 10
   private val WEIGHT_11 = 11
@@ -41,21 +40,7 @@ object GRNValidator extends Logging {
   private val WEIGHT_2 = 2
 
   private val weights =
-    List(WEIGHT_0,
-         WEIGHT_0,
-         WEIGHT_9,
-         WEIGHT_10,
-         WEIGHT_11,
-         WEIGHT_12,
-         WEIGHT_13,
-         WEIGHT_8,
-         WEIGHT_7,
-         WEIGHT_6,
-         WEIGHT_5,
-         WEIGHT_4,
-         WEIGHT_3,
-         WEIGHT_2
-        )
+    List(WEIGHT_10, WEIGHT_11, WEIGHT_12, WEIGHT_13, WEIGHT_8, WEIGHT_7, WEIGHT_6, WEIGHT_5, WEIGHT_4, WEIGHT_3, WEIGHT_2)
   private val checkChars = "ABCDEFGHXJKLMNYPQRSTZVW"
 
   def validateRegNoRegime(regime: Regime, regNum: String): Boolean =
@@ -101,7 +86,7 @@ object GRNValidator extends Logging {
 
   private def expectedCheckChar(regNum: String): Char = {
     val char3 = (regNum.charAt(2).toInt - 32) * WEIGHT_9
-    val sum = List.range(3, 14).map(x => weights(x) * regNum.charAt(x).asDigit).sum + char3
+    val sum = List.range(3, 14).map(x => weights(x - 3) * regNum.charAt(x).asDigit).sum + char3
     checkChars.charAt(sum % 23)
   }
 
