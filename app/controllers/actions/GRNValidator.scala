@@ -58,70 +58,58 @@ object GRNValidator extends Logging {
         )
   private val checkChars = "ABCDEFGHXJKLMNYPQRSTZVW"
 
-  def validateRegNoRegime(regime: Regime, regNum: String): Boolean = {
+  def validateRegNoRegime(regime: Regime, regNum: String): Boolean =
     validateRegNum(regime, regNum) && validateRegime(regime, regNum)
-  }
 
   def validateRegNum(regime: Regime, regNumber: String): Boolean = {
     val regNum = regNumber.toUpperCase().trim
-    if (regNum.length == 14) {
-      if (regime.equals(Regime.MGD)) {
-        if (regNumberPatternMGD.matcher(regNum).matches()) {
-          true
-        } else {
-          logger.warn(s"validateRegNum MGD '$regNum' does not match regEx")
-          false
-        }
-      } else {
-        if (regNumberPatternGTR.matcher(regNum).matches()) {
-          val char3 = (regNum.charAt(2).toInt - 32) * WEIGHT_9
-          val sum = List.range(3, 14).map(x => weights(x) * regNum.charAt(x).asDigit).sum + char3
-          val checkChar = checkChars.charAt(sum % 23)
-          if (regNum.charAt(1).equals(checkChar)) {
-            true
-          } else {
-            logger.warn(s"validateRegNum GTR '$regNum' has invalid check char ${regNum.charAt(1)}, should be=$checkChar")
-            false
-          }
-        } else {
-          logger.warn(s"validateRegNum GTR '$regNum' does not match regNumberPatternGTR")
-          false
-        }
-      }
-    } else {
-      logger.warn(s"validateRegNum '$regNum' is not 14 chars")
-      false
-    }
+    val result =
+      if (regNum.length != 14) Left(s"validateRegNum '$regNum' is not 14 chars")
+      else if (regime == Regime.MGD) mgdRegNumValid(regNum)
+      else gtrRegNumValid(regNum)
+    logInvalid(result)
   }
 
   def validateRegime(regime: Regime, regNumber: String): Boolean =
-    val regNum = regNumber.toUpperCase().trim
-    if (!regime.equals(Regime.MGD)) {
-      if (regNumberPatternGTR.matcher(regNum).matches()) {
-        val calculatedRegime = regimeFromRegNo(regNum.takeRight(REF_NO_LENGTH).toLong)
-        if (!calculatedRegime.equals(regime.code)) {
-          logger.warn(s"$regNum is not within the expected range for $regime")
-          false
-        } else {
-          true
-        }
-      } else {
-        logger.warn(s"validateRegime '$regNum' does not match regEx")
-        false
-      }
-    } else {
-      true
+    if (regime == Regime.MGD) true
+    else {
+      val regNum = regNumber.toUpperCase().trim
+      val result =
+        for {
+          _                <- ensure(regNumberPatternGTR.matcher(regNum).matches(), s"[validateRegime] RegNum is invalid '$regNum'")
+          calculatedRegime <- Right(Regime.fromRegNum(regNum.takeRight(REF_NO_LENGTH).toLong))
+          _ <- ensure(
+                 calculatedRegime.contains(regime),
+                 s"[validateRegime] Regime does not match RegNum $regime calc=$calculatedRegime $regNum"
+               )
+        } yield ()
+      logInvalid(result)
     }
 
-  private def regimeFromRegNo(ref: Long) = {
-    if (ref >= 3000000 && ref <= 3199999) {
-      "gbd"
-    } else if (ref >= 3200000 && ref <= 3399999) {
-      "pbd"
-    } else if (ref >= 3400000 && ref <= 3599999) {
-      "rgd"
-    } else {
-      ""
-    }
+  private def mgdRegNumValid(regNum: String): Either[String, Unit] =
+    ensure(regNumberPatternMGD.matcher(regNum).matches(), s"validateRegNum MGD '$regNum' does not match regEx")
+
+  private def gtrRegNumValid(regNum: String): Either[String, Unit] =
+    for {
+      _         <- ensure(regNumberPatternGTR.matcher(regNum).matches(), s"validateRegNum GTR '$regNum' does not match regEx")
+      checkChar <- Right(expectedCheckChar(regNum))
+      _ <- ensure(
+             regNum.charAt(1) == checkChar,
+             s"validateRegNum GTR '$regNum' has invalid check char ${regNum.charAt(1)}, should be=$checkChar"
+           )
+    } yield ()
+
+  private def expectedCheckChar(regNum: String): Char = {
+    val char3 = (regNum.charAt(2).toInt - 32) * WEIGHT_9
+    val sum = List.range(3, 14).map(x => weights(x) * regNum.charAt(x).asDigit).sum + char3
+    checkChars.charAt(sum % 23)
+  }
+
+  private def ensure(condition: Boolean, warning: => String): Either[String, Unit] =
+    if (condition) Right(()) else Left(warning)
+
+  private def logInvalid(result: Either[String, Unit]): Boolean = {
+    result.left.foreach(warning => logger.warn(warning))
+    result.isRight
   }
 }
