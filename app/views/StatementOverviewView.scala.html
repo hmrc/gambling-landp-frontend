@@ -51,7 +51,12 @@
     }
     @if(overview.total < 0) {
         <p class="govuk-body">
-            @messages("statement.paymentInfo") <a class="govuk-link" href="https://www.gov.uk/guidance/pay-general-betting-pool-betting-or-remote-gaming-duty">@messages("statement.paymentInfo.link")</a>.
+            @messages("statement.paymentInfo")
+            @if(regime == Regime.MGD) {
+                <a class="govuk-link" href="https://www.gov.uk/pay-machine-games-duty">@messages("statement.paymentInfo.link")</a>.
+            } else {
+                <a class="govuk-link" href="https://www.gov.uk/guidance/pay-general-betting-pool-betting-or-remote-gaming-duty">@messages("statement.paymentInfo.link")</a>.
+            }
         </p>
     }
     <h3 class="govuk-heading-s" data-testid="date-range">@dateRange</h3>
