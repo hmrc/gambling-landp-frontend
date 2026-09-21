@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.interest.InterestDrilldown
 import models.PaginationParams
 import play.api.i18n.I18nSupport
@@ -44,11 +45,23 @@ class InterestDrilldownController @Inject() (
     val regime = request.regime
     val regNumber = request.regNumber
     gamblingService.getInterestDrilldown(regime.code, regNumber, interestId, pageSize, pageNo).map {
-      case interestDetails @ InterestDrilldown(_, _, _, _, Some(code), items) if items.nonEmpty =>
+      case interestDetails@InterestDrilldown(_, _, _, _, Some(code), items) if items.nonEmpty =>
         val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
-        if (pagination.isOutOfRange) NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-        else Ok(view(interestId, pagination, interestDetails))
-      case _ => NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
+        
+        PaginationRedirect
+          .redirect(
+            pagination = pagination,
+            parent = routes.InterestBreakdownController.onPageLoad(),
+            page = lastPage =>
+              routes.InterestDrilldownController.onPageLoad(
+                pageSize = pageSize,
+                pageNo = lastPage,
+                interestId = interestId
+              )
+          )
+          .getOrElse {
+            Ok(view(interestId, pagination, interestDetails))
+          }
     }
   }
 }

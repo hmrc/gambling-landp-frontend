@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -44,10 +45,20 @@ class RepaymentInterestDetailsController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getRepaymentInterestDetails(regime.code, regNumber, pageSize, pageNo).map { interestDetails =>
       val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
-      if (pagination.isOutOfRange)
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-      else
-        Ok(view(regime, regNumber, pagination, interestDetails))
+
+      PaginationRedirect
+        .redirect(
+          pagination = pagination,
+          parent = routes.InterestBreakdownController.onPageLoad(),
+          page = lastPage =>
+            routes.RepaymentInterestDetailsController.onPageLoad(
+              pageSize = pageSize,
+              pageNo = lastPage
+            )
+        )
+        .getOrElse {
+          Ok(view(regime, regNumber, pagination, interestDetails))
+        }
     }
   }
 }

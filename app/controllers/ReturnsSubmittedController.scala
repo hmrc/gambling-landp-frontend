@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -44,10 +45,20 @@ class ReturnsSubmittedController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getReturnsSubmitted(regime.code, regNumber, pageSize, pageNo).map { returns =>
       val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)
-      if (pagination.isOutOfRange)
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-      else
-        Ok(view(regime, regNumber, pagination, returns))
+
+      PaginationRedirect
+        .redirect(
+          pagination = pagination,
+          parent = routes.ReturnsSubmittedController.onPageLoad(),
+          page = lastPage =>
+            routes.ReturnsSubmittedController.onPageLoad(
+              pageSize = pageSize,
+              pageNo = lastPage
+            )
+        )
+        .getOrElse {
+          Ok(view(regime, regNumber, pagination, returns))
+        }
     }
   }
 }
