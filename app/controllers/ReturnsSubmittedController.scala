@@ -49,12 +49,14 @@ class ReturnsSubmittedController @Inject() (
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.ReturnsSubmittedController.onPageLoad(),
+          parent     = None,
           page = lastPage =>
             routes.ReturnsSubmittedController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, returns))

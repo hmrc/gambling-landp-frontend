@@ -45,16 +45,18 @@ class ReallocationsInController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getReallocationsIn(regime.code, regNumber, pageSize, pageNo).map { reallocations =>
       val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
-      
+
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.ReallocationsController.onPageLoad(),
+          parent     = Some(routes.ReallocationsController.onPageLoad()),
           page = lastPage =>
             routes.ReallocationsInController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, reallocations))

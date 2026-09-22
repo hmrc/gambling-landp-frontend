@@ -51,13 +51,15 @@ class InterestAccruingDrilldownController @Inject() (
         PaginationRedirect
           .redirect(
             pagination = pagination,
-            parent = routes.InterestAccruingDetailsController.onPageLoad(),
+            parent     = Some(routes.InterestAccruingDetailsController.onPageLoad()),
             page = lastPage =>
               routes.InterestAccruingDrilldownController.onPageLoad(
-                pageSize = pageSize,
-                pageNo = lastPage,
+                pageSize   = pageSize,
+                pageNo     = lastPage,
                 interestId = interestId
-              )
+              ),
+            pageNotFoundView = pageNotFoundView,
+            appConfig        = appConfig
           )
           .getOrElse {
             Ok(view(interestId, pagination, interestAccruing))

@@ -45,19 +45,21 @@ class InterestDrilldownController @Inject() (
     val regime = request.regime
     val regNumber = request.regNumber
     gamblingService.getInterestDrilldown(regime.code, regNumber, interestId, pageSize, pageNo).map {
-      case interestDetails@InterestDrilldown(_, _, _, _, Some(code), items) if items.nonEmpty =>
+      case interestDetails @ InterestDrilldown(_, _, _, _, Some(code), items) if items.nonEmpty =>
         val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
-        
+
         PaginationRedirect
           .redirect(
             pagination = pagination,
-            parent = routes.InterestBreakdownController.onPageLoad(),
+            parent     = Some(routes.InterestBreakdownController.onPageLoad()),
             page = lastPage =>
               routes.InterestDrilldownController.onPageLoad(
-                pageSize = pageSize,
-                pageNo = lastPage,
+                pageSize   = pageSize,
+                pageNo     = lastPage,
                 interestId = interestId
-              )
+              ),
+            pageNotFoundView = pageNotFoundView,
+            appConfig        = appConfig
           )
           .getOrElse {
             Ok(view(interestId, pagination, interestDetails))

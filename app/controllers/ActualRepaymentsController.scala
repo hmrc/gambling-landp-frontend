@@ -45,16 +45,18 @@ class ActualRepaymentsController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getActualRepayments(regime.code, regNumber, pageSize, pageNo).map { actualRepayments =>
       val pagination = PaginationParams(actualRepayments.totalRecords, pageSize, pageNo)
-      
+
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.RepaymentsController.onPageLoad(),
+          parent     = Some(routes.RepaymentsController.onPageLoad()),
           page = lastPage =>
             routes.ActualRepaymentsController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, actualRepayments))

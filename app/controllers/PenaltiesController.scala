@@ -45,16 +45,18 @@ class PenaltiesController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getPenalties(regime.code, regNumber, pageSize, pageNo).map { penalties =>
       val pagination = PaginationParams(penalties.totalRecords, pageSize, pageNo)
-      
+
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.PenaltiesController.onPageLoad(),
+          parent     = None,
           page = lastPage =>
             routes.PenaltiesController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, penalties))

@@ -45,16 +45,18 @@ class AssessmentInAbsenceOfReturnsController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getAssessmentsWithoutReturns(regime.code, regNumber, pageSize, pageNo).map { assessments =>
       val pagination = PaginationParams(assessments.totalRecords.getOrElse(0), pageSize, pageNo)
-      
+
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.AssessmentInAbsenceOfReturnsController.onPageLoad(),
+          parent     = None,
           page = lastPage =>
             routes.AssessmentInAbsenceOfReturnsController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, assessments))

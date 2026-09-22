@@ -49,12 +49,14 @@ class OtherAssessmentsController @Inject() (
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.OtherAssessmentsController.onPageLoad(),
+          parent     = None,
           page = lastPage =>
             routes.OtherAssessmentsController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, assessments))

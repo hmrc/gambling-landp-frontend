@@ -45,16 +45,18 @@ class InterestDetailsController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getInterestDetails(regime.code, regNumber, pageSize, pageNo).map { interestDetails =>
       val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
-      
+
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.InterestBreakdownController.onPageLoad(),
+          parent     = Some(routes.InterestBreakdownController.onPageLoad()),
           page = lastPage =>
             routes.InterestDetailsController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, interestDetails))

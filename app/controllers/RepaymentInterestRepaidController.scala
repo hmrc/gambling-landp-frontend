@@ -45,16 +45,18 @@ class RepaymentInterestRepaidController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getRepaymentInterestRepaid(regime.code, regNumber, pageSize, pageNo).map { repaymentInterestRepaid =>
       val pagination = PaginationParams(repaymentInterestRepaid.totalRecords, pageSize, pageNo)
-      
+
       PaginationRedirect
         .redirect(
           pagination = pagination,
-          parent = routes.RepaymentsController.onPageLoad(),
+          parent     = Some(routes.RepaymentsController.onPageLoad()),
           page = lastPage =>
             routes.RepaymentInterestRepaidController.onPageLoad(
               pageSize = pageSize,
-              pageNo = lastPage
-            )
+              pageNo   = lastPage
+            ),
+          pageNotFoundView = pageNotFoundView,
+          appConfig        = appConfig
         )
         .getOrElse {
           Ok(view(pagination, repaymentInterestRepaid))
