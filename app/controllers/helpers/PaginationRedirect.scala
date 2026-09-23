@@ -35,7 +35,6 @@ object PaginationRedirect {
     if (pagination.totalRecords == 0) {
       parent match {
         case Some(parent) => Some(Redirect(parent))
-//        case None         => Some(NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk)))
         case None => None
       }
     } else if (
