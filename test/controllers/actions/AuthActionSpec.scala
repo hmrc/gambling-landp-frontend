@@ -20,7 +20,8 @@ import base.SpecBase
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
-import models.SessionKeys
+import models.{Regime, SessionKeys}
+import services.{AgentClientAuthResult, AgentClientAuthService}
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -41,6 +42,18 @@ class AuthActionSpec extends SpecBase {
   private val orgEnrolment = Enrolment("HMRC-MGD-ORG", Seq(EnrolmentIdentifier("HMRCMGDRN", "REG123")), "Activated")
   private val testCredentials = Some(Credentials("cred-id", "GovernmentGateway"))
 
+  private val agentAuthService: AgentClientAuthService =
+    new AgentClientAuthService(null) {
+      override def authoriseClient(regime: Regime, regNumber: String)(using hc: HeaderCarrier): Future[AgentClientAuthResult] =
+        Future.successful(AgentClientAuthResult.Authorised)
+    }
+
+  private def agentAuthServiceReturning(result: AgentClientAuthResult): AgentClientAuthService =
+    new AgentClientAuthService(null) {
+      override def authoriseClient(regime: Regime, regNumber: String)(using hc: HeaderCarrier): Future[AgentClientAuthResult] =
+        Future.successful(result)
+    }
+
   private def orgConnector(enrolments: Enrolments) =
     new FakeSuccessAuthConnector(Some(AffinityGroup.Organisation), enrolments, testCredentials)
 
@@ -59,7 +72,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new MissingBearerToken), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new MissingBearerToken), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -79,7 +93,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new BearerTokenExpired), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new BearerTokenExpired), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -99,7 +114,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new InsufficientEnrolments), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new InsufficientEnrolments), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -119,7 +135,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new InsufficientConfidenceLevel), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new InsufficientConfidenceLevel), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -139,7 +156,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedAuthProvider), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedAuthProvider), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -159,7 +177,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedAffinityGroup), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedAffinityGroup), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -179,7 +198,8 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedCredentialRole), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(new FakeFailingAuthConnector(new UnsupportedCredentialRole), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -199,7 +219,7 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, bodyParsers)
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest())
 
@@ -216,7 +236,7 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, bodyParsers)
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regNumber -> "REG123"))
 
@@ -233,7 +253,7 @@ class AuthActionSpec extends SpecBase {
           val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
 
-          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, bodyParsers)
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(orgEnrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(FakeRequest().withSession(SessionKeys.regime -> "mgd"))
 
@@ -256,6 +276,7 @@ class AuthActionSpec extends SpecBase {
           val authAction = new AuthenticatedIdentifierAction(
             new FakeSuccessAuthConnector(Some(AffinityGroup.Organisation), Enrolments(Set.empty), None),
             appConfig,
+            agentAuthService,
             bodyParsers
           )
           val controller = new Harness(authAction)
@@ -286,7 +307,7 @@ class AuthActionSpec extends SpecBase {
             val appConfig = application.injector.instanceOf[FrontendAppConfig]
             val enrolment = Enrolment(enrolmentKey, Seq(EnrolmentIdentifier(identifierKey, regNumber)), "Activated")
 
-            val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, bodyParsers)
+            val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, agentAuthService, bodyParsers)
             val controller = new Harness(authAction)
             val result = controller.onPageLoad()(
               FakeRequest().withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
@@ -305,7 +326,7 @@ class AuthActionSpec extends SpecBase {
             val appConfig = application.injector.instanceOf[FrontendAppConfig]
             val enrolment = Enrolment(enrolmentKey, Seq(EnrolmentIdentifier(identifierKey, regNumber)), "Activated")
 
-            val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, bodyParsers)
+            val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, agentAuthService, bodyParsers)
             val controller = new Harness(authAction)
             val result = controller.onPageLoad()(
               FakeRequest().withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> "WRONG999")
@@ -326,7 +347,7 @@ class AuthActionSpec extends SpecBase {
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
           val gbdEnrolment = Enrolment("HMRC-GTS-GBD", Seq(EnrolmentIdentifier("HMRCGTSGBRN", "GTS123")), "Activated")
 
-          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(gbdEnrolment))), appConfig, bodyParsers)
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(gbdEnrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(
             FakeRequest().withSession(SessionKeys.regime -> "pbd", SessionKeys.regNumber -> "GTS123")
@@ -346,7 +367,7 @@ class AuthActionSpec extends SpecBase {
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
           val enrolment = Enrolment("HMRC-GTS-GBD", Seq(EnrolmentIdentifier("HMRCGTSGBRN", "GTS123")), "Activated")
 
-          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, bodyParsers)
+          val authAction = new AuthenticatedIdentifierAction(orgConnector(Enrolments(Set(enrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(
             FakeRequest().withSession(SessionKeys.regime -> "invalid", SessionKeys.regNumber -> "GTS123")
@@ -366,7 +387,8 @@ class AuthActionSpec extends SpecBase {
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
           val gtsAgentEnrolment = Enrolment("HMRC-GTS-AGNT", Seq(EnrolmentIdentifier("HMRCGTSAGENTREF", "AGENT456")), "Activated")
 
-          val authAction = new AuthenticatedIdentifierAction(agentConnector(Enrolments(Set(gtsAgentEnrolment))), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(agentConnector(Enrolments(Set(gtsAgentEnrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(
             FakeRequest().withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> "CLIENT123")
@@ -385,7 +407,8 @@ class AuthActionSpec extends SpecBase {
           val appConfig = application.injector.instanceOf[FrontendAppConfig]
           val gtsAgentEnrolment = Enrolment("HMRC-GTS-AGNT", Seq(EnrolmentIdentifier("HMRCGTSAGENTREF", "AGENT456")), "NotActivated")
 
-          val authAction = new AuthenticatedIdentifierAction(agentConnector(Enrolments(Set(gtsAgentEnrolment))), appConfig, bodyParsers)
+          val authAction =
+            new AuthenticatedIdentifierAction(agentConnector(Enrolments(Set(gtsAgentEnrolment))), appConfig, agentAuthService, bodyParsers)
           val controller = new Harness(authAction)
           val result = controller.onPageLoad()(
             FakeRequest().withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> "CLIENT123")
@@ -393,6 +416,58 @@ class AuthActionSpec extends SpecBase {
 
           status(result) mustBe SEE_OTHER
           redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
+        }
+      }
+
+      "must redirect to access denied for an agent who does not hold the client (NotAuthorised)" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val gtsAgentEnrolment = Enrolment("HMRC-GTS-AGNT", Seq(EnrolmentIdentifier("HMRCGTSAGENTREF", "AGENT456")), "Activated")
+
+          val authAction = new AuthenticatedIdentifierAction(
+            agentConnector(Enrolments(Set(gtsAgentEnrolment))),
+            appConfig,
+            agentAuthServiceReturning(AgentClientAuthResult.NotAuthorised),
+            bodyParsers
+          )
+          val controller = new Harness(authAction)
+          val result = controller.onPageLoad()(
+            FakeRequest().withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> "CLIENT123")
+          )
+
+          status(result) mustBe SEE_OTHER
+          redirectLocation(result).value mustBe routes.AccessDeniedController.onPageLoad().url
+        }
+      }
+
+      Seq(AgentClientAuthResult.NotReady, AgentClientAuthResult.Failed).foreach { result =>
+        s"must redirect an agent to the journey-recovery page (not access denied) when the client list result is $result" in {
+
+          val application = applicationBuilder(userAnswers = None).build()
+
+          running(application) {
+            val bodyParsers = application.injector.instanceOf[BodyParsers.Default]
+            val appConfig = application.injector.instanceOf[FrontendAppConfig]
+            val gtsAgentEnrolment = Enrolment("HMRC-GTS-AGNT", Seq(EnrolmentIdentifier("HMRCGTSAGENTREF", "AGENT456")), "Activated")
+
+            val authAction = new AuthenticatedIdentifierAction(
+              agentConnector(Enrolments(Set(gtsAgentEnrolment))),
+              appConfig,
+              agentAuthServiceReturning(result),
+              bodyParsers
+            )
+            val controller = new Harness(authAction)
+            val res = controller.onPageLoad()(
+              FakeRequest().withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> "CLIENT123")
+            )
+
+            status(res) mustBe SEE_OTHER
+            redirectLocation(res).value mustBe routes.JourneyRecoveryController.onPageLoad().url
+          }
         }
       }
     }

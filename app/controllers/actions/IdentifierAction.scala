@@ -22,6 +22,7 @@ import controllers.routes
 import models.{AuthContext, Regime, SessionKeys}
 import models.requests.{IdentifierRequest, LoginRequest}
 import play.api.Logging
+import services.{AgentClientAuthResult, AgentClientAuthService}
 import play.api.mvc.Results.*
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.*
@@ -37,6 +38,7 @@ trait IdentifierAction extends ActionBuilder[IdentifierRequest, AnyContent] with
 class AuthenticatedIdentifierAction @Inject() (
   override val authConnector: AuthConnector,
   config: FrontendAppConfig,
+  agentClientAuthService: AgentClientAuthService,
   val parser: BodyParsers.Default
 )(implicit val executionContext: ExecutionContext)
     extends IdentifierAction
@@ -56,11 +58,10 @@ class AuthenticatedIdentifierAction @Inject() (
           val regNumber = request.session.get(SessionKeys.regNumber)
 
           (regime, regNumber) match {
-            case (Some(regime), Some(regNumber)) if AuthenticatedIdentifierAction.isAuthorisedForRegime(authContext, regime, regNumber) =>
-              block(IdentifierRequest(request, authContext.providerId, regime, regNumber))
-            case (Some(regime), Some(_)) =>
-              logger.warn(s"user not authorised for regime ${regime.code}")
-              Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
+            case (Some(regime), Some(regNumber)) =>
+              authorisedForRegime(authContext, regime, regNumber) { () =>
+                block(IdentifierRequest(request, authContext.providerId, regime, regNumber))
+              }
             case _ =>
               logger.warn("no regime or regNumber in session")
               Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
@@ -76,6 +77,27 @@ class AuthenticatedIdentifierAction @Inject() (
         Redirect(routes.UnauthorisedController.onPageLoad())
     }
   }
+
+  private def authorisedForRegime(authContext: AuthContext, regime: Regime, regNumber: String)(
+    proceed: () => Future[Result]
+  )(using hc: HeaderCarrier): Future[Result] =
+    if (!AuthenticatedIdentifierAction.isAuthorisedForRegime(authContext, regime, regNumber)) {
+      logger.warn(s"user not authorised for regime ${regime.code}")
+      Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
+    } else
+      authContext.affinityGroup match {
+        case AffinityGroup.Agent =>
+          agentClientAuthService.authoriseClient(regime, regNumber).flatMap {
+            case AgentClientAuthResult.Authorised => proceed()
+            case AgentClientAuthResult.NotAuthorised =>
+              logger.warn(s"agent not authorised for the client in regime ${regime.code}")
+              Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
+            case AgentClientAuthResult.NotReady | AgentClientAuthResult.Failed =>
+              logger.warn(s"client list not ready or failed for regime ${regime.code}")
+              Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          }
+        case _ => proceed()
+      }
 }
 
 object AuthenticatedIdentifierAction {
@@ -118,9 +140,6 @@ object AuthenticatedIdentifierAction {
     }
 }
 
-/** Lightweight auth check used at entry points (e.g. StatementRedirectController) that establish the session. Verifies the user is logged in as an
-  * Organisation or Agent — does NOT check session regime/regNumber.
-  */
 @ImplementedBy(classOf[AuthenticatedLoginAction])
 trait LoginAction extends ActionBuilder[LoginRequest, AnyContent] with ActionFunction[Request, LoginRequest]
 

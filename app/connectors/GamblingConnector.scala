@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.StatementOverview
+import models.{ClientListStatus, StatementOverview}
 import models.assessments.Assessments
 import models.interest.*
 import models.payments.Payments
@@ -25,6 +25,7 @@ import models.penalties.Penalties
 import models.reallocations.{Reallocations, ReallocationsDetails}
 import models.repayments.{ActualRepayments, RepaymentInterestRepaid, RepaymentsSummary}
 import models.returns.ReturnsSubmitted
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -137,4 +138,21 @@ class GamblingConnector @Inject() (
     httpClient
       .get(url"$baseUrl/interest-accruing-details/$regime/$regNumber?pageSize=$pageSize&pageNo=$pageNo")
       .execute[InterestAccruingDetails]
+
+  def startClientListRetrieval(regime: String)(using hc: HeaderCarrier): Future[ClientListStatus] =
+    httpClient
+      .post(url"$baseUrl/agent/client-list/$regime/retrieval/start")
+      .execute[JsValue]
+      .map(readStatus)
+
+  def hasClient(regime: String, regNumber: String)(using hc: HeaderCarrier): Future[Boolean] =
+    httpClient
+      .get(url"$baseUrl/agent/has-client/$regime/$regNumber")
+      .execute[JsValue]
+      .map(json => (json \ "hasClient").as[Boolean])
+
+  private def readStatus(json: JsValue): ClientListStatus =
+    (json \ "result").asOpt[String].flatMap(ClientListStatus.fromString).getOrElse {
+      throw new RuntimeException(s"Invalid client-list status response: ${json.toString}")
+    }
 }
