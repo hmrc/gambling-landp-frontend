@@ -153,18 +153,18 @@ class StatementOverviewViewSpec extends SpecBase {
     val overview =
       StatementOverview(
         gtrPeriodStartDate = Some(LocalDate.of(2025, 1, 1)),
-        gtrPeriodEndDate = Some(LocalDate.of(2025, 3, 31)),
-        balance = BigDecimal("100"),
-        amountDeclared = BigDecimal("200"),
-        assessments = BigDecimal("300"),
-        penalties = BigDecimal("400"),
-        adjustments = BigDecimal("500"),
-        reallocations = BigDecimal("600"),
-        otherAssessments = BigDecimal("700"),
-        interest = BigDecimal("800"),
-        payments = BigDecimal("900"),
-        repayments = Some(BigDecimal("100")),
-        total = BigDecimal("100")
+        gtrPeriodEndDate   = Some(LocalDate.of(2025, 3, 31)),
+        balance            = BigDecimal("100"),
+        amountDeclared     = BigDecimal("200"),
+        assessments        = BigDecimal("300"),
+        penalties          = BigDecimal("400"),
+        adjustments        = BigDecimal("500"),
+        reallocations      = BigDecimal("600"),
+        otherAssessments   = BigDecimal("700"),
+        interest           = BigDecimal("800"),
+        payments           = BigDecimal("900"),
+        repayments         = Some(BigDecimal("100")),
+        total              = BigDecimal("100")
       )
 
     implicit val request: play.api.mvc.Request[?] = FakeRequest()

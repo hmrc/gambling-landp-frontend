@@ -17,7 +17,7 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import models.StatementOverview
+import models.{ClientListStatus, StatementOverview}
 import models.assessments.{AssessmentItem, Assessments}
 import models.interest.*
 import models.payments.{PaymentItem, Payments}
@@ -1463,6 +1463,51 @@ class GamblingConnectorSpec extends AnyFreeSpec with Matchers with WireMockSuppo
           val result = connector.getInterestAccruingDetails(regime, regNumber, customPageSize, customPageNo).futureValue
 
           result mustEqual expectedInterestAccruingDetailsResponse
+        }
+      }
+    }
+
+    "startClientListRetrieval" - {
+
+      "must POST to the retrieval start endpoint and map the returned status" in {
+        stubFor(
+          post(urlEqualTo(s"/gambling/agent/client-list/$regime/retrieval/start"))
+            .willReturn(okJson("""{"result":"succeeded"}"""))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          connector.startClientListRetrieval(regime).futureValue mustEqual ClientListStatus.Succeeded
+        }
+      }
+
+      "must fail when the status payload is not recognised" in {
+        stubFor(
+          post(urlEqualTo(s"/gambling/agent/client-list/$regime/retrieval/start"))
+            .willReturn(okJson("""{"result":"nonsense"}"""))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          connector.startClientListRetrieval(regime).failed.futureValue mustBe a[RuntimeException]
+        }
+      }
+    }
+
+    "hasClient" - {
+
+      "must GET the has-client endpoint and return the boolean" in {
+        stubFor(
+          get(urlEqualTo(s"/gambling/agent/has-client/$regime/$regNumber"))
+            .willReturn(okJson("""{"hasClient":true}"""))
+        )
+
+        val app = buildApp()
+        running(app) {
+          val connector = app.injector.instanceOf[GamblingConnector]
+          connector.hasClient(regime, regNumber).futureValue mustBe true
         }
       }
     }
