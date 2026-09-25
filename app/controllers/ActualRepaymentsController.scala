@@ -16,14 +16,13 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{ActualRepaymentsView, PageNotFoundView}
+import views.html.ActualRepaymentsView
 import controllers.helpers.PaginationRedirect
 
 import javax.inject.Inject
@@ -33,8 +32,6 @@ class ActualRepaymentsController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  appConfig: FrontendAppConfig,
-  pageNotFoundView: PageNotFoundView,
   view: ActualRepaymentsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -54,9 +51,7 @@ class ActualRepaymentsController @Inject() (
             routes.ActualRepaymentsController.onPageLoad(
               pageSize = pageSize,
               pageNo   = lastPage
-            ),
-          pageNotFoundView = pageNotFoundView,
-          appConfig        = appConfig
+            )
         )
         .getOrElse {
           Ok(view(regime, regNumber, pagination, actualRepayments))

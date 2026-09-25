@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
 import controllers.helpers.PaginationRedirect
 import models.PaginationParams
@@ -24,7 +23,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{PageNotFoundView, RepaymentInterestRepaidView}
+import views.html.RepaymentInterestRepaidView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -33,8 +32,6 @@ class RepaymentInterestRepaidController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  appConfig: FrontendAppConfig,
-  pageNotFoundView: PageNotFoundView,
   view: RepaymentInterestRepaidView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -54,9 +51,7 @@ class RepaymentInterestRepaidController @Inject() (
             routes.RepaymentInterestRepaidController.onPageLoad(
               pageSize = pageSize,
               pageNo   = lastPage
-            ),
-          pageNotFoundView = pageNotFoundView,
-          appConfig        = appConfig
+            )
         )
         .getOrElse {
           Ok(view(pagination, repaymentInterestRepaid))

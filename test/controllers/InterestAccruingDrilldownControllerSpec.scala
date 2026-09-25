@@ -97,6 +97,25 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
       }
     }
 
+    "must redirect to the parent page when total records is 0" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(interestAccruingDrilldown.copy(totalRecords = 0, items = Seq.empty)))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.InterestAccruingDetailsController.onPageLoad().url
+      }
+    }
+
     "must return page not found when data has 0 items and description code is None" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
@@ -181,7 +200,7 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
       }
     }
 
-    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+    "must redirect to the last page when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageDetails))
@@ -195,8 +214,8 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.InterestAccruingDrilldownController.onPageLoad("INT-001", 10, 3).url
       }
     }
 

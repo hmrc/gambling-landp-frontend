@@ -141,7 +141,7 @@ class ActualRepaymentsControllerITSpec
         }
       }
 
-      "must render the empty-state message when the backend returns no items" in {
+      "must redirect to the parent page when the backend returns no items" in {
         val app = buildApp()
 
         stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 1, emptyPageJson)
@@ -151,11 +151,8 @@ class ActualRepaymentsControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual OK
-          contentAsString(result) must include("Actual repayments")
-          contentAsString(result) must include("Repayments HMRC has made, or will make to you.")
-          contentAsString(result) must include("1 January 2024 to 31 December 2024")
-          contentAsString(result) must include("You have no actual repayments.")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.RepaymentsController.onPageLoad().url
         }
       }
     }
@@ -220,7 +217,7 @@ class ActualRepaymentsControllerITSpec
         }
       }
 
-      "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      "must redirect to the last page when pageNo exceeds totalPages" in {
         val app = buildApp()
 
         stubActualRepayments(regime, regNumber, pageSize = 10, pageNo = 99, multiPageJson)
@@ -230,8 +227,8 @@ class ActualRepaymentsControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.ActualRepaymentsController.onPageLoad(pageSize = 10, pageNo = 3).url
         }
       }
     }

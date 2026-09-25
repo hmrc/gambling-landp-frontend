@@ -154,7 +154,7 @@ class ReallocationsOutControllerITSpec
         }
       }
 
-      "must render the empty-state message when the backend returns no items" in {
+      "must redirect to the parent when the backend returns no items" in {
         val app = buildApp()
 
         stubReallocationsOut(regime, regNumber, pageSize = 10, pageNo = 1, emptyPageJson)
@@ -164,8 +164,8 @@ class ReallocationsOutControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual OK
-          contentAsString(result) must include("You have no reallocations out.")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.ReallocationsController.onPageLoad().url
         }
       }
     }
@@ -228,7 +228,7 @@ class ReallocationsOutControllerITSpec
         }
       }
 
-      "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      "must redirect to the last page when pageNo exceeds totalPages" in {
         val app = buildApp()
 
         stubReallocationsOut(regime, regNumber, pageSize = 10, pageNo = 99, multiPageJson)
@@ -238,8 +238,8 @@ class ReallocationsOutControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.ReallocationsOutController.onPageLoad(pageSize = 10, pageNo = 3).url
         }
       }
     }

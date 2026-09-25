@@ -16,27 +16,19 @@
 
 package controllers.helpers
 
-import config.FrontendAppConfig
 import models.PaginationParams
-import play.api.i18n.Messages
-import play.api.mvc.Results.{NotFound, Redirect}
-import play.api.mvc.{Call, Request, Result}
-import views.html.PageNotFoundView
+import play.api.mvc.Results.Redirect
+import play.api.mvc.{Call, Result}
 
 object PaginationRedirect {
 
   def redirect(
     pagination: PaginationParams,
     parent: Option[Call],
-    page: Int => Call,
-    pageNotFoundView: PageNotFoundView,
-    appConfig: FrontendAppConfig
-  )(implicit request: Request[?], messages: Messages): Option[Result] =
+    page: Int => Call
+  ): Option[Result] =
     if (pagination.totalRecords == 0) {
-      parent match {
-        case Some(parent) => Some(Redirect(parent))
-        case None => None
-      }
+      parent.map(Redirect(_))
     } else if (
       pagination.pageNo < 1 ||
       pagination.pageNo > pagination.totalPages

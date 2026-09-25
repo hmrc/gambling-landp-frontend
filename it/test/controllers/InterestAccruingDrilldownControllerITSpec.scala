@@ -221,7 +221,7 @@ class InterestAccruingDrilldownControllerITSpec
         }
       }
 
-      "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      "must redirect to the last page when pageNo exceeds totalPages" in {
         val app = buildApp()
         stubInterestAccruing(regime, regNumber, multiPageJson, page = 99)
 
@@ -230,12 +230,12 @@ class InterestAccruingDrilldownControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.InterestAccruingDrilldownController.onPageLoad(interestId, pageSize, 3).url
         }
       }
 
-      "must return page not found when data has 0 items" in {
+      "must redirect to the parent page when the backend returns no items" in {
         val emptyJson =
           s"""
              |{
@@ -256,8 +256,8 @@ class InterestAccruingDrilldownControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.InterestAccruingDetailsController.onPageLoad().url
         }
       }
     }
