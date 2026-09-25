@@ -16,14 +16,14 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{InterestAccruingDetailsView, PageNotFoundView}
+import views.html.InterestAccruingDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -32,9 +32,7 @@ class InterestAccruingDetailsController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestAccruingDetailsView,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  view: InterestAccruingDetailsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -44,10 +42,21 @@ class InterestAccruingDetailsController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getInterestAccruingDetails(regime.code, regNumber, pageSize, pageNo).map { interestAccruingDetails =>
       val pagination = PaginationParams(interestAccruingDetails.totalRecords, pageSize, pageNo)
-      if (pagination.isOutOfRange)
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-      else
-        Ok(view(regime, regNumber, pagination, interestAccruingDetails))
+
+      PaginationRedirect
+        .redirect(
+          pagination = pagination,
+          parent     = Some(routes.InterestBreakdownController.onPageLoad()),
+          page = lastPage =>
+            routes.InterestAccruingDetailsController.onPageLoad(
+              pageSize = pageSize,
+              pageNo   = lastPage
+            )
+        )
+        .getOrElse {
+          Ok(view(regime, regNumber, pagination, interestAccruingDetails))
+        }
+
     }
   }
 }

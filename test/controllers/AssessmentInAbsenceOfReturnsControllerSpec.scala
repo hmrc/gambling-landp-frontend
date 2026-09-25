@@ -169,7 +169,7 @@ class AssessmentInAbsenceOfReturnsControllerSpec extends SpecBase with MockitoSu
       }
     }
 
-    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+    "must redirect to the last page when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
       when(mockService.getAssessmentsWithoutReturns(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
@@ -183,8 +183,8 @@ class AssessmentInAbsenceOfReturnsControllerSpec extends SpecBase with MockitoSu
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.AssessmentInAbsenceOfReturnsController.onPageLoad(10, 3).url
       }
     }
 

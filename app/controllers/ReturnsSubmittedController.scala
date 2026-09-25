@@ -16,14 +16,14 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{PageNotFoundView, ReturnsSubmittedView}
+import views.html.ReturnsSubmittedView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -32,9 +32,7 @@ class ReturnsSubmittedController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: ReturnsSubmittedView,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  view: ReturnsSubmittedView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -44,10 +42,20 @@ class ReturnsSubmittedController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getReturnsSubmitted(regime.code, regNumber, pageSize, pageNo).map { returns =>
       val pagination = PaginationParams(returns.totalPeriodRecords.getOrElse(0), pageSize, pageNo)
-      if (pagination.isOutOfRange)
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-      else
-        Ok(view(regime, regNumber, pagination, returns))
+
+      PaginationRedirect
+        .redirect(
+          pagination = pagination,
+          parent     = None,
+          page = lastPage =>
+            routes.ReturnsSubmittedController.onPageLoad(
+              pageSize = pageSize,
+              pageNo   = lastPage
+            )
+        )
+        .getOrElse {
+          Ok(view(regime, regNumber, pagination, returns))
+        }
     }
   }
 }

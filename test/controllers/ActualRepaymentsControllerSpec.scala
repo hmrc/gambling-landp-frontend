@@ -81,7 +81,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must render the empty-state message when the service returns no items" in {
+    "must redirect to the parent page when the service returns no items" in {
       val mockService = mock[GamblingService]
       when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(emptyResponse))
@@ -95,8 +95,8 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) must include("You have no actual repayments.")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.RepaymentsController.onPageLoad().url
       }
     }
 
@@ -160,7 +160,7 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+    "must redirect to the last page when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
       when(mockService.getActualRepayments(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
@@ -174,8 +174,8 @@ class ActualRepaymentsControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.ActualRepaymentsController.onPageLoad(10, 3).url
       }
     }
 

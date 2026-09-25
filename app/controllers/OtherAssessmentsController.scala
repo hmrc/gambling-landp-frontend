@@ -16,14 +16,14 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{OtherAssessmentsView, PageNotFoundView}
+import views.html.OtherAssessmentsView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -32,9 +32,7 @@ class OtherAssessmentsController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: OtherAssessmentsView,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  view: OtherAssessmentsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -44,10 +42,20 @@ class OtherAssessmentsController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getOtherAssessments(regime.code, regNumber, pageSize, pageNo).map { assessments =>
       val pagination = PaginationParams(assessments.totalRecords.getOrElse(0), pageSize, pageNo)
-      if (pagination.isOutOfRange)
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-      else
-        Ok(view(regime, regNumber, pagination, assessments))
+
+      PaginationRedirect
+        .redirect(
+          pagination = pagination,
+          parent     = None,
+          page = lastPage =>
+            routes.OtherAssessmentsController.onPageLoad(
+              pageSize = pageSize,
+              pageNo   = lastPage
+            )
+        )
+        .getOrElse {
+          Ok(view(regime, regNumber, pagination, assessments))
+        }
     }
   }
 }

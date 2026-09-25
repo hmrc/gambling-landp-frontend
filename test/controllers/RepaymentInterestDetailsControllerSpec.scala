@@ -199,7 +199,7 @@ class RepaymentInterestDetailsControllerSpec extends SpecBase with MockitoSugar 
       }
     }
 
-    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+    "must redirect to the last page when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
       when(mockService.getRepaymentInterestDetails(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
@@ -213,8 +213,8 @@ class RepaymentInterestDetailsControllerSpec extends SpecBase with MockitoSugar 
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.RepaymentInterestDetailsController.onPageLoad(10, 3).url
       }
     }
 

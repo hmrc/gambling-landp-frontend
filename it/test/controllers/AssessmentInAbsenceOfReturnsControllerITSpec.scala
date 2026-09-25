@@ -238,7 +238,7 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
         }
       }
 
-      "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+      "must redirect to the last page when pageNo exceeds totalPages" in {
         val app = buildApp()
 
         stubAssessmentsWithoutReturns(regime, regNumber, pageSize = 10, pageNo = 99, multiPageJson)
@@ -248,8 +248,8 @@ class AssessmentInAbsenceOfReturnsControllerITSpec
             .withSession(SessionKeys.regime -> regime, SessionKeys.regNumber -> regNumber)
           val result = route(app, request).value
 
-          status(result) mustEqual NOT_FOUND
-          contentAsString(result) must include("Page not found")
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.AssessmentInAbsenceOfReturnsController.onPageLoad(pageSize = 10, pageNo = 3).url
         }
       }
     }

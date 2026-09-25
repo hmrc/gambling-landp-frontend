@@ -16,14 +16,14 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
+import controllers.helpers.PaginationRedirect
 import models.PaginationParams
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{PageNotFoundView, ReallocationsInView}
+import views.html.ReallocationsInView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -32,9 +32,7 @@ class ReallocationsInController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: ReallocationsInView,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  view: ReallocationsInView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -44,10 +42,20 @@ class ReallocationsInController @Inject() (
     val regNumber = request.regNumber
     gamblingService.getReallocationsIn(regime.code, regNumber, pageSize, pageNo).map { reallocations =>
       val pagination = PaginationParams(reallocations.totalRecords.getOrElse(0), pageSize, pageNo)
-      if (pagination.isOutOfRange)
-        NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
-      else
-        Ok(view(regime, regNumber, pagination, reallocations))
+
+      PaginationRedirect
+        .redirect(
+          pagination = pagination,
+          parent     = Some(routes.ReallocationsController.onPageLoad()),
+          page = lastPage =>
+            routes.ReallocationsInController.onPageLoad(
+              pageSize = pageSize,
+              pageNo   = lastPage
+            )
+        )
+        .getOrElse {
+          Ok(view(regime, regNumber, pagination, reallocations))
+        }
     }
   }
 }

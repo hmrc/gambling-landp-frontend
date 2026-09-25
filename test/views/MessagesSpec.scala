@@ -26,8 +26,10 @@ class MessagesSpec extends AnyFreeSpec with Matchers {
 
   private val keyPattern = """messages\("([^"]+)"""".r
 
+  import scala.io.Codec
+
   private def keysFromFile(file: File): Seq[String] =
-    keyPattern.findAllMatchIn(Source.fromFile(file).mkString).map(_.group(1)).toSeq
+    keyPattern.findAllMatchIn(Source.fromFile(file)(Codec.UTF8).mkString).map(_.group(1)).toSeq
 
   private def allSourceFiles: Seq[File] = {
     def walk(dir: File): Seq[File] =
@@ -36,7 +38,8 @@ class MessagesSpec extends AnyFreeSpec with Matchers {
         case f                  => Seq(f)
       }
 
-    walk(new File("app/views")) ++ walk(new File("app/viewmodels")) ++ walk(new File("app/controllers"))
+    val files = walk(new File("app/views")) ++ walk(new File("app/viewmodels")) ++ walk(new File("app/controllers"))
+    files.filterNot(_.getName == ".DS_Store")
   }
 
   private lazy val templateKeys: Seq[String] =
@@ -44,7 +47,7 @@ class MessagesSpec extends AnyFreeSpec with Matchers {
 
   private def definedKeysIn(filename: String): Set[String] =
     Source
-      .fromFile(s"conf/$filename")
+      .fromFile(s"conf/$filename")(scala.io.Codec.UTF8)
       .getLines()
       .filterNot(l => l.trim.isEmpty || l.trim.startsWith("#"))
       .map(_.split("=").head.trim)

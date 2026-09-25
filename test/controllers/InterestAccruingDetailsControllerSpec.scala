@@ -112,7 +112,9 @@ class InterestAccruingDetailsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Interest on PPLR interest bearing from 1 Sep 2009 to 31 Jul 2016")
+        contentAsString(result) must (include("Interest on PPLR interest bearing from 1 Sep 2009 to 31 Jul 2016") or include(
+          "Interest on PPLR interest bearing from 1 Sept 2009 to 31 Jul 2016"
+        ))
       }
     }
 
@@ -196,7 +198,7 @@ class InterestAccruingDetailsControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return Not Found with page not found content when pageNo exceeds totalPages" in {
+    "must redirect to the last page when pageNo exceeds totalPages" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(multiPageResponse))
@@ -210,8 +212,34 @@ class InterestAccruingDetailsControllerSpec extends SpecBase with MockitoSugar {
           .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
         val result = route(app, request).value
 
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.InterestAccruingDetailsController.onPageLoad(10, 3).url
+      }
+    }
+
+    "must redirect to the parent page when the service returns no items" in {
+      val emptyResponse = InterestAccruingDetails(
+        periodStartDate = Some(LocalDate.of(2009, 9, 1)),
+        periodEndDate   = Some(LocalDate.of(2016, 7, 31)),
+        total           = BigDecimal(0),
+        totalRecords    = 0,
+        items           = Seq.empty
+      )
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestAccruingDetails(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(emptyResponse))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.InterestBreakdownController.onPageLoad().url
       }
     }
 

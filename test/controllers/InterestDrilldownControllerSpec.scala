@@ -139,6 +139,25 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
+    "must redirect to the parent page when total records is 0" in {
+      val mockService = mock[GamblingService]
+      when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(interestDrilldown.copy(totalRecords = 0, items = Seq.empty)))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.InterestBreakdownController.onPageLoad().url
+      }
+    }
+
     "must return page not found when data has 0 items and description code is none" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
