@@ -20,7 +20,7 @@ import com.google.inject.{ImplementedBy, Inject}
 import config.FrontendAppConfig
 import controllers.routes
 import models.{AuthContext, Regime, SessionKeys}
-import models.requests.{IdentifierRequest, LoginRequest}
+import models.requests.{IdentifierRequest, SignedInRequest}
 import play.api.Logging
 import services.{AgentClientAuthResult, AgentClientAuthService}
 import play.api.mvc.Results.*
@@ -140,19 +140,19 @@ object AuthenticatedIdentifierAction {
     }
 }
 
-@ImplementedBy(classOf[AuthenticatedLoginAction])
-trait LoginAction extends ActionBuilder[LoginRequest, AnyContent] with ActionFunction[Request, LoginRequest]
+@ImplementedBy(classOf[AuthenticatedSignedInAction])
+trait SignedInAction extends ActionBuilder[SignedInRequest, AnyContent] with ActionFunction[Request, SignedInRequest]
 
-class AuthenticatedLoginAction @Inject() (
+class AuthenticatedSignedInAction @Inject() (
   override val authConnector: AuthConnector,
   config: FrontendAppConfig,
   val parser: BodyParsers.Default
 )(implicit val executionContext: ExecutionContext)
-    extends LoginAction
+    extends SignedInAction
     with AuthorisedFunctions
     with Logging {
 
-  override def invokeBlock[A](request: Request[A], block: LoginRequest[A] => Future[Result]): Future[Result] = {
+  override def invokeBlock[A](request: Request[A], block: SignedInRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
@@ -160,7 +160,7 @@ class AuthenticatedLoginAction @Inject() (
       .retrieve(Retrievals.affinityGroup.and(Retrievals.credentials)) {
 
         case Some(AffinityGroup.Organisation | AffinityGroup.Agent) ~ Some(credentials) =>
-          block(LoginRequest(request, credentials.providerId))
+          block(SignedInRequest(request, credentials.providerId))
 
         case _ =>
           Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
