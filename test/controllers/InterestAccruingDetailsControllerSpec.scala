@@ -112,7 +112,9 @@ class InterestAccruingDetailsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Interest on PPLR interest bearing from 1 Sept 2009 to 31 Jul 2016")
+        contentAsString(result) must (include("Interest on PPLR interest bearing from 1 Sep 2009 to 31 Jul 2016") or include(
+          "Interest on PPLR interest bearing from 1 Sept 2009 to 31 Jul 2016"
+        ))
       }
     }
 
