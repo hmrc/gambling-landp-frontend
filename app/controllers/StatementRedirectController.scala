@@ -16,7 +16,7 @@
 
 package controllers
 
-import controllers.actions.{GRNValidator, LoginAction}
+import controllers.actions.{GRNValidator, SignedInAction}
 import models.{Regime, SessionKeys}
 import play.api.Logging
 import play.api.i18n.I18nSupport
@@ -27,12 +27,12 @@ import javax.inject.Inject
 
 class StatementRedirectController @Inject() (
   val controllerComponents: MessagesControllerComponents,
-  identify: LoginAction
+  signedIn: SignedInAction
 ) extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = identify { implicit request =>
+  def onPageLoad(regime: String, regNumber: String): Action[AnyContent] = signedIn { implicit request =>
     Regime.fromString(regime) match {
       case None =>
         logger.warn("no regime found")
