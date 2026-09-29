@@ -48,7 +48,7 @@ class InterestDrilldownController @Inject() (
         PaginationRedirect
           .redirect(
             pagination = pagination,
-            parent     = Some(routes.InterestBreakdownController.onPageLoad()),
+            parent     = Some(routes.InterestDetailsController.onPageLoad()),
             page = lastPage =>
               routes.InterestDrilldownController.onPageLoad(
                 pageSize   = pageSize,
@@ -59,6 +59,8 @@ class InterestDrilldownController @Inject() (
           .getOrElse {
             Ok(view(interestId, pagination, interestDetails))
           }
+      case null =>
+        Redirect(routes.InterestDetailsController.onPageLoad())
     }
   }
 }

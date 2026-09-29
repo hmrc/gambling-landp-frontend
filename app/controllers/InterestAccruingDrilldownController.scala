@@ -59,6 +59,8 @@ class InterestAccruingDrilldownController @Inject() (
           .getOrElse {
             Ok(view(interestId, pagination, interestAccruing))
           }
+      case null =>
+        Redirect(routes.InterestAccruingDetailsController.onPageLoad())
     }
   }
 }

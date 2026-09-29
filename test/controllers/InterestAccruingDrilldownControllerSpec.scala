@@ -116,6 +116,31 @@ class InterestAccruingDrilldownControllerSpec extends SpecBase with MockitoSugar
       }
     }
 
+    "must redirect to the parent page when interestAccruingDetails is null" in {
+      val mockService = mock[GamblingService]
+
+      when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(null))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(
+            SessionKeys.regime    -> "gbd",
+            SessionKeys.regNumber -> regNumber
+          )
+
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          routes.InterestAccruingDetailsController.onPageLoad().url
+      }
+    }
+
     "must render pagination and summary paragraphs when there are multiple pages" in {
       val mockService = mock[GamblingService]
       when(mockService.getInterestAccruingDrilldown(any(), any(), any(), any(), any())(any()))
