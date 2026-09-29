@@ -158,25 +158,6 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return page not found when data has 0 items and description code is none" in {
-      val mockService = mock[GamblingService]
-      when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(interestDrilldown.copy(descriptionCode = None, items = Seq.empty, total = BigDecimal(0))))
-
-      val app = applicationBuilder()
-        .overrides(bind[GamblingService].toInstance(mockService))
-        .build()
-
-      running(app) {
-        val request = FakeRequest(GET, url)
-          .withSession(SessionKeys.regime -> "gbd", SessionKeys.regNumber -> regNumber)
-        val result = route(app, request).value
-
-        status(result) mustEqual NOT_FOUND
-        contentAsString(result) must include("Page not found")
-      }
-    }
-
     "must support all valid regime codes" in {
       val regimes = Seq("gbd", "pbd", "rgd", "mgd")
 

@@ -16,7 +16,6 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.IdentifierAction
 import controllers.helpers.PaginationRedirect
 import models.interest.InterestDrilldown
@@ -25,7 +24,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.GamblingService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.{InterestDrilldownView, PageNotFoundView}
+import views.html.InterestDrilldownView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -34,9 +33,7 @@ class InterestDrilldownController @Inject() (
   val controllerComponents: MessagesControllerComponents,
   identify: IdentifierAction,
   gamblingService: GamblingService,
-  view: InterestDrilldownView,
-  pageNotFoundView: PageNotFoundView,
-  appConfig: FrontendAppConfig
+  view: InterestDrilldownView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -45,7 +42,7 @@ class InterestDrilldownController @Inject() (
     val regime = request.regime
     val regNumber = request.regNumber
     gamblingService.getInterestDrilldown(regime.code, regNumber, interestId, pageSize, pageNo).map {
-      case interestDetails @ InterestDrilldown(_, _, _, _, Some(code), _) =>
+      case interestDetails @ InterestDrilldown(_, _, _, _, _, _) =>
         val pagination = PaginationParams(interestDetails.totalRecords, pageSize, pageNo)
 
         PaginationRedirect
@@ -62,7 +59,6 @@ class InterestDrilldownController @Inject() (
           .getOrElse {
             Ok(view(interestId, pagination, interestDetails))
           }
-      case _ => NotFound(pageNotFoundView(appConfig.hmrcOnlineServiceDesk))
     }
   }
 }
