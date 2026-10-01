@@ -93,7 +93,6 @@ class AuthenticatedIdentifierAction @Inject() (
               logger.warn(s"agent not authorised for the client in regime ${regime.code}")
               Future.successful(Redirect(routes.AccessDeniedController.onPageLoad()))
             case AgentClientAuthResult.NotReady | AgentClientAuthResult.Failed =>
-              logger.warn(s"client list not ready or failed for regime ${regime.code}")
               Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
           }
         case _ => proceed()
