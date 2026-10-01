@@ -154,7 +154,32 @@ class InterestDrilldownControllerSpec extends SpecBase with MockitoSugar {
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.InterestBreakdownController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.InterestDetailsController.onPageLoad().url
+      }
+    }
+
+    "must redirect to the parent page when interestDetails is null" in {
+      val mockService = mock[GamblingService]
+
+      when(mockService.getInterestDrilldown(any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(null))
+
+      val app = applicationBuilder()
+        .overrides(bind[GamblingService].toInstance(mockService))
+        .build()
+
+      running(app) {
+        val request = FakeRequest(GET, url)
+          .withSession(
+            SessionKeys.regime    -> "gbd",
+            SessionKeys.regNumber -> regNumber
+          )
+
+        val result = route(app, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          routes.InterestDetailsController.onPageLoad().url
       }
     }
 
