@@ -40,15 +40,15 @@ class AgentClientAuthService @Inject() (connector: GamblingConnector)(implicit e
             case true  => AgentClientAuthResult.Authorised
             case false => AgentClientAuthResult.NotAuthorised
           }
-        case ClientListStatus.InProgress | ClientListStatus.InitiateDownload =>
-          logger.warn(s"""event="client_list_not_ready" regime=${regime.code}""")
+        case status @ (ClientListStatus.InProgress | ClientListStatus.InitiateDownload) =>
+          logger.warn(s"client list not ready for agent authorisation regime=${regime.code} status=${status.asString}")
           Future.successful(AgentClientAuthResult.NotReady)
         case ClientListStatus.Failed =>
-          logger.warn(s"""event="client_list_retrieval_failed" regime=${regime.code}""")
+          logger.warn(s"client list retrieval failed for agent authorisation regime=${regime.code}")
           Future.successful(AgentClientAuthResult.Failed)
       }
       .recover { case NonFatal(e) =>
-        logger.error(s"""event="authorise_client_error" regime=${regime.code}""", e)
+        logger.error(s"failed to authorise agent client regime=${regime.code}", e)
         AgentClientAuthResult.Failed
       }
 }
