@@ -111,8 +111,8 @@ object AuthenticatedIdentifierAction {
   private val regimeConfig: Map[Regime, RegimeConfig] = Map(
     Regime.MGD -> RegimeConfig("HMRC-MGD-ORG", "HMRCMGDRN", "HMRC-MGD-AGNT", "HMRCMGDAGENTREF"),
     Regime.GBD -> RegimeConfig("HMRC-GTS-GBD", "HMRCGTSGBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF"),
-    Regime.PBD -> RegimeConfig("HMRC-GTS-PBD", "HMRCGTSGBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF"),
-    Regime.RGD -> RegimeConfig("HMRC-GTS-RGD", "HMRCGTSGBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF")
+    Regime.PBD -> RegimeConfig("HMRC-GTS-PBD", "HMRCGTSPBRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF"),
+    Regime.RGD -> RegimeConfig("HMRC-GTS-RGD", "HMRCGTSRGRN", "HMRC-GTS-AGNT", "HMRCGTSAGENTREF")
   )
 
   private def activeIdentifierValue(

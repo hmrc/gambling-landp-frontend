@@ -296,7 +296,12 @@ class AuthActionSpec extends SpecBase {
         ("rgd", "HMRC-GTS-RGD"),
         ("mgd", "HMRC-MGD-ORG")
       ).foreach { case (regime, enrolmentKey) =>
-        val (identifierKey, regNumber) = if (regime == "mgd") ("HMRCMGDRN", "MGD123") else ("HMRCGTSGBRN", "GTS123")
+        val (identifierKey, regNumber) = regime match {
+          case "mgd" => ("HMRCMGDRN", "MGD123")
+          case "gbd" => ("HMRCGTSGBRN", "GTS123")
+          case "pbd" => ("HMRCGTSPBRN", "GTS123")
+          case "rgd" => ("HMRCGTSRGRN", "GTS123")
+        }
 
         s"must invoke the block when regime=$regime and regNumber in session match the $enrolmentKey enrolment" in {
 
